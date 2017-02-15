@@ -1,7 +1,6 @@
 from setuptools import setup
 import os
 
-import tridesclous
 
 install_requires = [
                     'numpy',
