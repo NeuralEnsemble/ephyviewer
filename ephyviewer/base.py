@@ -34,7 +34,7 @@ class MyViewBox(pg.ViewBox):
     xsize_zoom = QT.pyqtSignal(float)
     def __init__(self, *args, **kwds):
         pg.ViewBox.__init__(self, *args, **kwds)
-        #~ self.disableAutoRange()
+        self.disableAutoRange()
     def mouseClickEvent(self, ev):
         ev.accept()
     def mouseDoubleClickEvent(self, ev):
@@ -71,13 +71,14 @@ class BaseMultiChannelViewer(ViewerBase):
             self.params_controller.setWindowFlags(QT.Qt.Window)
             self.viewBox.doubleclicked.connect(self.show_params_controller)
         else:
-            self.params_controller = None        
+            self.params_controller = None
 
     def make_params(self):
         # Create parameters
         all = []
         for i in range(self.source.nb_channel):
-            name = 'Signal{}'.format(i)
+            #TODO add name, hadrware index, id
+            name = 'Channel{}'.format(i)
             all.append({'name': name, 'type': 'group', 'children': self._default_by_channel_params})
         self.by_channel_params = pg.parametertree.Parameter.create(name='AnalogSignals', type='group', children=all)
         self.params = pg.parametertree.Parameter.create(name='Global options',

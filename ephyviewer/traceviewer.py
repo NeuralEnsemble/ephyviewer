@@ -136,6 +136,23 @@ class TraceViewerController(BaseTraceViewerController):
             selected[[ind.row() for ind in self.qlist.selectedIndexes()]] = True
         return selected
     
+    @property
+    def visible_channels(self):
+        visible = [self.viewer.by_channel_params['Channel{}'.format(i), 'visible'] for i in range(self.source.nb_channel)]
+        return np.array(visible, dtype='bool')
+
+    @property
+    def gains(self):
+        print(self.viewer.by_channel_params['Channel0'])
+        print(self.viewer.by_channel_params['Channel0', 'gain'])
+        gains = [self.viewer.by_channel_params['Channel{}'.format(i), 'gain'] for i in range(self.source.nb_channel)]
+        return np.array(gains)
+
+    @property
+    def offsets(self):
+        offsets = [self.viewer.by_channel_params['Channel{}'.format(i), 'offset'] for i in range(self.source.nb_channel)]
+        return np.array(offsets)
+    
     def on_set_visible(self):
         # apply
         visibles = self.selected
@@ -169,12 +186,27 @@ class TraceViewer(BaseMultiChannelViewer):
     def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
         
+        self.initialize_plot()
+        
+        self._xratio = 0.3
+    
+    def initialize_plot(self):
+        
         self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00')
         self.plot.addItem(self.vline)
         
-        self._xratio = 0.3
-        self._last_chunk = None
-    
+        self.curves = []
+        self.channel_labels = []
+        for c in range(self.source.nb_channel):
+            color = self.by_channel_params['Channel{}'.format(c), 'color']
+            curve = pg.PlotCurveItem(pen='#7FFF00', connect='finite')
+            self.plot.addItem(curve)
+            self.curves.append(curve)
+            
+            label = pg.TextItem('chan{}'.format(c), color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+            self.plot.addItem(label)
+            self.channel_labels.append(label)
+        
     
     def refresh(self):
         print('TraceViewer.refresh', 't', self.t)
@@ -184,15 +216,53 @@ class TraceViewer(BaseMultiChannelViewer):
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
         i_start, i_stop = self.source.time_to_index(t_start), self.source.time_to_index(t_stop)
+        print(t_start, t_stop, i_start, i_stop)
+        #TODO which seg_num
+        seg_num = 0
         
         
         
+        gains = self.params_controller.gains
+        offsets = self.params_controller.offsets
+        visible_channels = self.params_controller.visible_channels
+        nb_visible = np.sum(visible_channels)
+        
+        sigs_chunk = self.source.get_chunk(seg_num=seg_num, i_start=i_start, i_stop=i_stop)
+        data_curves = sigs_chunk[:, visible_channels].T.copy()
+        if data_curves.dtype!='float32':
+            data_curves = data_curves.astype('float32')
+        
+        data_curves *= gains[visible_channels, None]
+        data_curves += offsets[visible_channels, None]
+        
+        times_chunk = np.arange(sigs_chunk.shape[0], dtype='float32')/self.source.sample_rate + t_start
+        
+        index_visible, = np.nonzero(visible_channels)
+        for i, c in enumerate(index_visible):
+            self.curves[c].show()
+            self.curves[c].setData(times_chunk, data_curves[i,:])
+            
+            self.channel_labels[c].show()
+            #~ self.channel_labels[c].setPos(t_start, nb_visible-i))
+
+        index_not_visible, = np.nonzero(~visible_channels)
+        for i, c in enumerate(index_not_visible):
+            self.cruves[c].hide()
+            self.channel_labels[c].hide()
+            
+            
+            if self.params['plot_threshold']:
+                threshold = self.controller.get_threshold()
+                self.threshold_lines[i].setPos(n-i-1 + self.gains[c]*threshold)
+                self.threshold_lines[i].show()
+            else:
+                self.threshold_lines[i].hide()        
+        
+        print(self.t, t_start, t_stop,)
         self.vline.setPos(self.t)
-        self.plot.setXRange( t_start, t_stop)
-        self.plot.setYRange(self.params['ylim_min'], self.params['ylim_max'])
-
-
-        
+        self.plot.setXRange( t_start, t_stop, padding = 0.0)
+        self.plot.setYRange(self.params['ylim_min'], self.params['ylim_max'], padding = 0.0)
+    
     
     def estimate_auto_scale(self):
         
@@ -207,3 +277,4 @@ class TraceViewer(BaseMultiChannelViewer):
         self.gains[self.visible_channels] = np.ones(n, dtype=float) * 1./(self.factor*max(self.mad))
         self.offsets[self.visible_channels] = np.arange(n)[::-1] - self.med[self.visible_channels]*self.gains[self.visible_channels]
         self.refresh()
+
