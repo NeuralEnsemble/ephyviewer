@@ -15,7 +15,7 @@ from .base import BaseMultiChannelViewer
 
 
 default_params = [
-    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
+    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'ylim_max', 'type': 'float', 'value': 10.},
     {'name': 'ylim_min', 'type': 'float', 'value': -10.},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
@@ -23,7 +23,7 @@ default_params = [
     ]
 
 default_by_channel_params = [ 
-    {'name': 'color', 'type': 'color', 'value': "FF0"},
+    {'name': 'color', 'type': 'color', 'value': "55FF00"},
     {'name': 'gain', 'type': 'float', 'value': 1, 'step': 0.1},
     {'name': 'offset', 'type': 'float', 'value': 0., 'step': 0.1},
     {'name': 'visible', 'type': 'bool', 'value': True},
@@ -143,8 +143,6 @@ class TraceViewerController(BaseTraceViewerController):
 
     @property
     def gains(self):
-        print(self.viewer.by_channel_params['Channel0'])
-        print(self.viewer.by_channel_params['Channel0', 'gain'])
         gains = [self.viewer.by_channel_params['Channel{}'.format(i), 'gain'] for i in range(self.source.nb_channel)]
         return np.array(gains)
 
@@ -189,6 +187,7 @@ class TraceViewer(BaseMultiChannelViewer):
         self.initialize_plot()
         
         self._xratio = 0.3
+        self._max_point = 1000
     
     def initialize_plot(self):
         
@@ -199,7 +198,9 @@ class TraceViewer(BaseMultiChannelViewer):
         self.channel_labels = []
         for c in range(self.source.nb_channel):
             color = self.by_channel_params['Channel{}'.format(c), 'color']
-            curve = pg.PlotCurveItem(pen='#7FFF00')#, connect='finite')
+            #~ curve = pg.PlotCurveItem(pen='#7FFF00')#, connect='finite')
+            curve = pg.PlotCurveItem(pen='#7FFF00', downsampleMethod='peak',
+                            autoDownsample=True, clipToView=True)#, connect='finite')
             self.plot.addItem(curve)
             self.curves.append(curve)
             
@@ -212,15 +213,25 @@ class TraceViewer(BaseMultiChannelViewer):
         print('TraceViewer.refresh', 't', self.t)
         
         self.graphicsview.setBackground(self.params['background_color'])
+
+        #TODO which seg_num
+        seg_num = 0
         
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
         i_start, i_stop = self.source.time_to_index(t_start), self.source.time_to_index(t_stop)
-        print(t_start, t_stop, i_start, i_stop)
-        #TODO which seg_num
-        seg_num = 0
+        #~ print(t_start, t_stop, i_start, i_stop)
         
+        ds_ratio = (i_stop - i_start)//self._max_point + 1
+        #~ print()
+        #~ print('ds_ratio', ds_ratio)
         
+        if ds_ratio>1:
+            i_start = i_start - (i_start%ds_ratio) + ds_ratio
+            i_stop = i_stop - (i_stop%ds_ratio)
+            #~ print('i_start, i_stop', i_start, i_stop)
+        
+        #TODO: limit on sig_chunk
         
         gains = self.params_controller.gains
         offsets = self.params_controller.offsets
@@ -228,23 +239,52 @@ class TraceViewer(BaseMultiChannelViewer):
         nb_visible = np.sum(visible_channels)
         
         sigs_chunk = self.source.get_chunk(seg_num=seg_num, i_start=i_start, i_stop=i_stop)
+        #~ print('sigs_chunk.shape', sigs_chunk.shape)
         data_curves = sigs_chunk[:, visible_channels].T.copy()
         if data_curves.dtype!='float32':
             data_curves = data_curves.astype('float32')
         
+        
+        if ds_ratio>1:
+            
+            #method decimate pur
+            #data_curves = data_curves[:, ::ds_ratio]
+            
+            #method min_max
+            #~ print('data_curves.shape', data_curves.shape)
+            small_size = (data_curves.shape[1]//ds_ratio)*2
+            #~ print('small_size', small_size)
+            small_arr = np.empty((data_curves.shape[0], small_size), dtype=data_curves.dtype)
+            #~ full_arr = data_curves[:, :data_curves.shape[1]-data_curves.shape[1]%ds_ratio]
+            
+            full_arr = data_curves.reshape(data_curves.shape[0], -1, ds_ratio)
+            small_arr[:, ::2] = full_arr.max(axis=2)
+            small_arr[:, 1::2] = full_arr.min(axis=2)
+            data_curves = small_arr
+        
+        #~ print(data_curves.shape)
+        
+            
         data_curves *= gains[visible_channels, None]
         data_curves += offsets[visible_channels, None]
         
-        times_chunk = np.arange(sigs_chunk.shape[0], dtype='float32')/self.source.sample_rate + t_start
+        times_chunk = np.arange(data_curves.shape[1], dtype='float32')/(self.source.sample_rate/ds_ratio) + t_start
+        
+        
+        
+        
+        
         
         index_visible, = np.nonzero(visible_channels)
         for i, c in enumerate(index_visible):
             self.curves[c].show()
             self.curves[c].setData(times_chunk, data_curves[i,:])
             
+            self.curves[c].setPen(self.by_channel_params['Channel{}'.format(c), 'color'])
+            
             self.channel_labels[c].show()
-            #~ self.channel_labels[c].setPos(t_start, nb_visible-i))
-
+            self.channel_labels[c].setPos(t_start, 0)
+        
         index_not_visible, = np.nonzero(~visible_channels)
         for i, c in enumerate(index_not_visible):
             self.cruves[c].hide()
@@ -258,10 +298,12 @@ class TraceViewer(BaseMultiChannelViewer):
             else:
                 self.threshold_lines[i].hide()        
         
-        print(self.t, t_start, t_stop,)
+        #~ print(self.t, t_start, t_stop,)
         self.vline.setPos(self.t)
         self.plot.setXRange( t_start, t_stop, padding = 0.0)
         self.plot.setYRange(self.params['ylim_min'], self.params['ylim_max'], padding = 0.0)
+        
+        #~ self.graphicsview.repaint()
     
     
     def estimate_auto_scale(self):

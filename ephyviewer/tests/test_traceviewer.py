@@ -10,9 +10,8 @@ def test_mainviewer():
     
     app = ephyviewer.mkQApp()
     view = ephyviewer.TraceViewer(source=source, name='trace')
-    view.t = 5.
     view.refresh()
-    win = ephyviewer.MainViewer()
+    win = ephyviewer.MainViewer(debug=True)
     win.add_view(view)
     win.show()
     app.exec_()

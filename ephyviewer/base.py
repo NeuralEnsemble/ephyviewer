@@ -7,6 +7,8 @@ import numpy as np
 
 
 
+
+
 class ViewerBase(QT.QWidget):
     
     time_changed = QT.pyqtSignal()
@@ -21,7 +23,7 @@ class ViewerBase(QT.QWidget):
     def seek(self, t):
         self.t = t
         self.refresh()
-    
+        
     def refresh(self):
         #overwrite this one
         raise(NotImplementedError)

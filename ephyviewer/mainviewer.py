@@ -2,6 +2,7 @@
 from __future__ import (unicode_literals, print_function, division, absolute_import)
 
 from collections import OrderedDict
+import time
 
 from .myqt import QT
 from .navigation import NavigationToolBar
@@ -20,12 +21,13 @@ orientation_to_qt={
 
 
 class MainViewer(QT.QMainWindow):
-    def __init__(self):
+    def __init__(self, debug=False):
         QT.QMainWindow.__init__(self)
 
         #TODO settings
         #http://www.programcreek.com/python/example/86789/PyQt5.QtCore.QSettings
         
+        self.debug = debug
         
         self.setDockNestingEnabled(True) 
         
@@ -39,11 +41,6 @@ class MainViewer(QT.QMainWindow):
         self.addDockWidget(QT.TopDockWidgetArea, dock)
         self.navigation_toolbar.time_changed.connect(self.on_time_changed)
 
-        #~ self.timeseeker.time_changed.connect(self.seek_all)
-        #~ self.timeseeker.fast_time_changed.connect(self.fast_seek_all)
-        
-        #~ self.subviewers = [ ]
-    
     def add_view(self, widget, location='bottom', orientation='vertical',
                         tabify_with=None, split_with=None):
         name = widget.name
@@ -75,13 +72,24 @@ class MainViewer(QT.QMainWindow):
             self.addDockWidget(loc, dock, orien)
 
         self.viewers[name] = {'widget': widget, 'dock':dock}
+        
+        #TODO seg_num
+        t_start = min(self.navigation_toolbar.t_start, widget.source.get_t_start(seg_num=0))
+        t_stop = max(self.navigation_toolbar.t_start, widget.source.get_t_stop(seg_num=0))
+        print('t_start, t_stop', t_start, t_stop)
+        self.navigation_toolbar.set_start_stop(t_start, t_stop, seek=True)
+        
 
     def on_time_changed(self, t):
         
         for name , viewer in self.viewers.items():
             if viewer['widget'] != self.sender():
+                t0 = time.time()
                 viewer['widget'].seek(t)
-                print(name, t)
+                
+                if self.debug:
+                    t1 = time.time()
+                    print('refresh duration for', name, t1-t0, 's')
         
         if self.navigation_toolbar != self.sender():
             print('self.navigation_toolbar.seek', t)

@@ -137,7 +137,7 @@ class NavigationToolBar(QT.QWidget) :
         # all in s
         
         self.t = 0 #  s
-        self.set_start_stop(0., 10.)
+        self.set_start_stop(0., 0.1)
         
         self.last_time = None
         

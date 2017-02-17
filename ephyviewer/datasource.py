@@ -17,6 +17,12 @@ class BaseDataSource:
     def nb_channel(self):
         pass
 
+    def get_t_start(self, seg_num=0):
+        pass
+
+    def get_t_stop(self, seg_num=0):
+        pass
+
 
 class BaseAnalogSignalSource(BaseDataSource):
     type = 'AnalogSignal'
@@ -46,6 +52,15 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
     @property
     def nb_channel(self):
         return self.signals.shape[1]
+
+    def get_t_start(self, seg_num=0):
+        assert seg_num==0
+        return self.t_start
+
+    def get_t_stop(self, seg_num=0):
+        assert seg_num==0
+        return self.t_start + self.get_length(seg_num=seg_num)/self.sample_rate
+
 
     def get_length(self, seg_num=0):
         assert seg_num==0
