@@ -8,6 +8,7 @@ def make_fake_signals():
     signals = np.random.randn(1000000, 16)
     
     signals *= np.random.rand(16)[None,:]
+    signals += (np.random.rand(16)[None,:]-1)*3
     
     
     sample_rate = 10000.

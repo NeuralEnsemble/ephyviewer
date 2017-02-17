@@ -38,6 +38,7 @@ class MainViewer(QT.QMainWindow):
         dock = QT.QDockWidget('navigation',self)
         dock.setObjectName( 'navigation')
         dock.setWidget(self.navigation_toolbar)
+        dock.setTitleBarWidget(QT.QWidget())
         self.addDockWidget(QT.TopDockWidgetArea, dock)
         self.navigation_toolbar.time_changed.connect(self.on_time_changed)
 
@@ -74,10 +75,13 @@ class MainViewer(QT.QMainWindow):
         self.viewers[name] = {'widget': widget, 'dock':dock}
         
         #TODO seg_num
-        t_start = min(self.navigation_toolbar.t_start, widget.source.get_t_start(seg_num=0))
-        t_stop = max(self.navigation_toolbar.t_start, widget.source.get_t_stop(seg_num=0))
-        print('t_start, t_stop', t_start, t_stop)
-        self.navigation_toolbar.set_start_stop(t_start, t_stop, seek=True)
+        try:
+            t_start = min(self.navigation_toolbar.t_start, widget.source.get_t_start(seg_num=0))
+            t_stop = max(self.navigation_toolbar.t_start, widget.source.get_t_stop(seg_num=0))
+            #~ print('t_start, t_stop', t_start, t_stop)
+            self.navigation_toolbar.set_start_stop(t_start, t_stop, seek=True)
+        except:
+            print('impossiblie to set t_start t_stop')
         
 
     def on_time_changed(self, t):

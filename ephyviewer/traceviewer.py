@@ -4,6 +4,8 @@ from __future__ import (unicode_literals, print_function, division, absolute_imp
 import weakref
 import numpy as np
 
+import matplotlib.cm
+import matplotlib.colors
 
 from .myqt import QT
 import pyqtgraph as pg
@@ -100,13 +102,22 @@ class TraceViewerController(BaseTraceViewerController):
         v.addWidget(but)
         but.clicked.connect(self.on_set_visible)
         
-        for i,text in enumerate(['Real scale (gain = 1, offset = 0)',
-                            'Fake scale (same gain for all)',
-                            'Fake scale (gain per channel)',]):
-            but = QT.QPushButton(text)
-            v.addWidget(but)
-            but.mode = i
-            but.clicked.connect(self.on_auto_gain_and_offset)
+        h = QT.QHBoxLayout()
+        v.addLayout(h)
+        h.addWidget(QT.QLabel('Scale mode:'))
+        self.combo_scale_mode = QT.QComboBox()
+        h.addWidget(self.combo_scale_mode)
+        self.scale_modes = ['Real scale',
+                            'Spread (same gain for all)',
+                            'Spread (gain per channel)',]
+        self.combo_scale_mode.addItems(self.scale_modes)
+        self.combo_scale_mode.currentIndexChanged.connect(self.on_scale_mode_changed)
+        self.scale_mode = 0
+        #~ for i,text in enumerate():
+            #~ but = QT.QPushButton(text)
+            #~ v.addWidget(but)
+            #~ but.mode = i
+            #~ but.clicked.connect(self.on_auto_gain_and_offset)
         
         
         v.addWidget(QT.QLabel(self.tr('<b>Gain zoom (mouse wheel on graph):</b>'),self))
@@ -124,14 +135,16 @@ class TraceViewerController(BaseTraceViewerController):
         but.clicked.connect(self.on_automatic_color)
         h.addWidget(but,4)
         self.combo_cmap = QT.QComboBox()
-        self.combo_cmap.addItems(['jet', 'prism', 'spring', 'spectral', 'hsv', 'autumn', 'spring', 'summer', 'winter', 'bone'])
+        self.combo_cmap.addItems(['Accent', 'Dark2','jet', 'prism', 'hsv', ])
         h.addWidget(self.combo_cmap,1)
         v.addLayout(h)
         
+        self.gain_factor = 1.
+        
     @property
     def selected(self):
-        selected = np.ones(self.viewer.nb_channel, dtype=bool)
-        if self.viewer.nb_channel>1:
+        selected = np.ones(self.viewer.source.nb_channel, dtype=bool)
+        if self.viewer.source.nb_channel>1:
             selected[:] = False
             selected[[ind.row() for ind in self.qlist.selectedIndexes()]] = True
         return selected
@@ -146,10 +159,21 @@ class TraceViewerController(BaseTraceViewerController):
         gains = [self.viewer.by_channel_params['Channel{}'.format(i), 'gain'] for i in range(self.source.nb_channel)]
         return np.array(gains)
 
+    @gains.setter
+    def gains(self, val):
+        for c, v in enumerate(val):
+            self.viewer.by_channel_params['Channel{}'.format(c), 'gain'] = v
+
     @property
     def offsets(self):
         offsets = [self.viewer.by_channel_params['Channel{}'.format(i), 'offset'] for i in range(self.source.nb_channel)]
         return np.array(offsets)
+
+    @offsets.setter
+    def offsets(self, val):
+        for c, v in enumerate(val):
+            self.viewer.by_channel_params['Channel{}'.format(c), 'offset'] = v
+
     
     def on_set_visible(self):
         # apply
@@ -157,21 +181,64 @@ class TraceViewerController(BaseTraceViewerController):
         for i,param in enumerate(self.viewer.by_channel_params.children()):
             param['visible'] = visibles[i]
     
-    def on_auto_gain_and_offset(self):
-        mode = self.sender().mode
-        self.viewer.auto_gain_and_offset(mode=mode, visibles=self.selected)
+    def on_scale_mode_changed(self, mode):
+        self.scale_mode = mode
+        if self.scale_mode==0:
+            self.gains = np.ones(self.viewer.source.nb_channel)
+            self.offsets = np.zeros(self.viewer.source.nb_channel)
+            #TODO ylims
+        else:
+            #~ n = np.sum(self.visible_channels)
+            #~ self.gains[self.visible_channels] = np.ones(n, dtype=float) * 1./(self.factor*max(self.mad))
+            #~ self.offsets[self.visible_channels] = np.arange(n)[::-1] - self.med[self.visible_channels]*self.gains[self.visible_channels]
+            #~ self.refresh()        
+            if self.scale_mode==1:
+                pass
+            elif self.scale_mode==2:
+                pass
+        #~ print(mode)
+    
+    #~ def on_auto_gain_and_offset(self):
+        #~ mode = self.sender().mode
+        #~ self.viewer.auto_gain_and_offset(mode=mode, visibles=self.selected)
     
     def on_gain_zoom(self):
         factor = self.sender().factor
-        self.viewer.gain_zoom(factor, selected=self.selected)
+        self.apply_gain_zoom(factor)
+
+    def apply_gain_zoom(self, factor_ratio):
+        if self.scale_mode==0:
+            pass
+            #TODO ylims
+        else :
+            self.gain_factor *= factor_ratio
+            self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
+            self.gains = self.gains * factor_ratio
+            self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
+            self.viewer.refresh()
+        
+    def apply_xsize_zoom(self, xmove):
+        factor = xmove/100.
+        newsize = self.viewer.params['xsize']*(factor+1.)
+        self.viewer.params['xsize'] = newsize
 
     def on_automatic_color(self, cmap_name = None):
         cmap_name = str(self.combo_cmap.currentText())
-        if self.source.nb_channel>1:
-            selected = self.multi.selected()
-        else:
-            selected = np.ones(1, dtype = bool)
-        self.viewer.automatic_color(cmap_name = cmap_name, selected = selected)
+        n = np.sum(self.selected)
+        if n==0: return
+        cmap = matplotlib.cm.get_cmap(cmap_name , n)
+        
+        self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
+        for i, c in enumerate(np.nonzero(self.selected)[0]):
+            color = [ int(e*255) for e in  matplotlib.colors.ColorConverter().to_rgb(cmap(i)) ]
+            self.viewer.by_channel_params['Channel{}'.format(c), 'color'] = color
+        self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
+        self.viewer.refresh()
+
+
+
+
+
 
 
 
@@ -199,8 +266,8 @@ class TraceViewer(BaseMultiChannelViewer):
         for c in range(self.source.nb_channel):
             color = self.by_channel_params['Channel{}'.format(c), 'color']
             #~ curve = pg.PlotCurveItem(pen='#7FFF00')#, connect='finite')
-            curve = pg.PlotCurveItem(pen='#7FFF00', downsampleMethod='peak',
-                            autoDownsample=True, clipToView=True)#, connect='finite')
+            curve = pg.PlotCurveItem(pen='#7FFF00', downsampleMethod='peak', downsample=1,
+                            autoDownsample=False, clipToView=True)#, connect='finite')
             self.plot.addItem(curve)
             self.curves.append(curve)
             
@@ -208,9 +275,17 @@ class TraceViewer(BaseMultiChannelViewer):
             self.plot.addItem(label)
             self.channel_labels.append(label)
         
+        
+        
+        self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
+        self.viewBox.gain_zoom.connect(self.params_controller.apply_gain_zoom)
+        
+        
+           
+        
     
     def refresh(self):
-        print('TraceViewer.refresh', 't', self.t)
+        #~ print('TraceViewer.refresh', 't', self.t)
         
         self.graphicsview.setBackground(self.params['background_color'])
 
@@ -271,19 +346,17 @@ class TraceViewer(BaseMultiChannelViewer):
         times_chunk = np.arange(data_curves.shape[1], dtype='float32')/(self.source.sample_rate/ds_ratio) + t_start
         
         
-        
-        
-        
-        
         index_visible, = np.nonzero(visible_channels)
         for i, c in enumerate(index_visible):
             self.curves[c].show()
             self.curves[c].setData(times_chunk, data_curves[i,:])
             
-            self.curves[c].setPen(self.by_channel_params['Channel{}'.format(c), 'color'])
+            color = self.by_channel_params['Channel{}'.format(c), 'color']
+            self.curves[c].setPen(color)
             
             self.channel_labels[c].show()
-            self.channel_labels[c].setPos(t_start, 0)
+            self.channel_labels[c].setPos(t_start, offsets[c])
+            self.channel_labels[c].setColor(color)
         
         index_not_visible, = np.nonzero(~visible_channels)
         for i, c in enumerate(index_not_visible):
@@ -306,17 +379,7 @@ class TraceViewer(BaseMultiChannelViewer):
         #~ self.graphicsview.repaint()
     
     
-    def estimate_auto_scale(self):
-        
-        self.factor = 1.
-        self.gain_zoom(15.)
-
-    def gain_zoom(self, factor_ratio):
-        self.factor *= factor_ratio
-        self.gains = np.zeros(self.controller.nb_channel, dtype='float32')
-        self.offsets = np.zeros(self.controller.nb_channel, dtype='float32')
-        n = np.sum(self.visible_channels)
-        self.gains[self.visible_channels] = np.ones(n, dtype=float) * 1./(self.factor*max(self.mad))
-        self.offsets[self.visible_channels] = np.arange(n)[::-1] - self.med[self.visible_channels]*self.gains[self.visible_channels]
-        self.refresh()
-
+    #~ def estimate_auto_scale(self):
+        #~ self.factor = 1.
+        #~ self.gain_zoom(15.)
+    

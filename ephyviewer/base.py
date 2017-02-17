@@ -50,8 +50,11 @@ class MyViewBox(pg.ViewBox):
         self.gain_zoom.emit(z)
         ev.accept()
     def mouseDragEvent(self, ev):
+        if ev.button()== QT.RightButton:
+            self.xsize_zoom.emit((ev.pos()-ev.lastPos()).x())
+        else:
+            pass
         ev.accept()
-        self.xsize_zoom.emit((ev.pos()-ev.lastPos()).x())
 
 
 class BaseMultiChannelViewer(ViewerBase):
@@ -99,7 +102,7 @@ class BaseMultiChannelViewer(ViewerBase):
         self.graphicsview  = pg.GraphicsView()#useOpenGL = True)
         self.mainlayout.addWidget(self.graphicsview)
         
-        self.plot = pg.PlotItem(viewBox = self.viewBox)
+        self.plot = pg.PlotItem(viewBox=self.viewBox)
         self.plot.hideButtons()
         self.graphicsview.setCentralItem(self.plot)
     
