@@ -199,7 +199,7 @@ class TraceViewer(BaseMultiChannelViewer):
         self.channel_labels = []
         for c in range(self.source.nb_channel):
             color = self.by_channel_params['Channel{}'.format(c), 'color']
-            curve = pg.PlotCurveItem(pen='#7FFF00', connect='finite')
+            curve = pg.PlotCurveItem(pen='#7FFF00')#, connect='finite')
             self.plot.addItem(curve)
             self.curves.append(curve)
             

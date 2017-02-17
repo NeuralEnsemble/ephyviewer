@@ -4,13 +4,13 @@ from __future__ import (unicode_literals, print_function, division, absolute_imp
 from collections import OrderedDict
 
 from .myqt import QT
-
+from .navigation import NavigationToolBar
 
 location_to_qt={
     'left': QT.LeftDockWidgetArea,
     'right': QT.RightDockWidgetArea,
     'top': QT.TopDockWidgetArea,
-    'bottom': QT.BottomDockWidgetArea
+    'bottom': QT.BottomDockWidgetArea,
 }
 
 orientation_to_qt={
@@ -32,13 +32,12 @@ class MainViewer(QT.QMainWindow):
         
         self.viewers = OrderedDict()
         
-        
-        
-        #~ self.timeseeker = TimeSeeker()
-        #~ dock = QDockWidget('Time',self)
-        #~ dock.setObjectName( 'Time')
-        #~ dock.setWidget(self.timeseeker)
-        #~ self.addDockWidget(Qt.TopDockWidgetArea, dock)
+        self.navigation_toolbar = NavigationToolBar()
+        dock = QT.QDockWidget('navigation',self)
+        dock.setObjectName( 'navigation')
+        dock.setWidget(self.navigation_toolbar)
+        self.addDockWidget(QT.TopDockWidgetArea, dock)
+        self.navigation_toolbar.time_changed.connect(self.on_time_changed)
 
         #~ self.timeseeker.time_changed.connect(self.seek_all)
         #~ self.timeseeker.fast_time_changed.connect(self.fast_seek_all)
@@ -77,7 +76,16 @@ class MainViewer(QT.QMainWindow):
 
         self.viewers[name] = {'widget': widget, 'dock':dock}
 
-
-
+    def on_time_changed(self, t):
+        
+        for name , viewer in self.viewers.items():
+            if viewer['widget'] != self.sender():
+                viewer['widget'].seek(t)
+                print(name, t)
+        
+        if self.navigation_toolbar != self.sender():
+            print('self.navigation_toolbar.seek', t)
+            self.navigation_toolbar.seek(t)
+        
 
 

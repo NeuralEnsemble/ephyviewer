@@ -4,7 +4,9 @@ from ephyviewer.base import ViewerBase
 
 
 class FakeView(ViewerBase):
-    pass
+    def refresh(self):
+        #~ print('refresh', self.name, self.t)
+        pass
 
 
 
@@ -32,3 +34,4 @@ def test_mainviewer():
     
 if __name__=='__main__':
     test_mainviewer()
+
