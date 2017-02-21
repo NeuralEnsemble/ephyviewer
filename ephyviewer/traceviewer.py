@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import (unicode_literals, print_function, division, absolute_import)
 
-import weakref
+
 import numpy as np
 
 import matplotlib.cm
@@ -10,7 +10,7 @@ import matplotlib.colors
 from .myqt import QT
 import pyqtgraph as pg
 
-from .base import BaseMultiChannelViewer
+from .base import BaseMultiChannelViewer, Base_ParamController
 
 
 
@@ -22,6 +22,8 @@ default_params = [
     {'name': 'ylim_min', 'type': 'float', 'value': -10.},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'display_labels', 'type': 'bool', 'value': False},
+    {'name': 'display_offset', 'type': 'bool', 'value': False},
+    
     ]
 
 default_by_channel_params = [ 
@@ -33,36 +35,14 @@ default_by_channel_params = [
 
 
 
-class BaseTraceViewerController(QT.QWidget):
+
+
+
+
+
+class TraceViewer_ParamController(Base_ParamController):
     def __init__(self, parent=None, viewer=None):
-        QT.QWidget.__init__(self, parent)
-        
-        # this controller is an attribute of the viewer
-        # so weakref to avoid loop reference and Qt crash
-        self._viewer = weakref.ref(viewer)
-        
-        # layout
-        self.mainlayout = QT.QVBoxLayout()
-        self.setLayout(self.mainlayout)
-        t = 'Options for {}'.format(self.viewer.name)
-        self.setWindowTitle(t)
-        self.mainlayout.addWidget(QT.QLabel('<b>'+t+'<\b>'))
-        
-
-    @property
-    def viewer(self):
-        return self._viewer()
-    
-    @property
-    def source(self):
-        return self._viewer().source
-
-
-
-
-class TraceViewerController(BaseTraceViewerController):
-    def __init__(self, parent=None, viewer=None):
-        BaseTraceViewerController.__init__(self, parent=parent, viewer=viewer)
+        Base_ParamController.__init__(self, parent=parent, viewer=viewer)
         
         
 
@@ -112,7 +92,7 @@ class TraceViewerController(BaseTraceViewerController):
                             'Spread (gain per channel)',]
         self.combo_scale_mode.addItems(self.scale_modes)
         self.combo_scale_mode.currentIndexChanged.connect(self.on_scale_mode_changed)
-        self.scale_mode = 0
+        self.scale_mode_index = 0
         #~ for i,text in enumerate():
             #~ but = QT.QPushButton(text)
             #~ v.addWidget(but)
@@ -123,10 +103,10 @@ class TraceViewerController(BaseTraceViewerController):
         v.addWidget(QT.QLabel(self.tr('<b>Gain zoom (mouse wheel on graph):</b>'),self))
         h = QT.QHBoxLayout()
         v.addLayout(h)
-        for label, factor in [('--', 1./10.), ('-', 1./1.3), ('+', 1.3), ('++', 10.),]:
+        for label, factor in [('--', 1./5.), ('-', 1./1.1), ('+', 1.1), ('++', 5.),]:
             but = QT.QPushButton(label)
             but.factor = factor
-            but.clicked.connect(self.on_gain_zoom)
+            but.clicked.connect(self.on_but_ygain_zoom)
             h.addWidget(but)
         
         v.addWidget(QT.QLabel('<b>Set color<\b>'))
@@ -139,7 +119,7 @@ class TraceViewerController(BaseTraceViewerController):
         h.addWidget(self.combo_cmap,1)
         v.addLayout(h)
         
-        self.gain_factor = 1.
+        self.ygain_factor = 1.
         
     @property
     def selected(self):
@@ -181,41 +161,60 @@ class TraceViewerController(BaseTraceViewerController):
         for i,param in enumerate(self.viewer.by_channel_params.children()):
             param['visible'] = visibles[i]
     
-    def on_scale_mode_changed(self, mode):
-        self.scale_mode = mode
-        if self.scale_mode==0:
-            self.gains = np.ones(self.viewer.source.nb_channel)
-            self.offsets = np.zeros(self.viewer.source.nb_channel)
-            #TODO ylims
-        else:
-            #~ n = np.sum(self.visible_channels)
-            #~ self.gains[self.visible_channels] = np.ones(n, dtype=float) * 1./(self.factor*max(self.mad))
-            #~ self.offsets[self.visible_channels] = np.arange(n)[::-1] - self.med[self.visible_channels]*self.gains[self.visible_channels]
-            #~ self.refresh()        
-            if self.scale_mode==1:
-                pass
-            elif self.scale_mode==2:
-                pass
-        #~ print(mode)
-    
-    #~ def on_auto_gain_and_offset(self):
-        #~ mode = self.sender().mode
-        #~ self.viewer.auto_gain_and_offset(mode=mode, visibles=self.selected)
-    
-    def on_gain_zoom(self):
-        factor = self.sender().factor
-        self.apply_gain_zoom(factor)
+    def estimate_median_mad(self):
+        sigs = self.viewer.last_chunk
+        assert sigs is not None, 'Need to debug this'
+        self.signals_med = med = np.median(sigs, axis=0)
+        self.signals_mad = np.median(np.abs(sigs-med),axis=0)*1.4826
+        #~ print('self.signals_med', self.signals_med)
 
-    def apply_gain_zoom(self, factor_ratio):
-        if self.scale_mode==0:
+    
+    def on_scale_mode_changed(self, mode_index):
+        self.scale_mode_index = mode_index
+        self.scale_mode = self.scale_modes[mode_index]
+        #~ print('on_scale_mode_changed', mode_index,self.scale_mode)
+        
+        self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
+        
+        gains = np.ones(self.viewer.source.nb_channel)
+        offsets = np.zeros(self.viewer.source.nb_channel)
+        nb_visible = np.sum(self.visible_channels)
+        self.ygain_factor = 1
+        if self.scale_mode_index==0:
+            self.viewer.params['ylim_min'] = np.min(self.viewer.last_chunk)
+            self.viewer.params['ylim_max'] = np.max(self.viewer.last_chunk)
+        else:
+            self.estimate_median_mad()
+            if self.scale_mode_index==1:
+                gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 4.5
+            elif self.scale_mode_index==2:
+                gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / self.signals_mad[self.visible_channels] / 4.5
+            offsets[self.visible_channels] = np.arange(nb_visible)[::-1] - self.signals_med[self.visible_channels]*gains[self.visible_channels]
+            self.viewer.params['ylim_min'] = -0.5
+            self.viewer.params['ylim_max'] = nb_visible-0.5
+            
+        self.gains = gains
+        self.offsets = offsets
+        self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
+        self.viewer.refresh()
+    
+    def on_but_ygain_zoom(self):
+        factor = self.sender().factor
+        self.apply_ygain_zoom(factor)
+
+    def apply_ygain_zoom(self, factor_ratio):
+        
+        if self.scale_mode_index==0:
             pass
             #TODO ylims
         else :
-            self.gain_factor *= factor_ratio
+            self.ygain_factor *= factor_ratio
             self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
             self.gains = self.gains * factor_ratio
+            self.offsets = self.offsets + self.signals_med*self.gains * (1-factor_ratio)
             self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
             self.viewer.refresh()
+        print('apply_ygain_zoom', factor_ratio, 'self.ygain_factor', self.ygain_factor)
         
     def apply_xsize_zoom(self, xmove):
         factor = xmove/100.
@@ -246,7 +245,7 @@ class TraceViewer(BaseMultiChannelViewer):
     _default_params = default_params
     _default_by_channel_params = default_by_channel_params
     
-    _ControllerClass = TraceViewerController
+    _ControllerClass = TraceViewer_ParamController
     
     def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
@@ -255,6 +254,7 @@ class TraceViewer(BaseMultiChannelViewer):
         
         self._xratio = 0.3
         self._max_point = 1000
+        self.last_chunk = None
     
     def initialize_plot(self):
         
@@ -263,6 +263,7 @@ class TraceViewer(BaseMultiChannelViewer):
         
         self.curves = []
         self.channel_labels = []
+        self.channel_offsets_line = []
         for c in range(self.source.nb_channel):
             color = self.by_channel_params['Channel{}'.format(c), 'color']
             #~ curve = pg.PlotCurveItem(pen='#7FFF00')#, connect='finite')
@@ -274,15 +275,14 @@ class TraceViewer(BaseMultiChannelViewer):
             label = pg.TextItem('chan{}'.format(c), color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
             self.plot.addItem(label)
             self.channel_labels.append(label)
-        
-        
+
+            offset_line = pg.InfiniteLine(angle = 0, movable = False, pen = '#7FFF00')
+            self.plot.addItem(offset_line)
+            self.channel_offsets_line.append(offset_line)
         
         self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
-        self.viewBox.gain_zoom.connect(self.params_controller.apply_gain_zoom)
-        
-        
-           
-        
+        self.viewBox.ygain_zoom.connect(self.params_controller.apply_ygain_zoom)
+    
     
     def refresh(self):
         #~ print('TraceViewer.refresh', 't', self.t)
@@ -314,6 +314,9 @@ class TraceViewer(BaseMultiChannelViewer):
         nb_visible = np.sum(visible_channels)
         
         sigs_chunk = self.source.get_chunk(seg_num=seg_num, i_start=i_start, i_stop=i_stop)
+        
+        self.last_chunk = sigs_chunk
+        
         #~ print('sigs_chunk.shape', sigs_chunk.shape)
         data_curves = sigs_chunk[:, visible_channels].T.copy()
         if data_curves.dtype!='float32':
@@ -354,22 +357,27 @@ class TraceViewer(BaseMultiChannelViewer):
             color = self.by_channel_params['Channel{}'.format(c), 'color']
             self.curves[c].setPen(color)
             
-            self.channel_labels[c].show()
-            self.channel_labels[c].setPos(t_start, offsets[c])
-            self.channel_labels[c].setColor(color)
+            if self.params['display_labels']:
+                self.channel_labels[c].show()
+                self.channel_labels[c].setPos(t_start, offsets[c])
+                self.channel_labels[c].setColor(color)
+            else:
+                self.channel_labels[c].hide()
+            
+            if self.params['display_offset']:
+                self.channel_offsets_line[c].show()
+                self.channel_offsets_line[c].setPos(offsets[c])
+                self.channel_offsets_line[c].setPen(color)
+            else:
+                self.channel_offsets_line[c].hide()
+            
         
         index_not_visible, = np.nonzero(~visible_channels)
         for i, c in enumerate(index_not_visible):
-            self.cruves[c].hide()
+            self.curves[c].hide()
             self.channel_labels[c].hide()
+            self.channel_offsets_line[c].hide()
             
-            
-            if self.params['plot_threshold']:
-                threshold = self.controller.get_threshold()
-                self.threshold_lines[i].setPos(n-i-1 + self.gains[c]*threshold)
-                self.threshold_lines[i].show()
-            else:
-                self.threshold_lines[i].hide()        
         
         #~ print(self.t, t_start, t_stop,)
         self.vline.setPos(self.t)
@@ -381,5 +389,5 @@ class TraceViewer(BaseMultiChannelViewer):
     
     #~ def estimate_auto_scale(self):
         #~ self.factor = 1.
-        #~ self.gain_zoom(15.)
+        #~ self.ygain_zoom(15.)
     

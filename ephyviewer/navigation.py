@@ -191,7 +191,7 @@ class NavigationToolBar(QT.QWidget) :
     def on_spinbox_time_changed(self, val):
         self.seek(val, refresh_spinbox = False)
     
-    def seek(self , t, refresh_scroll = True, refresh_spinbox = True):
+    def seek(self , t, refresh_scroll = True, refresh_spinbox = True, emit=True):
         self.t = t
         if (self.t<self.t_start):
             self.t = self.t_start
@@ -214,8 +214,9 @@ class NavigationToolBar(QT.QWidget) :
         
         if self.show_label:
             self.label_time.setText('{:5.3} s'.format(self.t))
-            
-        self.time_changed.emit(self.t)
+        
+        if emit:
+            self.time_changed.emit(self.t)
         
     def on_change_speed(self , speed):
         self.speed = speed

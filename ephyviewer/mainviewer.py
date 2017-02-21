@@ -97,7 +97,13 @@ class MainViewer(QT.QMainWindow):
         
         if self.navigation_toolbar != self.sender():
             print('self.navigation_toolbar.seek', t)
-            self.navigation_toolbar.seek(t)
+            self.navigation_toolbar.seek(t, emit=False)
+    
+    def seek(self, t):
+        for name , viewer in self.viewers.items():
+            viewer['widget'].seek(t)
+        
+        self.navigation_toolbar.seek(t, emit=False)
         
 
 

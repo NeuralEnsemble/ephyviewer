@@ -5,6 +5,7 @@ from .myqt import QT
 import pyqtgraph as pg
 import numpy as np
 
+import weakref
 
 
 
@@ -32,7 +33,7 @@ class ViewerBase(QT.QWidget):
 
 class MyViewBox(pg.ViewBox):
     doubleclicked = QT.pyqtSignal()
-    gain_zoom = QT.pyqtSignal(float)
+    ygain_zoom = QT.pyqtSignal(float)
     xsize_zoom = QT.pyqtSignal(float)
     def __init__(self, *args, **kwds):
         pg.ViewBox.__init__(self, *args, **kwds)
@@ -44,10 +45,10 @@ class MyViewBox(pg.ViewBox):
         ev.accept()
     def wheelEvent(self, ev):
         if ev.modifiers() == QT.Qt.ControlModifier:
-            z = 10 if ev.delta()>0 else 1/10.
+            z = 5. if ev.delta()>0 else 1/5.
         else:
-            z = 1.3 if ev.delta()>0 else 1/1.3
-        self.gain_zoom.emit(z)
+            z = 1.1 if ev.delta()>0 else 1/1.1
+        self.ygain_zoom.emit(z)
         ev.accept()
     def mouseDragEvent(self, ev):
         if ev.button()== QT.RightButton:
@@ -112,3 +113,29 @@ class BaseMultiChannelViewer(ViewerBase):
     
     def on_param_change(self):
         self.refresh()
+
+
+
+class Base_ParamController(QT.QWidget):
+    def __init__(self, parent=None, viewer=None):
+        QT.QWidget.__init__(self, parent)
+        
+        # this controller is an attribute of the viewer
+        # so weakref to avoid loop reference and Qt crash
+        self._viewer = weakref.ref(viewer)
+        
+        # layout
+        self.mainlayout = QT.QVBoxLayout()
+        self.setLayout(self.mainlayout)
+        t = 'Options for {}'.format(self.viewer.name)
+        self.setWindowTitle(t)
+        self.mainlayout.addWidget(QT.QLabel('<b>'+t+'<\b>'))
+        
+
+    @property
+    def viewer(self):
+        return self._viewer()
+    
+    @property
+    def source(self):
+        return self._viewer().source
