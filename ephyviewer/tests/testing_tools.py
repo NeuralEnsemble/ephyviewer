@@ -29,18 +29,24 @@ def make_video_file(filename, codec='mpeg4', rate=25.):
     print('make_video_file', filename)
     
     import av
+    
+    w, h = 800, 600
+    
     output = av.open(filename, 'w')
     stream = output.add_stream(codec, rate)
     stream.bit_rate = 8000000
     stream.pix_fmt = 'yuv420p'
-    stream.height = 600
-    stream.width = 800
+    stream.height = h
+    stream.width = w
     
     duration = 10.
     
     
-    one_img = np.ones((stream.height, stream.width), dtype='u1, u1, u1')
+    one_img = np.ones((h, w, 3), dtype='u1')
+    
     for i in range(int(duration*rate)):
+        one_img += np.random.randint(low=0, high=255, size=(h, w, 3)).astype('u1')
+        
         frame = av.VideoFrame.from_ndarray(one_img, format='bgr24')
         packet = stream.encode(frame)
         output.mux(packet)
@@ -50,9 +56,11 @@ def make_video_file(filename, codec='mpeg4', rate=25.):
 
 
 def make_fake_video_source():
-    filename = 'video0.avi'
-    if not os.path.exists(filename):
-        make_video_file(filename)
+    filenames = ['video0.avi', 'video1.avi', 'video2.avi',]
+    for filename in filenames:
+        if not os.path.exists(filename):
+            make_video_file(filename)
+    
     
     
     source = ephyviewer.MultiVideoFileSource([filename])

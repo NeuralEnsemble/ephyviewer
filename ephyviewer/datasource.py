@@ -90,20 +90,23 @@ class MultiVideoFileSource( BaseDataSource):
         n = len(self.video_filenames)
         
         self.containers = []
+        self.streams = []
         for video_filename in self.video_filenames:
-            container = av.open(video_filename)
+            container = av.open(video_filename, mode='r')
             self.containers.append(container)
+            stream = container.streams[0]
+            self.streams.append(stream)
+            #~ print(stream)
+            #~ print(stream.start_time)
+            print(stream.frames, float(stream.rate), stream.time_base)
+            
         
         if self.videotimes is None:
-            self.videotimes = []
-            for i in range(n):
-                self.videotimes.append()
-            
-            #TODO
-            pass
-        
-        self._t_start = min([np.min(self.videotimes[c]) for c in range(n)])
-        self._t_stop = max([np.max(self.videotimes[c]) for c in range(n)])
+            self._t_start = min([s.start_time for s in self.streams])
+            self._t_stop = max([s.start_time+s.frames*s.rate for s in self.streams])
+        else:
+            self._t_start = min([np.min(self.videotimes[c]) for c in range(n)])
+            self._t_stop = max([np.max(self.videotimes[c]) for c in range(n)])
     
     @property
     def nb_segment(self):

@@ -1,11 +1,11 @@
 import ephyviewer
 
 
-from  ephyviewer.tests.testing_tools import make_fake_signals
+from  ephyviewer.tests.testing_tools import make_fake_video_source
 
 
 def test_videoviewer():
-    source = make_fake_signals()
+    source = make_fake_video_source()
     
     
     app = ephyviewer.mkQApp()
