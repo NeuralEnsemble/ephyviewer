@@ -1,3 +1,4 @@
+
 import ephyviewer
 import numpy as np
 import os
@@ -34,7 +35,6 @@ def test_VideoMultiFileSource():
     videotimes = None
     source = ephyviewer.MultiVideoFileSource(video_filenames, videotimes)
     assert source.get_t_start()==0
-    print(source.get_t_stop())
     assert source.get_t_stop()==10.
     
     
@@ -48,3 +48,4 @@ def test_VideoMultiFileSource():
 if __name__=='__main__':
     #~ test_InMemoryAnalogSignalSource()
     test_VideoMultiFileSource()
+

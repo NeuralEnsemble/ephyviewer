@@ -10,12 +10,28 @@ def test_videoviewer():
     
     app = ephyviewer.mkQApp()
     view = ephyviewer.VideoViewer(source=source, name='video')
+    view.params['nb_column'] = 2
     
     win = ephyviewer.MainViewer(debug=True)
     win.add_view(view)
     win.show()
     
     app.exec_()
+
+def test_videoviewer():
+    source = make_fake_video_source()
+    
+    
+    app = ephyviewer.mkQApp()
+    view = ephyviewer.VideoViewer(source=source, name='video')
+    view.params['nb_column'] = 2
+    
+    win = ephyviewer.MainViewer(debug=True)
+    win.add_view(view)
+    win.show()
+    
+    app.exec_()
+
     
     
 if __name__=='__main__':
