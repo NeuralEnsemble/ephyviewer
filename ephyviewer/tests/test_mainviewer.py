@@ -37,6 +37,7 @@ def test_mainviewer2():
     from  ephyviewer.tests.testing_tools import make_fake_video_source
     from  ephyviewer.tests.testing_tools import make_fake_signals
     from  ephyviewer.tests.testing_tools import make_fake_event_source
+    from  ephyviewer.tests.testing_tools import make_fake_epoch_source
     
     
     app = ephyviewer.mkQApp()
@@ -44,10 +45,12 @@ def test_mainviewer2():
     view1 = ephyviewer.TraceViewer(source=make_fake_signals(), name='signals')
     view2 = ephyviewer.VideoViewer(source=make_fake_video_source(), name='video')
     view3 = ephyviewer.EventList(source=make_fake_event_source(), name='events')
+    view4 = ephyviewer.EpochViewer(source=make_fake_epoch_source(), name='epoch')
     
     win = ephyviewer.MainViewer()
     win.add_view(view1)
     win.add_view(view2)
+    win.add_view(view4)
     win.add_view(view3, location='bottom',  orientation='horizontal')
     
     win.show()
