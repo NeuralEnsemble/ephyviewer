@@ -12,7 +12,7 @@ import weakref
 
 class ViewerBase(QT.QWidget):
     
-    time_changed = QT.pyqtSignal()
+    time_changed = QT.pyqtSignal(float)
     
     def __init__(self, name='', source=None, **kargs):
         QT.QWidget.__init__(self, **kargs)

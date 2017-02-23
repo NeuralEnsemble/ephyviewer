@@ -36,7 +36,23 @@ def test_VideoMultiFileSource():
     source = ephyviewer.MultiVideoFileSource(video_filenames, videotimes)
     assert source.get_t_start()==0
     assert source.get_t_stop()==10.
+
+
+def test_EventSource():
+    ev_times = np.arange(0, 10., .5)
+    ev_labels = np.array(['Event0 num {}'.format(i) for i in range(ev_times.size)], dtype='U')
+    event0 = { 'time':ev_times, 'label':ev_labels, 'name':  'Event0' }
     
+    ev_times = np.arange(-6, 8., 2.)
+    ev_labels = np.array(['Event1 num {}'.format(i) for i in range(ev_times.size)], dtype='U')
+    event1 = { 'time':ev_times, 'label':ev_labels, 'name':  'Event1' }
+    
+    all_events = [event0, event1]
+    
+    source = ephyviewer.EventSource(all_events=all_events)
+
+    assert source.get_t_start()==-6.
+    assert source.get_t_stop()==9.5
     
     
     
@@ -47,5 +63,6 @@ def test_VideoMultiFileSource():
     
 if __name__=='__main__':
     #~ test_InMemoryAnalogSignalSource()
-    test_VideoMultiFileSource()
+    #~ test_VideoMultiFileSource()
+    test_EventSource()
 

@@ -70,9 +70,12 @@ class MainViewer(QT.QMainWindow):
         else:
             loc = location_to_qt[location]
             orien = orientation_to_qt[orientation]
+            print(location, loc)
             self.addDockWidget(loc, dock, orien)
 
         self.viewers[name] = {'widget': widget, 'dock':dock}
+        
+        widget.time_changed.connect(self.on_time_changed)
         
         #TODO seg_num
         try:

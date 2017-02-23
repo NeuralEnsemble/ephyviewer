@@ -10,3 +10,4 @@ from .navigation import NavigationToolBar
 #Viewers
 from .traceviewer import TraceViewer
 from .videoviewer import VideoViewer
+from .eventlist import EventList

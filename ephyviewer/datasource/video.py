@@ -257,6 +257,7 @@ class FrameGrabber:
     
 
 class MultiVideoFileSource( BaseDataSource):
+    type = 'video'
     def __init__(self, video_filenames, videotimes=None):
         assert HAVE_AV, 'PyAv is not installed'
         
