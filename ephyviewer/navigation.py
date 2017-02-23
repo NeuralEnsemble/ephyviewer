@@ -9,6 +9,11 @@ from collections import OrderedDict
 
 import time
 
+
+#TODO:
+#  * xsize in navigation
+#  * real time when possible
+
 class NavigationToolBar(QT.QWidget) :
     """
     """
@@ -53,6 +58,7 @@ class NavigationToolBar(QT.QWidget) :
             #~ self.scroll_time.setMaximum(length)
         
         h = QT.QHBoxLayout()
+        h.addStretch()
         self.mainlayout.addLayout(h)
         
         if show_play:
@@ -129,6 +135,8 @@ class NavigationToolBar(QT.QWidget) :
             self.label_time = QT.QLabel('0')
             t.addWidget(self.label_time)
             t.addSeparator()
+        
+        h.addStretch()
 
         self.timer_play = QT.QTimer(parent=self, interval=int(play_interval*1000))
         self.timer_play.timeout.connect(self.on_timer_play_interval)

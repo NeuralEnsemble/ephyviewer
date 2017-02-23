@@ -8,15 +8,15 @@ class BaseDataSource:
         pass
     
     @property
-    def nb_segment(self):
-        pass
-    
-    @property
     def nb_channel(self):
-        pass
+        raise(NotImplementedError)
 
-    def get_t_start(self, seg_num=0):
-        pass
+    @property
+    def t_start(self):
+        raise(NotImplementedError)
 
-    def get_t_stop(self, seg_num=0):
-        pass
+    @property
+    def t_stop(self):
+        raise(NotImplementedError)
+
+

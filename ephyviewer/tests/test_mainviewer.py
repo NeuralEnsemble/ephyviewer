@@ -36,14 +36,14 @@ def test_mainviewer():
 def test_mainviewer2():
     from  ephyviewer.tests.testing_tools import make_fake_video_source
     from  ephyviewer.tests.testing_tools import make_fake_signals
-    from  ephyviewer.tests.testing_tools import make_event_source
+    from  ephyviewer.tests.testing_tools import make_fake_event_source
     
     
     app = ephyviewer.mkQApp()
     
     view1 = ephyviewer.TraceViewer(source=make_fake_signals(), name='signals')
     view2 = ephyviewer.VideoViewer(source=make_fake_video_source(), name='video')
-    view3 = ephyviewer.EventList(source=make_event_source(), name='events')
+    view3 = ephyviewer.EventList(source=make_fake_event_source(), name='events')
     
     win = ephyviewer.MainViewer()
     win.add_view(view1)

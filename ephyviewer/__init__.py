@@ -11,3 +11,5 @@ from .navigation import NavigationToolBar
 from .traceviewer import TraceViewer
 from .videoviewer import VideoViewer
 from .eventlist import EventList
+from .epochviewer import EpochViewer
+

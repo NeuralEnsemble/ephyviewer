@@ -6,7 +6,7 @@ from  ephyviewer.tests.testing_tools import make_fake_signals
 
 def test_traceviewer():
     source = make_fake_signals()
-    
+
     
     app = ephyviewer.mkQApp()
     view = ephyviewer.TraceViewer(source=source, name='trace')

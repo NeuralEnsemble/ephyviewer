@@ -1,11 +1,11 @@
 import ephyviewer
 
 
-from  ephyviewer.tests.testing_tools import make_event_source
+from  ephyviewer.tests.testing_tools import make_fake_event_source
 
 
 def test_eventlist():
-    source = make_event_source()
+    source = make_fake_event_source()
     
     
     app = ephyviewer.mkQApp()

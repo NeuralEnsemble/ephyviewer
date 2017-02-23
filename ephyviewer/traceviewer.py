@@ -289,9 +289,6 @@ class TraceViewer(BaseMultiChannelViewer):
         
         self.graphicsview.setBackground(self.params['background_color'])
 
-        #TODO which seg_num
-        seg_num = 0
-        
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
         i_start, i_stop = self.source.time_to_index(t_start), self.source.time_to_index(t_stop)
@@ -313,7 +310,7 @@ class TraceViewer(BaseMultiChannelViewer):
         visible_channels = self.params_controller.visible_channels
         nb_visible = np.sum(visible_channels)
         
-        sigs_chunk = self.source.get_chunk(seg_num=seg_num, i_start=i_start, i_stop=i_stop)
+        sigs_chunk = self.source.get_chunk(i_start=i_start, i_stop=i_stop)
         
         self.last_chunk = sigs_chunk
         

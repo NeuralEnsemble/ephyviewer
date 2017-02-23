@@ -79,8 +79,8 @@ class MainViewer(QT.QMainWindow):
         
         #TODO seg_num
         try:
-            t_start = min(self.navigation_toolbar.t_start, widget.source.get_t_start(seg_num=0))
-            t_stop = max(self.navigation_toolbar.t_start, widget.source.get_t_stop(seg_num=0))
+            t_start = min(self.navigation_toolbar.t_start, widget.source.t_start)
+            t_stop = max(self.navigation_toolbar.t_start, widget.source.t_stop)
             #~ print('t_start, t_stop', t_start, t_stop)
             self.navigation_toolbar.set_start_stop(t_start, t_stop, seek=True)
         except:

@@ -92,13 +92,27 @@ def make_fake_video_source():
     
 
 
-def make_event_source():
+def make_fake_event_source():
     all_events = []
     for c in range(3):
         ev_times = np.arange(0, 10., .5) + c*3
         ev_labels = np.array(['Event{} num {}'.format(c, i) for i in range(ev_times.size)], dtype='U')
         all_events.append({ 'time':ev_times, 'label':ev_labels, 'name':'Event{}'.format(c) })
     
-    source = ephyviewer.EventSource(all_events=all_events)
+    source = ephyviewer.InMemoryEventSource(all_events=all_events)
     return source
+
+
+
+def make_fake_epoch_source():
+    all_epochs = []
+    for c in range(3):
+        ep_times = np.arange(0, 10., .5) + c*3
+        ep_durations = np.ones(ep_times.shape) * .1
+        ep_labels = np.array(['Event{} num {}'.format(c, i) for i in range(ep_times.size)], dtype='U')
+        all_epochs.append({ 'time':ep_times, 'duration':ep_durations, 'label':ep_labels, 'name':'Event{}'.format(c) })
+    
+    source = ephyviewer.InMemoryEpochSource(all_epochs=all_epochs)
+    return source
+    
     

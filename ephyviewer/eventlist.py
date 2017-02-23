@@ -28,7 +28,7 @@ class EventList(ViewerBase):
         self.mainlayout.addWidget(self.list_widget)
         self.combo.currentIndexChanged.connect(self.refresh_list)
         
-        self.combo.addItems([ev['name'] for ev in self.source.all_events ])
+        self.combo.addItems([self.source.get_name(i) for i in range(self.source.nb_channel) ])
         
         self.list_widget.currentRowChanged.connect(self.select_event)
         
@@ -38,16 +38,20 @@ class EventList(ViewerBase):
     def refresh_list(self, ind):
         self.ind = ind
         self.list_widget.clear()
-        ev = self.source.all_events[ind]
-        for i in range(ev['time'].size):
-            if ev['label'] is None:
-                self.list_widget.addItem('{} : {:.3f}'.format(i, ev['time'][i]) )
+        #~ ev = self.source.all_events[ind]
+        times, labels = self.source.get_chunk(chan=ind,  i_start=None, i_stop=None)
+        for i in range(times.size):
+            if labels is None:
+                self.list_widget.addItem('{} : {:.3f}'.format(i, times[i]) )
             else:
-                self.list_widget.addItem('{} : {:.3f} {}'.format(i, ev['time'][i], ev['label'][i]) )
+                self.list_widget.addItem('{} : {:.3f} {}'.format(i, times[i], labels[i]) )
 
         
     def select_event(self, i):
-        ev = self.source.all_events[self.ind]
-        t = ev['time'][i]
+        
+        #~ ev = self.source.all_events[self.ind]
+        #~ t = ev['time'][i]
+        times, labels = self.source.get_chunk(chan=self.ind,  i_start=i, i_stop=i+1)
+        t = float(times[0])
         self.time_changed.emit(t)
         

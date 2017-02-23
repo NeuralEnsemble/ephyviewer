@@ -280,17 +280,15 @@ class MultiVideoFileSource( BaseDataSource):
         self._t_stop = max(self.t_stops)
     
     @property
-    def nb_segment(self):
-        return 1
-    
-    @property
     def nb_channel(self):
         return len(self.video_filenames)
 
-    def get_t_start(self, seg_num=0):
+    @property
+    def t_start(self):
         return self._t_start
-
-    def get_t_stop(self, seg_num=0):
+    
+    @property
+    def t_stop(self):
         return self._t_stop
     
     def time_to_frame_index(self, i, t):
