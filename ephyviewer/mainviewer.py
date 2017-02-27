@@ -21,7 +21,7 @@ orientation_to_qt={
 
 
 class MainViewer(QT.QMainWindow):
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, **navigation_params):
         QT.QMainWindow.__init__(self)
 
         #TODO settings
@@ -34,7 +34,7 @@ class MainViewer(QT.QMainWindow):
         
         self.viewers = OrderedDict()
         
-        self.navigation_toolbar = NavigationToolBar()
+        self.navigation_toolbar = NavigationToolBar(**navigation_params)
         dock = QT.QDockWidget('navigation',self)
         dock.setObjectName( 'navigation')
         dock.setWidget(self.navigation_toolbar)

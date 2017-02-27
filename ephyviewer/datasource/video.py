@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, print_function, division, absolute_import)
+#~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
 from .sourcebase import BaseDataSource
 import sys
@@ -258,11 +258,11 @@ class FrameGrabber:
 
 class MultiVideoFileSource( BaseDataSource):
     type = 'video'
-    def __init__(self, video_filenames, videotimes=None):
+    def __init__(self, video_filenames, video_times=None):
         assert HAVE_AV, 'PyAv is not installed'
         
         self.video_filenames = video_filenames
-        self.videotimes = videotimes
+        self.video_times = video_times
         n = len(self.video_filenames)
         
         self.t_starts, self.t_stops, self.rates = [], [], []
@@ -293,17 +293,11 @@ class MultiVideoFileSource( BaseDataSource):
     
     def time_to_frame_index(self, i, t):
         
-        if self.videotimes is None:
+        if self.video_times is None:
             frame_index = int((t-self.t_starts[i])*self.rates[i])
         else:
-            #TODO
-            #~ allinf,  = np.where(self.t>=self.videotimes[i])
-            #~ if allinf.size>0:
-                #~ frame = allinf[-1]
-            #~ else:
-                #~ frame = 0
-            
-            raise(NotIMplementedError)
+            frame_index = np.searchsorted(self.video_times[i], t)
+            print('t', t, 'frame_index', frame_index, 'self.video_times', self.video_times[i][[0, -1]])
         
         return frame_index
 

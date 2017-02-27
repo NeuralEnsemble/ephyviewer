@@ -8,6 +8,7 @@ import numpy as np
 from collections import OrderedDict
 
 import time
+import datetime
 
 
 #TODO:
@@ -21,6 +22,7 @@ class NavigationToolBar(QT.QWidget) :
     
     def __init__(self, parent = None, show_play = True, show_step = True,
                                     show_scroll_time = True, show_spinbox = True, show_label = False,
+                                    datetime0 = None,
                                     play_interval = 0.1) :
         QT.QWidget.__init__(self, parent)
         
@@ -41,6 +43,8 @@ class NavigationToolBar(QT.QWidget) :
         self.show_spinbox = show_spinbox
         self.show_label = show_label
         self.play_interval = play_interval
+        
+        self.datetime0 = datetime0
         
 
         if show_scroll_time:
@@ -132,9 +136,12 @@ class NavigationToolBar(QT.QWidget) :
             self.spinbox_time.valueChanged.connect(self.on_spinbox_time_changed)
         
         if show_label:
+            
             self.label_time = QT.QLabel('0')
-            t.addWidget(self.label_time)
-            t.addSeparator()
+            h.addWidget(self.label_time)
+            #trick for separator
+            h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
+
         
         h.addStretch()
 
@@ -221,7 +228,12 @@ class NavigationToolBar(QT.QWidget) :
             self.spinbox_time.valueChanged.connect(self.on_spinbox_time_changed)
         
         if self.show_label:
-            self.label_time.setText('{:5.3} s'.format(self.t))
+            #~ self.label_time.setText('{:10.3} s'.format(self.t))
+            
+            dt = self.datetime0 + datetime.timedelta(seconds=self.t)
+            #~ print(
+            self.label_time.setText('{}'.format(dt))
+            
         
         if emit:
             self.time_changed.emit(self.t)

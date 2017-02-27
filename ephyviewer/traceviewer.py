@@ -188,9 +188,9 @@ class TraceViewer_ParamController(Base_ParamController):
         else:
             self.estimate_median_mad()
             if self.scale_mode_index==1:
-                gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 4.5
+                gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 9.
             elif self.scale_mode_index==2:
-                gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / self.signals_mad[self.visible_channels] / 4.5
+                gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / self.signals_mad[self.visible_channels] / 9.
             offsets[self.visible_channels] = np.arange(nb_visible)[::-1] - self.signals_med[self.visible_channels]*gains[self.visible_channels]
             self.viewer.params['ylim_min'] = -0.5
             self.viewer.params['ylim_max'] = nb_visible-0.5
@@ -245,7 +245,7 @@ class DataGrabber(QT.QObject):
         QT.QObject.__init__(self, parent)
         self.source = source
         self.viewer = viewer
-        self._max_point = 1000
+        self._max_point = 3000
         
     def on_request_data(self, t, t_start, t_stop, gains, offsets, visibles):
         #~ print('on_request_data', t_start, t_stop)

@@ -52,6 +52,7 @@ class EventList(ViewerBase):
         #~ ev = self.source.all_events[self.ind]
         #~ t = ev['time'][i]
         times, labels = self.source.get_chunk(chan=self.ind,  i_start=i, i_stop=i+1)
-        t = float(times[0])
-        self.time_changed.emit(t)
+        if len(times)>0:
+            t = float(times[0])
+            self.time_changed.emit(t)
         
