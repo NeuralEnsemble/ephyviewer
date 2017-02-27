@@ -17,7 +17,7 @@ from .base import BaseMultiChannelViewer, Base_ParamController
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
-    {'name': 'display_labels', 'type': 'bool', 'value': False},
+    {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
 default_by_channel_params = [ 
@@ -105,11 +105,28 @@ class RectItem(pg.GraphicsWidget):
         p.drawRect(self.boundingRect())
 
 
+class DataGrabber(QT.QObject):
+    data_ready = QT.pyqtSignal(float, float, object, object)
+    
+    def __init__(self, source, parent=None):
+        QT.QObject.__init__(self, parent)
+        self.source = source
+        
+    def on_request_data(self, t_start, t_stop, visibles):
+        data = {}
+        for e, chan in enumerate(visibles):
+            times, durations, labels = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop)
+            data[chan] = (times, durations, labels)
+        self.data_ready.emit(t_start, t_stop, visibles, data)
+    
+
 class EpochViewer(BaseMultiChannelViewer):
     _default_params = default_params
     _default_by_channel_params = default_by_channel_params
     
     _ControllerClass = EpochViewer_ParamController
+    
+    request_data = QT.pyqtSignal(float, float, object)
     
     def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
@@ -117,63 +134,55 @@ class EpochViewer(BaseMultiChannelViewer):
         self.initialize_plot()
         
         self._xratio = 0.3
+        
+        self.thread = QT.QThread(parent=self)
+        self.datagrabber = DataGrabber(source=self.source)
+        self.datagrabber.moveToThread(self.thread)
+        self.thread.start()
+        
+        
+        self.datagrabber.data_ready.connect(self.on_data_ready)
+        self.request_data.connect(self.datagrabber.on_request_data)
+        
     
     def initialize_plot(self):
         pass
-        #~ self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00')
-        #~ self.plot.addItem(self.vline)
-        
-        #~ self.curves = []
-        #~ self.channel_labels = []
-        #~ self.channel_offsets_line = []
-        #~ for c in range(self.source.nb_channel):
-            #~ color = self.by_channel_params['Channel{}'.format(c), 'color']
-            #~ curve = pg.PlotCurveItem(pen='#7FFF00')#, connect='finite')
-            #~ curve = pg.PlotCurveItem(pen='#7FFF00', downsampleMethod='peak', downsample=1,
-                            #~ autoDownsample=False, clipToView=True)#, connect='finite')
-            #~ self.plot.addItem(curve)
-            #~ self.curves.append(curve)
-            
-            #~ label = pg.TextItem('chan{}'.format(c), color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
-            #~ self.plot.addItem(label)
-            #~ self.channel_labels.append(label)
-
-            #~ offset_line = pg.InfiniteLine(angle = 0, movable = False, pen = '#7FFF00')
-            #~ self.plot.addItem(offset_line)
-            #~ self.channel_offsets_line.append(offset_line)
-        
-        #~ self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
-        #~ self.viewBox.ygain_zoom.connect(self.params_controller.apply_ygain_zoom)
-    
     
     def refresh(self):
-        self.graphicsview.setBackground(self.params['background_color'])
-        
-        self.plot.clear()
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
-        
-        
         visibles, = np.nonzero(self.params_controller.visible_channels)
-        
+        self.request_data.emit(t_start, t_stop, visibles)
+
+    def on_data_ready(self, t_start, t_stop, visibles, data):
+        self.plot.clear()
+        self.graphicsview.setBackground(self.params['background_color'])
         
         for e, chan in enumerate(visibles):
+            times, durations, labels = data[chan]
             
-            times, durations, labels = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop, limit='inside_only')
-            #~ self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop, limit='outside_also')
+            color = self.by_channel_params.children()[e].param('color').value()
+            color2 = QT.QColor(color)
+            color2.setAlpha(130)
+            
+            ypos = visibles.size-e-1
             
             for i in range(times.size):
-                color = self.by_channel_params.children()[e].param('color').value()
-                color2 = QT.QColor(color)
-                color2.setAlpha(130)
-                item = RectItem([times[i],  visibles.size-e-1,durations[i], .9],  border = color, fill = color2)
+                item = RectItem([times[i],  ypos,durations[i], .9],  border = color, fill = color2)
                 item.setPos(times[i],  visibles.size-e-1)
                 self.plot.addItem(item)
 
+            if self.params['display_labels']:
+                label_name = '{}: {}'.format(chan, self.source.get_name(chan=chan))
+                label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+                self.plot.addItem(label)
+                label.setPos(t_start, ypos+0.45)
+        
         self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00')
         self.plot.addItem(self.vline)
 
         self.vline.setPos(self.t)
         self.plot.setXRange( t_start, t_stop)
         self.plot.setYRange( 0, visibles.size)
-        self.is_refreshing = False
+
+

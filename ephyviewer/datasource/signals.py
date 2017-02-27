@@ -50,4 +50,8 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
     
     def time_to_index(self, t):
         return int((t-self.t_start)*self.sample_rate)
+    
+    def index_to_time(self, ind):
+        return float(ind/self.sample_rate) + self.t_start
+
 

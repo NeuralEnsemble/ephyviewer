@@ -17,9 +17,6 @@ def test_traceviewer():
     win.add_view(view)
     win.show()
     
-    #TODO remove this
-    win.seek(5.)
-    
     app.exec_()
     
     

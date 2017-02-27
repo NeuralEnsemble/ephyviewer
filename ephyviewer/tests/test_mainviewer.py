@@ -47,7 +47,7 @@ def test_mainviewer2():
     view3 = ephyviewer.EventList(source=make_fake_event_source(), name='events')
     view4 = ephyviewer.EpochViewer(source=make_fake_epoch_source(), name='epoch')
     
-    win = ephyviewer.MainViewer()
+    win = ephyviewer.MainViewer(debug=True)
     win.add_view(view1)
     win.add_view(view2)
     win.add_view(view4)
