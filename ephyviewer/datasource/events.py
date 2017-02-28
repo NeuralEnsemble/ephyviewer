@@ -39,7 +39,7 @@ class BaseInMemoryEventAndEpoch(BaseDataSource):
     def t_stop(self):
         return self._t_stop
     
-    def get_name(self, chan=0):
+    def get_channel_name(self, chan=0):
         return self.all[chan]['name']
     
     def get_size(self, chan=0):

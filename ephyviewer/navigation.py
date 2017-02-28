@@ -19,11 +19,13 @@ class NavigationToolBar(QT.QWidget) :
     """
     """
     time_changed = QT.pyqtSignal(float)
+    xsize_changed = QT.pyqtSignal(float)
     
-    def __init__(self, parent = None, show_play = True, show_step = True,
-                                    show_scroll_time = True, show_spinbox = True, show_label = False,
-                                    datetime0 = None,
-                                    play_interval = 0.1) :
+    def __init__(self, parent=None, show_play=True, show_step=True,
+                                    show_scroll_time=True, show_spinbox=True,
+                                    show_label_datetime=False, datetime0=None,
+                                    show_global_xsize=False, play_interval = 0.1) :
+        
         QT.QWidget.__init__(self, parent)
         
         self.setSizePolicy(QT.QSizePolicy.Minimum, QT.QSizePolicy.Maximum)
@@ -41,7 +43,8 @@ class NavigationToolBar(QT.QWidget) :
         self.show_step = show_step
         self.show_scroll_time = show_scroll_time
         self.show_spinbox = show_spinbox
-        self.show_label = show_label
+        self.show_label_datetime = show_label_datetime
+        self.show_global_xsize = show_global_xsize
         self.play_interval = play_interval
         
         self.datetime0 = datetime0
@@ -101,20 +104,6 @@ class NavigationToolBar(QT.QWidget) :
             self.on_change_step(None)
             self.combo_step.currentIndexChanged.connect(self.on_change_step)
             
-            
-            #~ self.popupStep = QT.QToolButton( popupMode = QToolButton.MenuButtonPopup,
-                                                                        #~ toolButtonStyle = Qt.ToolButtonTextBesideIcon,
-                                                                        #~ text = u'Step 50ms'
-                                                                        #~ )
-            #~ t.addWidget(self.popupStep)
-            #~ ag = QT.QActionGroup(self.popupStep )
-            #~ ag.setExclusive( True)
-            #~ for s in ['60s','10s', '1s', '100ms', '50ms', '5ms' ]:
-                #~ act = QT.QAction(s, self.popupStep, checkable = True)
-                #~ ag.addAction(act)
-                #~ self.popupStep.addAction(act)
-            #~ ag.triggered.connect(self.change_step)
-            
             but = QT.QPushButton('>')
             but.clicked.connect(self.next_step)
             h.addWidget(but)
@@ -135,13 +124,22 @@ class NavigationToolBar(QT.QWidget) :
             #~ h.addSeparator()
             self.spinbox_time.valueChanged.connect(self.on_spinbox_time_changed)
         
-        if show_label:
-            
-            self.label_time = QT.QLabel('0')
-            h.addWidget(self.label_time)
+        if show_label_datetime:
+            assert self.datetime0 is not None
+            self.label_datetime = QT.QLabel('')
+            h.addWidget(self.label_datetime)
             #trick for separator
             h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
-
+        
+        if show_global_xsize:
+            h.addWidget(QT.QLabel('xsize'))
+            self.spinbox_xsize =pg.SpinBox(value=3., decimals = 8, bounds = (0.001, np.inf),step = 0.1, siPrefix=False, suffix='s', int=False)
+            h.addWidget(self.spinbox_xsize)
+            #~ self.spinbox_xsize.valueChanged.connect(self.on_spinbox_xsize_changed)
+            self.spinbox_xsize.valueChanged.connect(self.xsize_changed.emit)
+            #trick for separator
+            h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
+            
         
         h.addStretch()
 
@@ -205,6 +203,9 @@ class NavigationToolBar(QT.QWidget) :
     
     def on_spinbox_time_changed(self, val):
         self.seek(val, refresh_spinbox = False)
+
+    #~ def on_spinbox_xsize_changed(self, val):
+        #~ print('xsize', val)
     
     def seek(self , t, refresh_scroll = True, refresh_spinbox = True, emit=True):
         self.t = t
@@ -227,12 +228,9 @@ class NavigationToolBar(QT.QWidget) :
             self.spinbox_time.setValue(t)
             self.spinbox_time.valueChanged.connect(self.on_spinbox_time_changed)
         
-        if self.show_label:
-            #~ self.label_time.setText('{:10.3} s'.format(self.t))
-            
+        if self.show_label_datetime:
             dt = self.datetime0 + datetime.timedelta(seconds=self.t)
-            #~ print(
-            self.label_time.setText('{}'.format(dt))
+            self.label_datetime.setText('{}'.format(dt))
             
         
         if emit:

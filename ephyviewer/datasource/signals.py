@@ -22,17 +22,23 @@ class BaseAnalogSignalSource(BaseDataSource):
 
 
 class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
-    def __init__(self, signals, sample_rate, t_start):
+    def __init__(self, signals, sample_rate, t_start, channel_names=None):
         BaseAnalogSignalSource.__init__(self)
         
         self.signals = signals
         self.sample_rate = float(sample_rate)
         self._t_start = float(t_start)
         self._t_stop = self.signals.shape[0]/self.sample_rate + float(t_start)
+        self.channel_names = channel_names
+        if channel_names is None:
+            self.channel_names = ['Channel {:3}'.format(c) for c in range(self.signals.shape[1])]
     
     @property
     def nb_channel(self):
         return self.signals.shape[1]
+    
+    def get_channel_name(self, chan=0):
+        return self.channel_names[chan]
 
     @property
     def t_start(self):

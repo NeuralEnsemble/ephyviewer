@@ -11,6 +11,9 @@ class BaseDataSource:
     def nb_channel(self):
         raise(NotImplementedError)
 
+    def get_channel_name(self, chan=0):
+        raise(NotImplementedError)
+
     @property
     def t_start(self):
         raise(NotImplementedError)

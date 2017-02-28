@@ -11,7 +11,7 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import BaseMultiChannelViewer, Base_ParamController
-
+from .datasource import InMemoryEpochSource
 
 
 default_params = [
@@ -53,7 +53,7 @@ class EpochViewer_ParamController(Base_ParamController):
         
         if self.source.nb_channel>1:
             v.addWidget(QT.QLabel('<b>Select channel...</b>'))
-            names = [p.name() for p in self.viewer.by_channel_params]
+            names = [p.name() + ': '+p['name'] for p in self.viewer.by_channel_params]
             self.qlist = QT.QListWidget()
             v.addWidget(self.qlist, 2)
             self.qlist.addItems(names)
@@ -79,7 +79,7 @@ class EpochViewer_ParamController(Base_ParamController):
     
     @property
     def visible_channels(self):
-        visible = [self.viewer.by_channel_params['Channel{}'.format(i), 'visible'] for i in range(self.source.nb_channel)]
+        visible = [self.viewer.by_channel_params['ch{}'.format(i), 'visible'] for i in range(self.source.nb_channel)]
         return np.array(visible, dtype='bool')
 
     def on_set_visible(self):
@@ -143,7 +143,18 @@ class EpochViewer(BaseMultiChannelViewer):
         
         self.datagrabber.data_ready.connect(self.on_data_ready)
         self.request_data.connect(self.datagrabber.on_request_data)
-        
+
+    @classmethod
+    def from_numpy(cls, all_epochs, name):
+        source = InMemoryEpochSource(all_epochs)
+        view = cls(source=source, name=name)
+        return view
+    
+    def closeEvent(self, event):
+        event.accept()
+        self.thread.quit()
+        self.thread.wait()
+
     
     def initialize_plot(self):
         pass
@@ -173,7 +184,7 @@ class EpochViewer(BaseMultiChannelViewer):
                 self.plot.addItem(item)
 
             if self.params['display_labels']:
-                label_name = '{}: {}'.format(chan, self.source.get_name(chan=chan))
+                label_name = '{}: {}'.format(chan, self.source.get_channel_name(chan=chan))
                 label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
                 self.plot.addItem(label)
                 label.setPos(t_start, ypos+0.45)

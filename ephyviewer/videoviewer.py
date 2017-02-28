@@ -11,7 +11,7 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import ViewerBase, Base_ParamController
-from .datasource import FrameGrabber
+from .datasource import FrameGrabber, MultiVideoFileSource
 
 default_params = [
     {'name': 'nb_column', 'type': 'int', 'value': 4},
@@ -111,6 +111,12 @@ class VideoViewer(ViewerBase):
             
             self.request_frame.connect(self.frame_grabbers[i].on_request_frame)
 
+    @classmethod
+    def from_filenames(cls, video_filenames, video_times, name):
+        source = MultiVideoFileSource(video_filenames, video_times=video_times)
+        view = cls(source=source, name=name)
+        return view
+        
 
     def closeEvent(self, event):
         for i, thread in enumerate(self.threads):
@@ -193,24 +199,24 @@ class VideoViewer(ViewerBase):
     def refresh(self):
         visible_channels = self.params_controller.visible_channels
         
-        print()
-        print('refresh t=', self.t)
+        #~ print()
+        #~ print('refresh t=', self.t)
         for c in range(self.source.nb_channel):
             if visible_channels[c]:
                 frame_index = self.source.time_to_frame_index(c, self.t)
-                print( 'c', c, 'frame_index', frame_index)
+                #~ print( 'c', c, 'frame_index', frame_index)
                 
                 if self.frame_grabbers[c].active_frame != frame_index:
                     self.frame_grabbers[c].active_frame = frame_index
                     self.request_frame.emit(c, frame_index)
     
     def update_frame(self, video_index, frame):
-        print('update_frame', video_index, frame)
+        #~ print('update_frame', video_index, frame)
         
         #TODO : find better solution!!!! to avoid copy
         img = frame.to_nd_array(format='rgb24')
         img = img.swapaxes(0,1)[:,::-1,:]
-        print(img.shape, img.dtype)
+        #~ print(img.shape, img.dtype)
         self.images[video_index].setImage(img)
         
 

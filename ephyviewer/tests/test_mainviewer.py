@@ -11,9 +11,14 @@ def test_mainviewer():
 
     class FakeView(ViewerBase):
         def refresh(self):
+            self.v = self.t
             #~ print('refresh', self.name, self.t)
             pass
-    
+        def set_settings(self, value):
+            self.v = value
+        def get_settings(self):
+            return self.v
+        
     app = ephyviewer.mkQApp()
     
     view1 = FakeView(name='view1')
@@ -22,7 +27,7 @@ def test_mainviewer():
     view4 = FakeView(name='view4')
     view5 = FakeView(name='view5')
     
-    win = ephyviewer.MainViewer()
+    win = ephyviewer.MainViewer(settings_name='test0')
     win.add_view(view1)
     win.add_view(view2)
     
@@ -47,7 +52,7 @@ def test_mainviewer2():
     view3 = ephyviewer.EventList(source=make_fake_event_source(), name='events')
     view4 = ephyviewer.EpochViewer(source=make_fake_epoch_source(), name='epoch')
     
-    win = ephyviewer.MainViewer(debug=True)
+    win = ephyviewer.MainViewer(debug=True, settings_name='test1', show_global_xsize=True)
     win.add_view(view1)
     win.add_view(view2)
     win.add_view(view4)

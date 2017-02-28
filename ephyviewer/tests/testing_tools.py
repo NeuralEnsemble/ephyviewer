@@ -16,7 +16,7 @@ def make_fake_signals():
     signals *= np.random.rand(16)[None,:]
     signals += (np.random.rand(16)[None,:]-1)*3
     
-    
+    #~ print(signals.shape)
     sample_rate = 10000.
     t_start = 0.
     

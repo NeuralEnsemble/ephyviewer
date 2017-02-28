@@ -8,7 +8,7 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import ViewerBase
-
+from .datasource import InMemoryEventSource
 
 
 
@@ -28,9 +28,15 @@ class EventList(ViewerBase):
         self.mainlayout.addWidget(self.list_widget)
         self.combo.currentIndexChanged.connect(self.refresh_list)
         
-        self.combo.addItems([self.source.get_name(i) for i in range(self.source.nb_channel) ])
+        self.combo.addItems([self.source.get_channel_name(i) for i in range(self.source.nb_channel) ])
         
         self.list_widget.currentRowChanged.connect(self.select_event)
+
+    @classmethod
+    def from_numpy(cls, all_events, name):
+        source = InMemoryEventSource(all_events)
+        view = cls(source=source, name=name)
+        return view
         
     def refresh(self):
         pass

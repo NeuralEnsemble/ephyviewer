@@ -11,6 +11,7 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import BaseMultiChannelViewer, Base_ParamController
+from .datasource import InMemoryAnalogSignalSource
 
 
 #todo remove this
@@ -68,7 +69,7 @@ class TraceViewer_ParamController(Base_ParamController):
         
         if self.source.nb_channel>1:
             v.addWidget(QT.QLabel('<b>Select channel...</b>'))
-            names = [p.name() for p in self.viewer.by_channel_params]
+            names = [p.name()+': '+p['name'] for p in self.viewer.by_channel_params]
             self.qlist = QT.QListWidget()
             v.addWidget(self.qlist, 2)
             self.qlist.addItems(names)
@@ -133,28 +134,28 @@ class TraceViewer_ParamController(Base_ParamController):
     
     @property
     def visible_channels(self):
-        visible = [self.viewer.by_channel_params['Channel{}'.format(i), 'visible'] for i in range(self.source.nb_channel)]
+        visible = [self.viewer.by_channel_params['ch{}'.format(i), 'visible'] for i in range(self.source.nb_channel)]
         return np.array(visible, dtype='bool')
 
     @property
     def gains(self):
-        gains = [self.viewer.by_channel_params['Channel{}'.format(i), 'gain'] for i in range(self.source.nb_channel)]
+        gains = [self.viewer.by_channel_params['ch{}'.format(i), 'gain'] for i in range(self.source.nb_channel)]
         return np.array(gains)
 
     @gains.setter
     def gains(self, val):
         for c, v in enumerate(val):
-            self.viewer.by_channel_params['Channel{}'.format(c), 'gain'] = v
+            self.viewer.by_channel_params['ch{}'.format(c), 'gain'] = v
 
     @property
     def offsets(self):
-        offsets = [self.viewer.by_channel_params['Channel{}'.format(i), 'offset'] for i in range(self.source.nb_channel)]
+        offsets = [self.viewer.by_channel_params['ch{}'.format(i), 'offset'] for i in range(self.source.nb_channel)]
         return np.array(offsets)
 
     @offsets.setter
     def offsets(self, val):
         for c, v in enumerate(val):
-            self.viewer.by_channel_params['Channel{}'.format(c), 'offset'] = v
+            self.viewer.by_channel_params['ch{}'.format(c), 'offset'] = v
 
     
     def on_set_visible(self):
@@ -232,7 +233,7 @@ class TraceViewer_ParamController(Base_ParamController):
         self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
         for i, c in enumerate(np.nonzero(self.selected)[0]):
             color = [ int(e*255) for e in  matplotlib.colors.ColorConverter().to_rgb(cmap(i)) ]
-            self.viewer.by_channel_params['Channel{}'.format(c), 'color'] = color
+            self.viewer.by_channel_params['ch{}'.format(c), 'color'] = color
         self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
         self.viewer.refresh()
 
@@ -312,7 +313,7 @@ class DataGrabber(QT.QObject):
             dict_curves[c] = data_curves[i, :]
             
         times_curves = np.arange(data_curves.shape[1], dtype='float32')
-        times_curves /= self.source.sample_rate/ds_ratio
+        times_curves /= 2*self.source.sample_rate/ds_ratio
         times_curves += self.source.index_to_time(i_start)
         
         #~ print('on_request_data', threading.get_ident())
@@ -347,6 +348,17 @@ class TraceViewer(BaseMultiChannelViewer):
         
         self.datagrabber.data_ready.connect(self.on_data_ready)
         self.request_data.connect(self.datagrabber.on_request_data)
+    
+    @classmethod
+    def from_numpy(cls, sigs, sample_rate, t_start, name, channel_names=None):
+        source = InMemoryAnalogSignalSource(sigs, sample_rate, t_start, channel_names=channel_names)
+        view = cls(source=source, name=name)
+        return view
+
+    def closeEvent(self, event):
+        event.accept()
+        self.thread.quit()
+        self.thread.wait()
         
     
     def initialize_plot(self):
@@ -358,14 +370,16 @@ class TraceViewer(BaseMultiChannelViewer):
         self.channel_labels = []
         self.channel_offsets_line = []
         for c in range(self.source.nb_channel):
-            color = self.by_channel_params['Channel{}'.format(c), 'color']
+            color = self.by_channel_params['ch{}'.format(c), 'color']
             #~ curve = pg.PlotCurveItem(pen='#7FFF00')#, connect='finite')
             curve = pg.PlotCurveItem(pen='#7FFF00', downsampleMethod='peak', downsample=1,
                             autoDownsample=False, clipToView=True)#, connect='finite')
             self.plot.addItem(curve)
             self.curves.append(curve)
             
-            label = pg.TextItem('chan{}'.format(c), color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+            ch_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
+            label = pg.TextItem(ch_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+            
             self.plot.addItem(label)
             self.channel_labels.append(label)
 
@@ -417,7 +431,7 @@ class TraceViewer(BaseMultiChannelViewer):
             self.curves[c].show()
             self.curves[c].setData(times_curves, dict_curves[c])
             
-            color = self.by_channel_params['Channel{}'.format(c), 'color']
+            color = self.by_channel_params['ch{}'.format(c), 'color']
             self.curves[c].setPen(color)
             
             if self.params['display_labels']:

@@ -169,7 +169,8 @@ class FrameGrabber:
                 break
         
         if reseek < 0:
-            raise ValueError("seeking failed %i" % frame_index)
+            #~ raise ValueError("seeking failed %i" % frame_index)
+            return None
             
         # frame at this point should be the correct frame
         
@@ -178,7 +179,8 @@ class FrameGrabber:
             return frame
         
         else:
-            raise ValueError("seeking failed %i" % target_frame)
+            return None
+            #~ raise ValueError("seeking failed %i" % target_frame)
         
     def get_frame_count(self):
         
@@ -297,7 +299,6 @@ class MultiVideoFileSource( BaseDataSource):
             frame_index = int((t-self.t_starts[i])*self.rates[i])
         else:
             frame_index = np.searchsorted(self.video_times[i], t)
-            print('t', t, 'frame_index', frame_index, 'self.video_times', self.video_times[i][[0, -1]])
         
         return frame_index
 

@@ -28,6 +28,12 @@ class ViewerBase(QT.QWidget):
     def refresh(self):
         #overwrite this one
         raise(NotImplementedError)
+    
+    def set_settings(self, value):
+        pass
+    
+    def get_settings(self):
+        return None
 
 
 
@@ -84,9 +90,12 @@ class BaseMultiChannelViewer(ViewerBase):
         all = []
         for i in range(self.source.nb_channel):
             #TODO add name, hadrware index, id
-            name = 'Channel{}'.format(i)
-            all.append({'name': name, 'type': 'group', 'children': self._default_by_channel_params})
-        self.by_channel_params = pg.parametertree.Parameter.create(name='AnalogSignals', type='group', children=all)
+            name = 'ch{}'.format(i)
+            
+            children =[{'name': 'name', 'type': 'str', 'value': self.source.get_channel_name(i), 'readonly':True}]
+            children += self._default_by_channel_params
+            all.append({'name': name, 'type': 'group', 'children': children})
+        self.by_channel_params = pg.parametertree.Parameter.create(name='Channels', type='group', children=all)
         self.params = pg.parametertree.Parameter.create(name='Global options',
                                                     type='group', children=self._default_params)
         self.all_params = pg.parametertree.Parameter.create(name='all param',
@@ -113,6 +122,16 @@ class BaseMultiChannelViewer(ViewerBase):
     
     def on_param_change(self):
         self.refresh()
+    
+    def set_xsize(self, xsize):
+        #~ print(self.__class__.__name__, 'set_xsize', xsize)
+        self.params['xsize'] = xsize
+
+    def set_settings(self, value):
+        self.all_params.restoreState(value)
+    
+    def get_settings(self):
+        return self.all_params.saveState()
 
 
 
