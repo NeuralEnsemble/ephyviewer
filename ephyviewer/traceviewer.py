@@ -333,6 +333,12 @@ class TraceViewer(BaseMultiChannelViewer):
     
     def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
+
+        self.make_params()
+        self.set_layout()
+        self.make_param_controller()
+        
+        self.viewBox.doubleclicked.connect(self.show_params_controller)
         
         self.initialize_plot()
         

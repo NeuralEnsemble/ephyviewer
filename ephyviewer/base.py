@@ -75,15 +75,9 @@ class BaseMultiChannelViewer(ViewerBase):
         
         self.with_user_dialog = with_user_dialog
         
-        self.make_params()
-        self.set_layout()
-
-        if self.with_user_dialog and self._ControllerClass:
-            self.params_controller = self._ControllerClass(parent=self, viewer=self)
-            self.params_controller.setWindowFlags(QT.Qt.Window)
-            self.viewBox.doubleclicked.connect(self.show_params_controller)
-        else:
-            self.params_controller = None
+        #~ self.make_params()
+        #~ self.set_layout()
+        #~ self.make_param_controller()
 
     def make_params(self):
         # Create parameters
@@ -91,7 +85,6 @@ class BaseMultiChannelViewer(ViewerBase):
         for i in range(self.source.nb_channel):
             #TODO add name, hadrware index, id
             name = 'ch{}'.format(i)
-            
             children =[{'name': 'name', 'type': 'str', 'value': self.source.get_channel_name(i), 'readonly':True}]
             children += self._default_by_channel_params
             all.append({'name': name, 'type': 'group', 'children': children})
@@ -115,7 +108,13 @@ class BaseMultiChannelViewer(ViewerBase):
         self.plot = pg.PlotItem(viewBox=self.viewBox)
         self.plot.hideButtons()
         self.graphicsview.setCentralItem(self.plot)
-    
+ 
+    def make_param_controller(self):
+        if self.with_user_dialog and self._ControllerClass:
+            self.params_controller = self._ControllerClass(parent=self, viewer=self)
+            self.params_controller.setWindowFlags(QT.Qt.Window)
+        else:
+            self.params_controller = None
 
     def show_params_controller(self):
         self.params_controller.show()
@@ -158,3 +157,66 @@ class Base_ParamController(QT.QWidget):
     @property
     def source(self):
         return self._viewer().source
+
+
+
+class Base_MultiChannel_ParamController(Base_ParamController):
+    def __init__(self, parent=None, viewer=None):
+        Base_ParamController.__init__(self, parent=parent, viewer=viewer)
+
+
+        h = QT.QHBoxLayout()
+        self.mainlayout.addLayout(h)
+        
+        self.v1 = QT.QVBoxLayout()
+        h.addLayout(self.v1)
+        self.tree_params = pg.parametertree.ParameterTree()
+        self.tree_params.setParameters(self.viewer.params, showTop=True)
+        self.tree_params.header().hide()
+        self.v1.addWidget(self.tree_params)
+
+        self.tree_by_channel_params = pg.parametertree.ParameterTree()
+        self.tree_by_channel_params.header().hide()
+        h.addWidget(self.tree_by_channel_params)
+        self.tree_by_channel_params.setParameters(self.viewer.by_channel_params, showTop=True)        
+        v = QT.QVBoxLayout()
+        h.addLayout(v)
+        
+        
+        if self.source.nb_channel>1:
+            v.addWidget(QT.QLabel('<b>Select channel...</b>'))
+            names = [p.name() + ': '+p['name'] for p in self.viewer.by_channel_params]
+            self.qlist = QT.QListWidget()
+            v.addWidget(self.qlist, 2)
+            self.qlist.addItems(names)
+            self.qlist.setSelectionMode(QT.QAbstractItemView.ExtendedSelection)
+            
+            for i in range(len(names)):
+                self.qlist.item(i).setSelected(True)            
+            v.addWidget(QT.QLabel('<b>and apply...<\b>'))
+            
+        
+        
+        but = QT.QPushButton('set visble')
+        v.addWidget(but)
+        but.clicked.connect(self.on_set_visible)
+
+    @property
+    def selected(self):
+        selected = np.ones(self.viewer.source.nb_channel, dtype=bool)
+        if self.viewer.source.nb_channel>1:
+            selected[:] = False
+            selected[[ind.row() for ind in self.qlist.selectedIndexes()]] = True
+        return selected
+
+    
+    @property
+    def visible_channels(self):
+        visible = [self.viewer.by_channel_params['ch{}'.format(i), 'visible'] for i in range(self.source.nb_channel)]
+        return np.array(visible, dtype='bool')
+
+    def on_set_visible(self):
+        # apply
+        visibles = self.selected
+        for i,param in enumerate(self.viewer.by_channel_params.children()):
+            param['visible'] = visibles[i]

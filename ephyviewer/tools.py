@@ -47,3 +47,47 @@ class ParamDialog(QT.QDialog):
 
     def get(self):
         return get_dict_from_group_param(self.params)
+
+
+
+
+def create_plot_grid(graphiclayout, nb_column, visible_channels):
+    nb_channel = visible_channels.size
+    nb_visible =sum(visible_channels)
+    
+    graphiclayout.clear()
+    plots = [None] * nb_channel
+    #~ images = [None] * nb_channel
+    r,c = 0,0
+    
+    rowspan = nb_column
+    colspan = nb_visible//nb_column
+    graphiclayout.ci.currentRow = 0
+    graphiclayout.ci.currentCol = 0        
+    for i in range(nb_channel):
+        if not visible_channels[i]: continue
+
+        viewBox = pg.ViewBox()
+        viewBox.setAspectLocked()
+        plot = pg.PlotItem(viewBox=viewBox)
+        plot.hideButtons()
+        plot.showAxis('left', False)
+        plot.showAxis('bottom', False)
+
+        graphiclayout.ci.layout.addItem(plot, r, c)  # , rowspan, colspan)
+        if r not in graphiclayout.ci.rows:
+            graphiclayout.ci.rows[r] = {}
+        graphiclayout.ci.rows[r][c] = plot
+        graphiclayout.ci.items[plot] = [(r,c)]
+        plots[i] = plot
+        
+        #~ images[i] = image = pg.ImageItem()
+        #~ image.setPxMode(True)
+        #~ plot.addItem(image)
+        
+        c+=1
+        if c==nb_column:
+            c=0
+            r+=1    
+    
+    return plots

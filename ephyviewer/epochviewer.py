@@ -10,7 +10,7 @@ import matplotlib.colors
 from .myqt import QT
 import pyqtgraph as pg
 
-from .base import BaseMultiChannelViewer, Base_ParamController
+from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
 from .datasource import InMemoryEpochSource
 
 
@@ -28,65 +28,10 @@ default_by_channel_params = [
 
 
 
-class EpochViewer_ParamController(Base_ParamController):
-    def __init__(self, parent=None, viewer=None):
-        Base_ParamController.__init__(self, parent=parent, viewer=viewer)
+class EpochViewer_ParamController(Base_MultiChannel_ParamController):
+    pass
 
 
-        h = QT.QHBoxLayout()
-        self.mainlayout.addLayout(h)
-        
-        self.v1 = QT.QVBoxLayout()
-        h.addLayout(self.v1)
-        self.tree_params = pg.parametertree.ParameterTree()
-        self.tree_params.setParameters(self.viewer.params, showTop=True)
-        self.tree_params.header().hide()
-        self.v1.addWidget(self.tree_params)
-
-        self.tree_by_channel_params = pg.parametertree.ParameterTree()
-        self.tree_by_channel_params.header().hide()
-        h.addWidget(self.tree_by_channel_params)
-        self.tree_by_channel_params.setParameters(self.viewer.by_channel_params, showTop=True)        
-        v = QT.QVBoxLayout()
-        h.addLayout(v)
-        
-        
-        if self.source.nb_channel>1:
-            v.addWidget(QT.QLabel('<b>Select channel...</b>'))
-            names = [p.name() + ': '+p['name'] for p in self.viewer.by_channel_params]
-            self.qlist = QT.QListWidget()
-            v.addWidget(self.qlist, 2)
-            self.qlist.addItems(names)
-            self.qlist.setSelectionMode(QT.QAbstractItemView.ExtendedSelection)
-            
-            for i in range(len(names)):
-                self.qlist.item(i).setSelected(True)            
-            v.addWidget(QT.QLabel('<b>and apply...<\b>'))
-            
-        
-        
-        but = QT.QPushButton('set visble')
-        v.addWidget(but)
-        but.clicked.connect(self.on_set_visible)
-    
-    @property
-    def selected(self):
-        selected = np.ones(self.viewer.source.nb_channel, dtype=bool)
-        if self.viewer.source.nb_channel>1:
-            selected[:] = False
-            selected[[ind.row() for ind in self.qlist.selectedIndexes()]] = True
-        return selected
-    
-    @property
-    def visible_channels(self):
-        visible = [self.viewer.by_channel_params['ch{}'.format(i), 'visible'] for i in range(self.source.nb_channel)]
-        return np.array(visible, dtype='bool')
-
-    def on_set_visible(self):
-        # apply
-        visibles = self.selected
-        for i,param in enumerate(self.viewer.by_channel_params.children()):
-            param['visible'] = visibles[i]
 
 
 class RectItem(pg.GraphicsWidget):
@@ -130,6 +75,12 @@ class EpochViewer(BaseMultiChannelViewer):
     
     def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
+        
+        self.make_params()
+        self.set_layout()
+        self.make_param_controller()
+        
+        self.viewBox.doubleclicked.connect(self.show_params_controller)
         
         self.initialize_plot()
         

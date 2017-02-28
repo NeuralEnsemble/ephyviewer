@@ -285,6 +285,9 @@ class MultiVideoFileSource( BaseDataSource):
     def nb_channel(self):
         return len(self.video_filenames)
 
+    def get_channel_name(self, chan=0):
+        return 'video {}'.format(chan)
+
     @property
     def t_start(self):
         return self._t_start
