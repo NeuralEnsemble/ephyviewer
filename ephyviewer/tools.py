@@ -51,7 +51,7 @@ class ParamDialog(QT.QDialog):
 
 
 
-def create_plot_grid(graphiclayout, nb_column, visible_channels):
+def create_plot_grid(graphiclayout, nb_column, visible_channels, ViewBoxClass=pg.ViewBox, vb_params={}):
     nb_channel = visible_channels.size
     nb_visible =sum(visible_channels)
     
@@ -67,8 +67,8 @@ def create_plot_grid(graphiclayout, nb_column, visible_channels):
     for i in range(nb_channel):
         if not visible_channels[i]: continue
 
-        viewBox = pg.ViewBox()
-        viewBox.setAspectLocked()
+        viewBox = ViewBoxClass(**vb_params)
+        #~ viewBox.setAspectLocked()
         plot = pg.PlotItem(viewBox=viewBox)
         plot.hideButtons()
         plot.showAxis('left', False)
