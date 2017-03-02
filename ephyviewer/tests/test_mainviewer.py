@@ -51,9 +51,12 @@ def test_mainviewer2():
     view2 = ephyviewer.VideoViewer(source=make_fake_video_source(), name='video')
     view3 = ephyviewer.EventList(source=make_fake_event_source(), name='events')
     view4 = ephyviewer.EpochViewer(source=make_fake_epoch_source(), name='epoch')
+    view5 = ephyviewer.TimeFreqViewer(source=make_fake_signals(), name='timefreq')
+    
     
     win = ephyviewer.MainViewer(debug=True, settings_name='test1', show_global_xsize=True)
     win.add_view(view1)
+    win.add_view(view5)
     win.add_view(view2)
     win.add_view(view4)
     win.add_view(view3, location='bottom',  orientation='horizontal')

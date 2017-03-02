@@ -113,6 +113,7 @@ class BaseMultiChannelViewer(ViewerBase):
         if self.with_user_dialog and self._ControllerClass:
             self.params_controller = self._ControllerClass(parent=self, viewer=self)
             self.params_controller.setWindowFlags(QT.Qt.Window)
+            self.params_controller.some_channel_changed.connect(self.on_param_change)
         else:
             self.params_controller = None
 
@@ -161,6 +162,8 @@ class Base_ParamController(QT.QWidget):
 
 
 class Base_MultiChannel_ParamController(Base_ParamController):
+    some_channel_changed = QT.pyqtSignal()
+    
     def __init__(self, parent=None, viewer=None):
         Base_ParamController.__init__(self, parent=parent, viewer=viewer)
 
@@ -217,6 +220,13 @@ class Base_MultiChannel_ParamController(Base_ParamController):
 
     def on_set_visible(self):
         # apply
+        self.viewer.by_channel_params.blockSignals(True)
+        #~ self.all_params.sigTreeStateChanged.connect(self.on_param_change)   
+        
         visibles = self.selected
         for i,param in enumerate(self.viewer.by_channel_params.children()):
             param['visible'] = visibles[i]
+        
+        self.viewer.by_channel_params.blockSignals(False)
+        self.some_channel_changed.emit()
+

@@ -39,11 +39,13 @@ default_by_channel_params = [
 
 
 
-
+#TODO use Base_MultiChannel_ParamController instead of Base_ParamController
+#to avoid code duplication
 
 
 
 class TraceViewer_ParamController(Base_ParamController):
+    some_channel_changed = QT.pyqtSignal()
     def __init__(self, parent=None, viewer=None):
         Base_ParamController.__init__(self, parent=parent, viewer=viewer)
         

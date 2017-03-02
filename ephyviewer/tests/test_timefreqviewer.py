@@ -12,8 +12,8 @@ def test_traceviewer():
     view = ephyviewer.TimeFreqViewer(source=source, name='timefreq')
     #~ view.refresh()
     
-    for c in range(source.nb_channel):
-        view.by_channel_params['ch'+str(c), 'visible'] = True
+    #~ for c in range(source.nb_channel):
+        #~ view.by_channel_params['ch'+str(c), 'visible'] = True
     
     win = ephyviewer.MainViewer(debug=True)
     win.add_view(view)

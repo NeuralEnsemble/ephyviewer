@@ -136,6 +136,10 @@ class VideoViewer(BaseMultiChannelViewer):
         self.plots = create_plot_grid(self.graphiclayout, self.params['nb_column'], visible_channels,
                      ViewBoxClass=pg.ViewBox, vb_params={'lockAspect':True})
         
+        for plot in self.plots:
+            plot.showAxis('left', False)
+            plot.showAxis('bottom', False)
+
         
         self.images = []
         for c in range(self.source.nb_channel):

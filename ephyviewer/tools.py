@@ -71,8 +71,8 @@ def create_plot_grid(graphiclayout, nb_column, visible_channels, ViewBoxClass=pg
         #~ viewBox.setAspectLocked()
         plot = pg.PlotItem(viewBox=viewBox)
         plot.hideButtons()
-        plot.showAxis('left', False)
-        plot.showAxis('bottom', False)
+        #~ plot.showAxis('left', False)
+        #~ plot.showAxis('bottom', False)
 
         graphiclayout.ci.layout.addItem(plot, r, c)  # , rowspan, colspan)
         if r not in graphiclayout.ci.rows:
