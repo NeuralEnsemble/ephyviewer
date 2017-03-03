@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, print_function, division, absolute_import)
+#~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
 from .myqt import QT
 import pyqtgraph as pg
@@ -187,7 +187,7 @@ class NavigationToolBar(QT.QWidget) :
             self.step_size = float(text[:-2])*1e-3
         else:
             self.step_size = float(text[:-1])
-        print('self.step_size', self.step_size)
+        #~ print('self.step_size', self.step_size)
         
     def prev_step(self):
         t = self.t -  self.step_size

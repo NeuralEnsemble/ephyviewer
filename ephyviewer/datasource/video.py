@@ -83,7 +83,7 @@ class FrameGrabber:
                         pts = frame.pts
                     else:
                         pts = frame.dts
-                    
+                    #~ print('  pts',pts)
                     if not pts is None:
                         frame_index = pts_to_frame(pts, time_base, rate, self.start_time)
                         
@@ -235,11 +235,12 @@ class FrameGrabber:
         
 
         index, first_frame = next(self.next_frame())
+        
         self.stream.seek(self.stream.start_time)
-
+        
         # find the pts of the first frame
         index, first_frame = next(self.next_frame())
-
+        
         if self.pts_seen:
             pts = first_frame.pts
         else:
@@ -247,14 +248,11 @@ class FrameGrabber:
  
         self.start_time = pts or first_frame.dts
             
-        #~ print "First pts", pts, self.stream.start_time, first_frame
+        #~ print("First pts", pts, self.stream.start_time, first_frame)
 
         #self.nb_frames = get_frame_count(self.file, self.stream)
         self.nb_frames = self.get_frame_count()
-
-
-
-
+    
 
     
 
@@ -269,15 +267,17 @@ class MultiVideoFileSource( BaseDataSource):
         
         self.t_starts, self.t_stops, self.rates = [], [], []
         self.nb_frames = []
+        self.frame_grabbers = []
         for video_filename in self.video_filenames:
             fg = FrameGrabber()
             fg.set_file(video_filename)
+            self.frame_grabbers.append(fg)
             
             self.nb_frames.append(fg.get_frame_count())
             self.rates.append(fg.rate)
             self.t_starts.append(fg.start_time)
             self.t_stops.append(fg.start_time+fg.stream.duration*fg.time_base)
-
+        
         self._t_start = min(self.t_starts)
         self._t_stop = max(self.t_stops)
     

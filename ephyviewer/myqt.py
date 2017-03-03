@@ -1,12 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 
-Helper for import PyQt5
+Helper for import PyQt5/PtQt4
 see
 http://mikeboers.com/blog/2015/07/04/static-libraries-in-a-dynamic-world#the-fold
 """
-
-import PyQt5 # this force pyqtgraph to deal with Qt5
 
 
 class ModuleProxy(object):
@@ -26,9 +24,26 @@ class ModuleProxy(object):
         raise AttributeError(name)
 
 
-from PyQt5 import QtCore, QtGui, QtWidgets
+try:
+    import PyQt5
+    QT_MODE = 'PyQt5'
+except ImportError:
+    try:
+        import PyQt4
+        QT_MODE = 'PyQt4'
+    except ImportError:
+        print('no PyQt5/PyQt4')
 
-QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
+
+if QT_MODE == 'PyQt5':
+    from PyQt5 import QtCore, QtGui, QtWidgets
+    QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
+elif QT_MODE == 'PyQt4':
+    from PyQt4 import QtCore, QtGui
+    QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui])
+    
+
 
 from pyqtgraph import mkQApp
+
 

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, print_function, division, absolute_import)
+#~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
 from collections import OrderedDict
 import time
 import sys
 import pickle
 
-from .myqt import QT
+from .myqt import QT, QT_MODE
 from .navigation import NavigationToolBar
 
 location_to_qt={
@@ -60,7 +60,9 @@ class MainViewer(QT.QMainWindow):
         dock = QT.QDockWidget(name)
         dock.setObjectName(name)
         dock.setWidget(widget)
-
+        
+        #TODO chustum titlebar
+        #~ dock.setTitleBarWidget(titlebar)
         
         if tabify_with is not None:
             assert tabify_with in self.viewers, '{} no exists'.format(tabify_with)
@@ -89,26 +91,23 @@ class MainViewer(QT.QMainWindow):
         try:
             t_start = min(self.navigation_toolbar.t_start, widget.source.t_start)
             t_stop = max(self.navigation_toolbar.t_stop, widget.source.t_stop)
-            print('t_start, t_stop', t_start, t_stop, name)
+            #~ print('t_start, t_stop', t_start, t_stop, name)
             self.navigation_toolbar.set_start_stop(t_start, t_stop, seek=True)
         except:
             print('impossiblie to set t_start t_stop')
         
         if self.settings_name is not None:
             value = self.settings.value('viewer_'+name)
+            
             if value is not None:
-                #~ try:
-                if True:
+                try:
+                    if QT_MODE == 'PyQt4' and sys.version_info[0]==2:
+                        value = str(value.toPyObject())
                     value = pickle.loads(value)
-                    print('setiings', name, value)
                     widget.set_settings(value)
-                    
-                #~ except:
-                    #~ print('erreur settings', name)
+                except:
+                    print('erreur load settings', name)
             
-            #~ print(value)
-            
-        
 
     def on_time_changed(self, t):
         
@@ -126,7 +125,7 @@ class MainViewer(QT.QMainWindow):
             self.navigation_toolbar.seek(t, emit=False)
     
     def on_xsize_changed(self, xsize):
-        print('on_xsize_changed', xsize)
+        #~ print('on_xsize_changed', xsize)
         for name , viewer in self.viewers.items():
             if hasattr(viewer['widget'], 'set_xsize'):
                 viewer['widget'].set_xsize(xsize)
@@ -145,6 +144,8 @@ class MainViewer(QT.QMainWindow):
             
             for name, d in self.viewers.items():
                 value = d['widget'].get_settings()
+                #~ print('save', name, type(value))
                 if value is not None:
                     print('save ', name)
+                    
                     self.settings.setValue('viewer_'+name, pickle.dumps(value))

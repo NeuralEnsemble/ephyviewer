@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, print_function, division, absolute_import)
+#~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
 
 import ephyviewer
@@ -80,6 +80,7 @@ def make_video_file(filename, codec='mpeg4', rate=25.): # mpeg4 mjpeg libx264
 
 def make_fake_video_source():
     filenames = ['video0.avi', 'video1.avi', 'video2.avi',]
+    #~ filenames = ['video0.avi']
     for filename in filenames:
         if not os.path.exists(filename):
             make_video_file(filename, )

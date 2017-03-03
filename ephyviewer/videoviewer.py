@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import (unicode_literals, print_function, division, absolute_import)
+#~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
 
 import numpy as np
@@ -25,48 +25,42 @@ default_by_channel_params = [
 
 
 
-class QFrameGrabber(QT.QObject, FrameGrabber):
-    #~ frame_ready = QT.pyqtSignal(object, object)
-    #~ update_frame_range = QtCore.pyqtSignal(object)
+#~ class QFrameGrabber(QT.QObject, FrameGrabber):
+    #~ frame_ready = QT.pyqtSignal(int, object)
+    #~ def on_request_frame(self, video_index, target_frame):
+        #~ if self.video_index!=video_index:
+            #~ return
+        #~ frame = self.get_frame(target_frame)
+        #~ if not frame:
+            #~ return
+        #~ self.frame_ready.emit(self.video_index, frame)
+
+
+class QFrameGrabber(QT.QObject):
     frame_ready = QT.pyqtSignal(int, object)
-    
+    def __init__(self, frame_grabber, video_index, parent=None):
+        QT.QObject.__init__(self, parent)
+        
+        self.fg = frame_grabber
+        self.video_index = video_index
     
     def on_request_frame(self, video_index, target_frame):
-        
-        
         if self.video_index!=video_index:
             return
-        #~ print('on_request_frame', video_index, target_frame)
-        
-        frame = self.get_frame(target_frame)
+        frame = self.fg.get_frame(target_frame)
         if not frame:
             return
         self.frame_ready.emit(self.video_index, frame)
-        
-        #~ rgba = frame.reformat(frame.width, frame.height, "rgb24", 'itu709')
-        #print rgba.to_image().save("test.png")
-        # could use the buffer interface here instead, some versions of PyQt don't support it for some reason
-        # need to track down which version they added support for it
-        #~ self.frame = bytearray(rgba.planes[0])
-        #~ bytesPerPixel  =3 
-        #~ img = QtGui.QImage(self.frame, rgba.width, rgba.height, rgba.width * bytesPerPixel, QtGui.QImage.Format_RGB888)
-        
-        #img = QtGui.QImage(rgba.planes[0], rgba.width, rgba.height, QtGui.QImage.Format_RGB888)
+    
+    @property
+    def active_frame(self):
+        return self.fg.active_frame
 
-        #pixmap = QtGui.QPixmap.fromImage(img)
-        #~ self.frame_ready.emit(img, target_frame)
+    @active_frame.setter
+    def active_frame(self, value):
+        self.fg.active_frame = value
 
 
-
-
-#~ class VideoViewer_ParamController(Base_ParamController):
-    #~ def __init__(self, parent=None, viewer=None):
-        #~ Base_ParamController.__init__(self, parent=parent, viewer=viewer)
-
-    #~ @property
-    #~ def visible_channels(self):
-        #~ visible = [self.viewer.by_channel_params.children()[i]['visible'] for i in range(self.source.nb_channel)]
-        #~ return np.array(visible, dtype='bool')
 
 class VideoViewer_ParamController(Base_MultiChannel_ParamController):
     pass
@@ -88,14 +82,14 @@ class VideoViewer(BaseMultiChannelViewer):
         self.make_param_controller()
         self.set_layout()
         
-        self.frame_grabbers = []
+        self.qframe_grabbers = []
         self.threads = []
         #~ self.actual_frames = []
         for i, video_filename in enumerate(self.source.video_filenames):
-            fg = QFrameGrabber()
-            self.frame_grabbers.append(fg)
-            fg.set_file(video_filename)
-            fg.video_index = i
+            fg = QFrameGrabber(self.source.frame_grabbers[i], i)
+            self.qframe_grabbers.append(fg)
+            #~ fg.set_file(video_filename)
+            #~ fg.video_index = i
             fg.frame_ready.connect(self.update_frame)
             
             thread = QT.QThread(parent=self)
@@ -103,7 +97,7 @@ class VideoViewer(BaseMultiChannelViewer):
             thread.start()
             self.threads.append(thread)
             
-            self.request_frame.connect(self.frame_grabbers[i].on_request_frame)
+            self.request_frame.connect(self.qframe_grabbers[i].on_request_frame)
 
     @classmethod
     def from_filenames(cls, video_filenames, video_times, name):
@@ -160,8 +154,8 @@ class VideoViewer(BaseMultiChannelViewer):
                 frame_index = self.source.time_to_frame_index(c, self.t)
                 #~ print( 'c', c, 'frame_index', frame_index)
                 
-                if self.frame_grabbers[c].active_frame != frame_index:
-                    self.frame_grabbers[c].active_frame = frame_index
+                if self.qframe_grabbers[c].active_frame != frame_index:
+                    self.qframe_grabbers[c].active_frame = frame_index
                     self.request_frame.emit(c, frame_index)
     
     def update_frame(self, video_index, frame):
