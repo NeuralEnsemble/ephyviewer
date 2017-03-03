@@ -23,8 +23,8 @@ orientation_to_qt={
 
 
 class MainViewer(QT.QMainWindow):
-    def __init__(self, debug=False, settings_name=None, **navigation_params):
-        QT.QMainWindow.__init__(self)
+    def __init__(self, debug=False, settings_name=None, parent=None, **navigation_params):
+        QT.QMainWindow.__init__(self, parent)
 
         #TODO settings
         #http://www.programcreek.com/python/example/86789/PyQt5.QtCore.QSettings
@@ -101,8 +101,10 @@ class MainViewer(QT.QMainWindow):
             
             if value is not None:
                 try:
+                #~ if True:
                     if QT_MODE == 'PyQt4' and sys.version_info[0]==2:
-                        value = str(value.toPyObject())
+                        if type(value)==QT.QVariant:
+                            value = bytes(value.toPyObject())
                     value = pickle.loads(value)
                     widget.set_settings(value)
                 except:

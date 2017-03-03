@@ -125,7 +125,7 @@ class BaseMultiChannelViewer(ViewerBase):
     
     def set_xsize(self, xsize):
         #~ print(self.__class__.__name__, 'set_xsize', xsize)
-        if 'xsize' in self.params:
+        if 'xsize' in [p.name() for p in self.params.children()]:
             self.params['xsize'] = xsize
 
     def set_settings(self, value):
