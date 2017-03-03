@@ -23,6 +23,8 @@ default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'ylim_max', 'type': 'float', 'value': 10.},
     {'name': 'ylim_min', 'type': 'float', 'value': -10.},
+    {'name': 'scale_mode', 'type': 'list', 'value': 'real_scale', 
+        'values':['real_scale', 'spread_same_gain', 'spread_gain_per_channel'] },
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'display_labels', 'type': 'bool', 'value': False},
     {'name': 'display_offset', 'type': 'bool', 'value': False},
@@ -87,17 +89,18 @@ class TraceViewer_ParamController(Base_ParamController):
         v.addWidget(but)
         but.clicked.connect(self.on_set_visible)
         
-        h = QT.QHBoxLayout()
-        v.addLayout(h)
-        h.addWidget(QT.QLabel('Scale mode:'))
-        self.combo_scale_mode = QT.QComboBox()
-        h.addWidget(self.combo_scale_mode)
-        self.scale_modes = ['Real scale',
-                            'Spread (same gain for all)',
-                            'Spread (gain per channel)',]
-        self.combo_scale_mode.addItems(self.scale_modes)
-        self.combo_scale_mode.currentIndexChanged.connect(self.on_scale_mode_changed)
-        self.scale_mode_index = 0
+        #~ h = QT.QHBoxLayout()
+        #~ v.addLayout(h)
+        #~ h.addWidget(QT.QLabel('Scale mode:'))
+        #~ self.combo_scale_mode = QT.QComboBox()
+        #~ h.addWidget(self.combo_scale_mode)
+        #~ self.scale_modes = ['Real scale',
+                            #~ 'Spread (same gain for all)',
+                            #~ 'Spread (gain per channel)',]
+        #~ self.combo_scale_mode.addItems(self.scale_modes)
+        #~ self.combo_scale_mode.currentIndexChanged.connect(self.on_scale_mode_changed)
+        #~ self.scale_mode_index = 0
+        
         #~ for i,text in enumerate():
             #~ but = QT.QPushButton(text)
             #~ v.addWidget(but)
@@ -174,25 +177,29 @@ class TraceViewer_ParamController(Base_ParamController):
         #~ print('self.signals_med', self.signals_med)
 
     
-    def on_scale_mode_changed(self, mode_index):
-        self.scale_mode_index = mode_index
-        self.scale_mode = self.scale_modes[mode_index]
-        #~ print('on_scale_mode_changed', mode_index,self.scale_mode)
+    def on_scale_mode_changed(self):
         
-        self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
+        print('on_scale_mode_changed', self.viewer.params['scale_mode'])
+        
+        scale_mode = self.viewer.params['scale_mode']
+        
+        #~ 'real_scale', 'spread_same_gain', 'spread_gain_per_channel'
+        
+        #~ self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
+        self.viewer.all_params.blockSignals(True)
         
         gains = np.ones(self.viewer.source.nb_channel)
         offsets = np.zeros(self.viewer.source.nb_channel)
         nb_visible = np.sum(self.visible_channels)
         self.ygain_factor = 1
-        if self.scale_mode_index==0:
+        if scale_mode=='real_scale':
             self.viewer.params['ylim_min'] = np.min(self.viewer.last_sigs_chunk)
             self.viewer.params['ylim_max'] = np.max(self.viewer.last_sigs_chunk)
         else:
             self.estimate_median_mad()
-            if self.scale_mode_index==1:
+            if scale_mode=='spread_same_gain':
                 gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 9.
-            elif self.scale_mode_index==2:
+            elif scale_mode=='spread_gain_per_channel':
                 gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / self.signals_mad[self.visible_channels] / 9.
             offsets[self.visible_channels] = np.arange(nb_visible)[::-1] - self.signals_med[self.visible_channels]*gains[self.visible_channels]
             self.viewer.params['ylim_min'] = -0.5
@@ -200,8 +207,10 @@ class TraceViewer_ParamController(Base_ParamController):
             
         self.gains = gains
         self.offsets = offsets
-        self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
-        self.viewer.refresh()
+        #~ self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
+        self.viewer.all_params.blockSignals(False)
+        
+        #~ self.viewer.refresh()
     
     def on_but_ygain_zoom(self):
         factor = self.sender().factor
@@ -209,16 +218,25 @@ class TraceViewer_ParamController(Base_ParamController):
 
     def apply_ygain_zoom(self, factor_ratio):
         
-        if self.scale_mode_index==0:
+        scale_mode = self.viewer.params['scale_mode']
+        
+        self.viewer.all_params.blockSignals(True)
+        if scale_mode=='real_scale':
+            self.ygain_factor *= factor_ratio
+            
+            self.viewer.params['ylim_max'] = self.viewer.params['ylim_max']*factor_ratio
+            self.viewer.params['ylim_min'] = self.viewer.params['ylim_min']*factor_ratio
+            
             pass
             #TODO ylims
         else :
             self.ygain_factor *= factor_ratio
-            self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
             self.gains = self.gains * factor_ratio
             self.offsets = self.offsets + self.signals_med*self.gains * (1-factor_ratio)
-            self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
-            self.viewer.refresh()
+        
+        self.viewer.all_params.blockSignals(False)
+        
+        self.viewer.refresh()
         print('apply_ygain_zoom', factor_ratio, 'self.ygain_factor', self.ygain_factor)
         
     def apply_xsize_zoom(self, xmove):
@@ -379,7 +397,6 @@ class TraceViewer(BaseMultiChannelViewer):
         self.channel_offsets_line = []
         for c in range(self.source.nb_channel):
             color = self.by_channel_params['ch{}'.format(c), 'color']
-            #~ curve = pg.PlotCurveItem(pen='#7FFF00')#, connect='finite')
             curve = pg.PlotCurveItem(pen='#7FFF00', downsampleMethod='peak', downsample=1,
                             autoDownsample=False, clipToView=True)#, connect='finite')
             self.plot.addItem(curve)
@@ -398,6 +415,14 @@ class TraceViewer(BaseMultiChannelViewer):
         self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
         self.viewBox.ygain_zoom.connect(self.params_controller.apply_ygain_zoom)
     
+    def on_param_change(self, params=None, changes=None):
+        #track if new scale mode
+        for param, change, data in changes:
+            if change != 'value': continue
+            if param.name()=='scale_mode':
+                self.params_controller.on_scale_mode_changed()
+        
+        self.refresh()
     
     def refresh(self):
         #~ print('TraceViewer.refresh', 't', self.t)
@@ -409,18 +434,6 @@ class TraceViewer(BaseMultiChannelViewer):
 
         self.request_data.emit(self.t, t_start, t_stop, gains, offsets, visibles)
         
-        #~ print('refresh', threading.get_ident())
-
-
-    
-    
-        
-
-
-        
-        
-
-        #~ self.graphicsview.repaint()
     
     def on_data_ready(self, t,   t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk):
         #~ print('on_data_ready', t, t_start, t_stop)
@@ -429,11 +442,9 @@ class TraceViewer(BaseMultiChannelViewer):
             #~ print('on_data_ready not same t')
             return
         
-        
         self.last_sigs_chunk = sigs_chunk
         offsets = self.params_controller.offsets
         self.graphicsview.setBackground(self.params['background_color'])
-    
         
         for i, c in enumerate(visibles):
             self.curves[c].show()
@@ -456,10 +467,7 @@ class TraceViewer(BaseMultiChannelViewer):
             else:
                 self.channel_offsets_line[c].hide()
             
-        
-        #~ index_not_visible, = np.nonzero(~visible_channels)
         for c in range(self.source.nb_channel):
-        #~ for i, c in enumerate(index_not_visible):
             if c not in visibles:
                 self.curves[c].hide()
                 self.channel_labels[c].hide()
@@ -468,4 +476,6 @@ class TraceViewer(BaseMultiChannelViewer):
         self.vline.setPos(self.t)
         self.plot.setXRange( t_start, t_stop, padding = 0.0)
         self.plot.setYRange(self.params['ylim_min'], self.params['ylim_max'], padding = 0.0)
+        
+        #~ self.graphicsview.repaint()
 
