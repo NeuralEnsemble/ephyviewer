@@ -129,11 +129,38 @@ class BaseMultiChannelViewer(ViewerBase):
             self.params['xsize'] = xsize
 
     def set_settings(self, value):
-        self.all_params.restoreState(value)
+        actual_value = self.all_params.saveState()
+        #~ print('same tree', same_param_tree(actual_value, value))
+        if same_param_tree(actual_value, value):
+            # this prevent restore something that is not same tree
+            # as actual. Possible when new features.
+            self.all_params.restoreState(value)
+        else:
+            print('Not possible to restore setiings')
     
     def get_settings(self):
         return self.all_params.saveState()
 
+
+def same_param_tree(tree1, tree2):
+    children1 = list(tree1['children'].keys())
+    children2 = list(tree2['children'].keys())
+    if len(children1) != len(children2):
+        return False
+    
+    for k1, k2 in zip(children1, children2):
+        if k1!=k2:
+            return False
+        
+        if 'children' in tree1['children'][k1]:
+            if not 'children' in tree2['children'][k2]:
+                return False
+            #~ print('*'*5)
+            #~ print('Recursif', k1)
+            if not same_param_tree(tree1['children'][k1], tree2['children'][k2]):
+                return False
+            
+    return True
 
 
 class Base_ParamController(QT.QWidget):

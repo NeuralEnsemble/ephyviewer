@@ -67,10 +67,27 @@ def test_mainviewer2():
     app.exec_()
 
 
+def test_save_load_params():
+    from  ephyviewer.tests.testing_tools import make_fake_signals
+    
+    
+    app = ephyviewer.mkQApp()
+    
+    view1 = ephyviewer.TraceViewer(source=make_fake_signals(), name='signals')
+    
+    win = ephyviewer.MainViewer(debug=True, settings_name='test2', show_global_xsize=True)
+    #~ print(win.settings_name)
+    #~ exit()
+    #TODO bug because new params!!!!!!!
+    win.add_view(view1)
+    
+    win.show()
+    app.exec_()
     
     
     
 if __name__=='__main__':
     #~ test_mainviewer()
-    test_mainviewer2()
+    #~ test_mainviewer2()
+    test_save_load_params()
 

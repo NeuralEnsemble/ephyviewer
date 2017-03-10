@@ -96,6 +96,10 @@ class MainViewer(QT.QMainWindow):
         except:
             print('impossiblie to set t_start t_stop')
         
+        self.load_one_setting(name, widget)
+    
+    def load_one_setting(self, name, widget):
+        print('self.settings_name', self.settings_name)
         if self.settings_name is not None:
             value = self.settings.value('viewer_'+name)
             
@@ -109,7 +113,17 @@ class MainViewer(QT.QMainWindow):
                     widget.set_settings(value)
                 except:
                     print('erreur load settings', name)
-            
+        
+    
+    def save_all_settings(self):
+        print('save_all_settings')
+        if self.settings_name is not None:
+            for name, d in self.viewers.items():
+                value = d['widget'].get_settings()
+                #~ print('save', name, type(value))
+                if value is not None:
+                    print('save ', name)
+                    self.settings.setValue('viewer_'+name, pickle.dumps(value))
 
     def on_time_changed(self, t):
         
@@ -139,15 +153,7 @@ class MainViewer(QT.QMainWindow):
         self.navigation_toolbar.seek(t, emit=False)
     
     def closeEvent(self, event):
-        #~ print('save settings')
         event.accept()
+        self.save_all_settings()
         
-        if self.settings_name is not None:
-            
-            for name, d in self.viewers.items():
-                value = d['widget'].get_settings()
-                #~ print('save', name, type(value))
-                if value is not None:
-                    print('save ', name)
-                    
-                    self.settings.setValue('viewer_'+name, pickle.dumps(value))
+
