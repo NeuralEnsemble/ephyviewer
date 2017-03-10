@@ -1,0 +1,168 @@
+# -*- coding: utf-8 -*-
+#~ from __future__ import (unicode_literals, print_function, division, absolute_import)
+
+
+import numpy as np
+
+import matplotlib.cm
+import matplotlib.colors
+
+from .myqt import QT
+import pyqtgraph as pg
+
+from .base import ViewerBase, Base_ParamController, MyViewBox
+from .epochviewer import RectItem, DataGrabber
+
+
+default_params = [
+    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
+    {'name': 'background_color', 'type': 'color', 'value': 'k'},
+    {'name': 'display_labels', 'type': 'bool', 'value': True},
+    ]
+
+
+
+class EpochEncoder_ParamController(Base_ParamController):
+    def __init__(self, parent=None, viewer=None, with_visible=True, with_color=True):
+        Base_ParamController.__init__(self, parent=parent, viewer=viewer)
+
+        h = QT.QHBoxLayout()
+        self.mainlayout.addLayout(h)
+        
+        self.v1 = QT.QVBoxLayout()
+        h.addLayout(self.v1)
+        self.tree_params = pg.parametertree.ParameterTree()
+        self.tree_params.setParameters(self.viewer.params, showTop=True)
+        self.tree_params.header().hide()
+        self.v1.addWidget(self.tree_params)
+
+
+
+
+class EpochEncoder(ViewerBase):
+    _default_params = default_params
+    
+    request_data = QT.pyqtSignal(float, float, object)
+    
+    def __init__(self, **kargs):
+        ViewerBase.__init__(self, **kargs)
+        
+        self.make_params()
+        self.set_layout()
+        self.make_param_controller()
+        
+        self.viewBox.doubleclicked.connect(self.show_params_controller)
+        
+        self.initialize_plot()
+        
+        self._xratio = 0.3
+        
+        self.thread = QT.QThread(parent=self)
+        self.datagrabber = DataGrabber(source=self.source)
+        self.datagrabber.moveToThread(self.thread)
+        self.thread.start()
+        
+        
+        self.datagrabber.data_ready.connect(self.on_data_ready)
+        self.request_data.connect(self.datagrabber.on_request_data)
+
+    def make_params(self):
+        # Create parameters
+        self.params = pg.parametertree.Parameter.create(name='Global options',
+                                                    type='group', children=self._default_params)
+        self.params.sigTreeStateChanged.connect(self.on_param_change)        
+    
+    def set_layout(self):
+        # layout
+        self.mainlayout = QT.QVBoxLayout()
+        self.setLayout(self.mainlayout)
+        
+        self.viewBox = MyViewBox()
+        
+        self.graphicsview  = pg.GraphicsView()#useOpenGL = True)
+        self.mainlayout.addWidget(self.graphicsview)
+        
+        self.plot = pg.PlotItem(viewBox=self.viewBox)
+        self.plot.hideButtons()
+        self.graphicsview.setCentralItem(self.plot)
+ 
+    def make_param_controller(self):
+        self.params_controller = EpochEncoder_ParamController(parent=self, viewer=self)
+        self.params_controller.setWindowFlags(QT.Qt.Window)
+
+
+    def closeEvent(self, event):
+        event.accept()
+        self.thread.quit()
+        self.thread.wait()
+
+    
+    def initialize_plot(self):
+        pass
+
+    def show_params_controller(self):
+        self.params_controller.show()
+    
+    def on_param_change(self):
+        self.refresh()
+    
+    def set_xsize(self, xsize):
+        self.params['xsize'] = xsize
+
+    def set_settings(self, value):
+        pass
+    
+    def get_settings(self):
+        pass
+        #~ return self.all_params.saveState()
+    
+    def refresh(self):
+        xsize = self.params['xsize']
+        t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
+        self.request_data.emit(t_start, t_stop, [0])
+
+    def on_data_ready(self, t_start, t_stop, visibles, data):
+        #~ print('on_data_ready', self, t_start, t_stop, visibles, data)
+        #~ exit()
+        #~ return
+        self.plot.clear()
+        self.graphicsview.setBackground(self.params['background_color'])
+        
+        times, durations, labels = data[0]
+        
+        #~ color = self.by_channel_params.children()[e].param('color').value()
+        color2 = QT.QColor('green')
+        color2.setAlpha(200)
+        
+        #~ ypos = visibles.size-e-1
+        
+        n = len(self.source.possible_labels)
+        
+        for i in range(times.size):
+            ypos = n - self.source.possible_labels.index(labels[i]) - 1
+            item = RectItem([times[i],  ypos,durations[i], .9],  border = color2, fill = color2)
+            item.setPos(times[i],  ypos)
+            self.plot.addItem(item)
+
+        #~ if self.params['display_labels']:
+            #~ label_name = '{}: {}'.format(chan, self.source.get_channel_name(chan=chan))
+            #~ label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+            #~ self.plot.addItem(label)
+            #~ label.setPos(t_start, ypos+0.45)
+        
+        
+        for i, label_name in enumerate(self.source.possible_labels):
+            label = pg.TextItem(label_name, color=color2, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+            self.plot.addItem(label)
+            label.setPos(t_start, n - i - 0.55)
+
+        
+        
+        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00')
+        self.plot.addItem(self.vline)
+
+        self.vline.setPos(self.t)
+        self.plot.setXRange( t_start, t_stop)
+        self.plot.setYRange( 0, n)
+
+

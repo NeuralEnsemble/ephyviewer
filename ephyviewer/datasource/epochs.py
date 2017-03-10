@@ -27,11 +27,45 @@ class InMemoryEpochSource(BaseInMemoryEventAndEpoch):
         ep_durations = self.all[chan]['duration']
         ev_labels = self.all[chan]['label']
         
-        keep1 = (ev_times>=t_start) & (ev_times<t_stop)#begin inside
-        keep2 = (ev_times+ep_durations>=t_start) & (ev_times+ep_durations<t_stop) #end inside
-        keep3 = (ev_times<=t_start) & (ev_times+ep_durations>t_stop) # overlap
-        keep = keep1|  keep2 | keep3
+        #~ keep1 = (ev_times>=t_start) & (ev_times<t_stop)#begin inside
+        #~ keep2 = (ev_times+ep_durations>=t_start) & (ev_times+ep_duqrations<t_stop) #end inside
+        #~ keep3 = (ev_times<=t_start) & (ev_times+ep_durations>t_stop) # overlap
+        #~ keep = keep1|  keep2 | keep3
         
-        return ev_times[keep], ep_durations[keep], ev_labels[keep]
+        #~ return ev_times[keep], ep_durations[keep], ev_labels[keep]
+        
+        i1 = np.searchsorted(ev_times, t_start, side='left')
+        i2 = np.searchsorted(ev_times+ep_durations, t_stop, side='left')
+        sl = slice(i1, i2+1)
+        return ev_times[sl], ep_durations[sl], ev_labels[sl]
+
+
+
+
+class WritableEpochSource(InMemoryEpochSource):
+    """
+    Identique to EpochSource but onlye one channel that can be persosently saved.
+    
+    epoch is dict
+    { 'time':np.array, 'duration':np.array, 'label':np.array, 'name':' ''}
+    """
+    def __init__(self, epoch, possible_labels):
+        InMemoryEpochSource.__init__(self, all_epochs=[epoch])
+        self._t_stop = max([ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0])
+        
+        assert np.all(np.in1d(epoch['label'], possible_labels))
+        self.possible_labels = possible_labels
+        
+        
+        
+
+    def get_chunk(self, chan=0,  i_start=None, i_stop=None):
+        assert chan==0
+        return InMemoryEpochSource. get_chunk(self, chan=chan,  i_start=i_start, i_stop=i_stop)
+    
+    def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
+        print(chan)
+        assert chan==0
+        return InMemoryEpochSource.get_chunk_by_time(self, chan=chan,  t_start=t_start, t_stop=t_stop)
 
 

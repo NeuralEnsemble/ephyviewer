@@ -14,3 +14,6 @@ from .eventlist import EventList
 from .epochviewer import EpochViewer
 from .timefreqviewer import TimeFreqViewer
 
+
+#Encoders
+from .epochencoder import EpochEncoder
