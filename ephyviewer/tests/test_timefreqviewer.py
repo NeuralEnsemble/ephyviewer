@@ -15,7 +15,7 @@ def test_traceviewer():
     #~ for c in range(source.nb_channel):
         #~ view.by_channel_params['ch'+str(c), 'visible'] = True
     
-    win = ephyviewer.MainViewer(debug=True)
+    win = ephyviewer.MainViewer(debug=True, show_auto_scale=True)
     win.add_view(view)
     win.show()
     

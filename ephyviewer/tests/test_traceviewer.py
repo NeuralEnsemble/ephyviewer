@@ -13,7 +13,7 @@ def test_traceviewer():
     #~ view.refresh()
     
     
-    win = ephyviewer.MainViewer(debug=True)
+    win = ephyviewer.MainViewer(debug=True, show_auto_scale=True)
     win.add_view(view)
     win.show()
     

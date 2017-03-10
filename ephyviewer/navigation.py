@@ -20,11 +20,13 @@ class NavigationToolBar(QT.QWidget) :
     """
     time_changed = QT.pyqtSignal(float)
     xsize_changed = QT.pyqtSignal(float)
+    auto_scale_requested = QT.pyqtSignal()
     
     def __init__(self, parent=None, show_play=True, show_step=True,
                                     show_scroll_time=True, show_spinbox=True,
                                     show_label_datetime=False, datetime0=None,
-                                    show_global_xsize=False, play_interval = 0.1) :
+                                    show_global_xsize=False, show_auto_scale=False,
+                                    play_interval = 0.1) :
         
         QT.QWidget.__init__(self, parent)
         
@@ -139,7 +141,12 @@ class NavigationToolBar(QT.QWidget) :
             self.spinbox_xsize.valueChanged.connect(self.xsize_changed.emit)
             #trick for separator
             h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
-            
+        
+        if show_auto_scale:
+            but = QT.PushButton('auto-scale')
+            h.addWidget(but)
+            but.clicked.connect(self.auto_scale_requested.emit)
+            h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
         
         h.addStretch()
 

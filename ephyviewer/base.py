@@ -5,6 +5,10 @@ from .myqt import QT
 import pyqtgraph as pg
 import numpy as np
 
+import matplotlib.cm
+import matplotlib.colors
+
+
 import weakref
 
 
@@ -34,6 +38,9 @@ class ViewerBase(QT.QWidget):
     
     def get_settings(self):
         return None
+    
+    def auto_scale(self):
+        pass
 
 
 
@@ -74,11 +81,7 @@ class BaseMultiChannelViewer(ViewerBase):
         ViewerBase.__init__(self, **kargs)
         
         self.with_user_dialog = with_user_dialog
-        
-        #~ self.make_params()
-        #~ self.set_layout()
-        #~ self.make_param_controller()
-
+    
     def make_params(self):
         # Create parameters
         all = []
@@ -113,7 +116,6 @@ class BaseMultiChannelViewer(ViewerBase):
         if self.with_user_dialog and self._ControllerClass:
             self.params_controller = self._ControllerClass(parent=self, viewer=self)
             self.params_controller.setWindowFlags(QT.Qt.Window)
-            self.params_controller.some_channel_changed.connect(self.on_param_change)
         else:
             self.params_controller = None
 
@@ -134,7 +136,9 @@ class BaseMultiChannelViewer(ViewerBase):
         if same_param_tree(actual_value, value):
             # this prevent restore something that is not same tree
             # as actual. Possible when new features.
+            self.all_params.blockSignals(True)
             self.all_params.restoreState(value)
+            self.all_params.blockSignals(False)
         else:
             print('Not possible to restore setiings')
     
@@ -190,9 +194,10 @@ class Base_ParamController(QT.QWidget):
 
 
 class Base_MultiChannel_ParamController(Base_ParamController):
-    some_channel_changed = QT.pyqtSignal()
+    channel_visibility_changed = QT.pyqtSignal()
+    channel_color_changed = QT.pyqtSignal()
     
-    def __init__(self, parent=None, viewer=None):
+    def __init__(self, parent=None, viewer=None, with_visible=True, with_color=True):
         Base_ParamController.__init__(self, parent=parent, viewer=viewer)
 
 
@@ -213,25 +218,51 @@ class Base_MultiChannel_ParamController(Base_ParamController):
         v = QT.QVBoxLayout()
         h.addLayout(v)
         
-        
-        if self.source.nb_channel>1:
-            v.addWidget(QT.QLabel('<b>Select channel...</b>'))
-            names = [p.name() + ': '+p['name'] for p in self.viewer.by_channel_params]
-            self.qlist = QT.QListWidget()
-            v.addWidget(self.qlist, 2)
-            self.qlist.addItems(names)
-            self.qlist.setSelectionMode(QT.QAbstractItemView.ExtendedSelection)
-            
-            for i in range(len(names)):
-                self.qlist.item(i).setSelected(True)            
-            v.addWidget(QT.QLabel('<b>and apply...<\b>'))
-            
-        
-        
-        but = QT.QPushButton('set visble')
+        but = QT.PushButton('default params')
         v.addWidget(but)
-        but.clicked.connect(self.on_set_visible)
+        but.clicked.connect(self.reset_to_default)
+        
+        
+        if with_visible:
+            if self.source.nb_channel>1:
+                v.addWidget(QT.QLabel('<b>Select channel...</b>'))
+                names = [p.name() + ': '+p['name'] for p in self.viewer.by_channel_params]
+                self.qlist = QT.QListWidget()
+                v.addWidget(self.qlist, 2)
+                self.qlist.addItems(names)
+                self.qlist.setSelectionMode(QT.QAbstractItemView.ExtendedSelection)
+                
+                for i in range(len(names)):
+                    self.qlist.item(i).setSelected(True)            
+                v.addWidget(QT.QLabel('<b>and apply...<\b>'))
+                
 
+            but = QT.QPushButton('set visble')
+            v.addWidget(but)
+            but.clicked.connect(self.on_set_visible)
+            
+            self.channel_visibility_changed.connect(self.on_channel_visibility_changed)
+            
+        if with_color:
+            v.addWidget(QT.QLabel('<b>Set color<\b>'))
+            h = QT.QHBoxLayout()
+            but = QT.QPushButton('Progressive')
+            but.clicked.connect(self.on_automatic_color)
+            h.addWidget(but,4)
+            self.combo_cmap = QT.QComboBox()
+            self.combo_cmap.addItems(['Accent', 'Dark2','jet', 'prism', 'hsv', ])
+            h.addWidget(self.combo_cmap,1)
+            v.addLayout(h)
+            
+            self.channel_color_changed.connect(self.on_channel_color_changed)
+    
+    def reset_to_default(self):
+        self.viewer.make_params()
+        self.tree_params.setParameters(self.viewer.params, showTop=True)
+        self.tree_by_channel_params.setParameters(self.viewer.by_channel_params, showTop=True)
+        self.viewer.on_param_change()
+        self.viewer.refresh()
+    
     @property
     def selected(self):
         selected = np.ones(self.viewer.source.nb_channel, dtype=bool)
@@ -249,12 +280,31 @@ class Base_MultiChannel_ParamController(Base_ParamController):
     def on_set_visible(self):
         # apply
         self.viewer.by_channel_params.blockSignals(True)
-        #~ self.all_params.sigTreeStateChanged.connect(self.on_param_change)   
         
         visibles = self.selected
         for i,param in enumerate(self.viewer.by_channel_params.children()):
             param['visible'] = visibles[i]
         
         self.viewer.by_channel_params.blockSignals(False)
-        self.some_channel_changed.emit()
+        self.channel_visibility_changed.emit()
+
+    def on_automatic_color(self, cmap_name = None):
+        cmap_name = str(self.combo_cmap.currentText())
+        n = np.sum(self.selected)
+        if n==0: return
+        cmap = matplotlib.cm.get_cmap(cmap_name , n)
+        
+        self.viewer.by_channel_params.blockSignals(True)
+        for i, c in enumerate(np.nonzero(self.selected)[0]):
+            color = [ int(e*255) for e in  matplotlib.colors.ColorConverter().to_rgb(cmap(i)) ]
+            self.viewer.by_channel_params['ch{}'.format(c), 'color'] = color
+        self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
+        self.viewer.by_channel_params.blockSignals(False)
+        self.channel_color_changed.emit()
+
+    def on_channel_visibility_changed(self):
+        self.viewer.refresh()
+    
+    def on_channel_color_changed(self):
+        self.viewer.refresh()
 

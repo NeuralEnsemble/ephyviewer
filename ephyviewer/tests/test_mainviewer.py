@@ -54,7 +54,7 @@ def test_mainviewer2():
     view5 = ephyviewer.TimeFreqViewer(source=make_fake_signals(), name='timefreq')
     
     
-    win = ephyviewer.MainViewer(debug=True, settings_name='test1', show_global_xsize=True)
+    win = ephyviewer.MainViewer(debug=True, settings_name='test1', show_global_xsize=True, show_auto_scale=True)
     #TODO bug because new params!!!!!!!
     #~ win = ephyviewer.MainViewer(debug=True, show_global_xsize=True)
     win.add_view(view1)
@@ -75,7 +75,7 @@ def test_save_load_params():
     
     view1 = ephyviewer.TraceViewer(source=make_fake_signals(), name='signals')
     
-    win = ephyviewer.MainViewer(debug=True, settings_name='test2', show_global_xsize=True)
+    win = ephyviewer.MainViewer(debug=True, settings_name='test2', show_global_xsize=True, show_auto_scale=True)
     #~ print(win.settings_name)
     #~ exit()
     #TODO bug because new params!!!!!!!
@@ -88,6 +88,6 @@ def test_save_load_params():
     
 if __name__=='__main__':
     #~ test_mainviewer()
-    #~ test_mainviewer2()
-    test_save_load_params()
+    test_mainviewer2()
+    #~ test_save_load_params()
 

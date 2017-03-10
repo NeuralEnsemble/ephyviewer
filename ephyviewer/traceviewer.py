@@ -4,13 +4,13 @@
 
 import numpy as np
 
-import matplotlib.cm
-import matplotlib.colors
+#~ import matplotlib.cm
+#~ import matplotlib.colors
 
 from .myqt import QT
 import pyqtgraph as pg
 
-from .base import BaseMultiChannelViewer, Base_ParamController
+from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
 from .datasource import InMemoryAnalogSignalSource
 
 
@@ -24,7 +24,7 @@ default_params = [
     {'name': 'ylim_max', 'type': 'float', 'value': 10.},
     {'name': 'ylim_min', 'type': 'float', 'value': -10.},
     {'name': 'scale_mode', 'type': 'list', 'value': 'real_scale', 
-        'values':['real_scale', 'spread_same_gain', 'spread_gain_per_channel'] },
+        'values':['real_scale', 'same_for_all', 'by_channel'] },
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'display_labels', 'type': 'bool', 'value': False},
     {'name': 'display_offset', 'type': 'bool', 'value': False},
@@ -46,88 +46,24 @@ default_by_channel_params = [
 
 
 
-class TraceViewer_ParamController(Base_ParamController):
-    some_channel_changed = QT.pyqtSignal()
+class TraceViewer_ParamController(Base_MultiChannel_ParamController):
+    
     def __init__(self, parent=None, viewer=None):
-        Base_ParamController.__init__(self, parent=parent, viewer=viewer)
+        Base_MultiChannel_ParamController.__init__(self, parent=parent, viewer=viewer, with_visible=True, with_color=True)
         
         
-
-        h = QT.QHBoxLayout()
-        self.mainlayout.addLayout(h)
+        #TODO put this somewhere
         
-        self.v1 = QT.QVBoxLayout()
-        h.addLayout(self.v1)
-        self.tree_params = pg.parametertree.ParameterTree()
-        self.tree_params.setParameters(self.viewer.params, showTop=True)
-        self.tree_params.header().hide()
-        self.v1.addWidget(self.tree_params)
-
-        self.tree_by_channel_params = pg.parametertree.ParameterTree()
-        self.tree_by_channel_params.header().hide()
-        h.addWidget(self.tree_by_channel_params)
-        self.tree_by_channel_params.setParameters(self.viewer.by_channel_params, showTop=True)        
-        v = QT.QVBoxLayout()
-        h.addLayout(v)
-        
-        
-        if self.source.nb_channel>1:
-            v.addWidget(QT.QLabel('<b>Select channel...</b>'))
-            names = [p.name()+': '+p['name'] for p in self.viewer.by_channel_params]
-            self.qlist = QT.QListWidget()
-            v.addWidget(self.qlist, 2)
-            self.qlist.addItems(names)
-            self.qlist.setSelectionMode(QT.QAbstractItemView.ExtendedSelection)
-            
-            for i in range(len(names)):
-                self.qlist.item(i).setSelected(True)            
-            v.addWidget(QT.QLabel('<b>and apply...<\b>'))
-            
-        
-        # Gain and offset
-        but = QT.QPushButton('set visble')
-        v.addWidget(but)
-        but.clicked.connect(self.on_set_visible)
-        
+        #~ v.addWidget(QT.QLabel(self.tr('<b>Gain zoom (mouse wheel on graph):</b>'),self))
         #~ h = QT.QHBoxLayout()
         #~ v.addLayout(h)
-        #~ h.addWidget(QT.QLabel('Scale mode:'))
-        #~ self.combo_scale_mode = QT.QComboBox()
-        #~ h.addWidget(self.combo_scale_mode)
-        #~ self.scale_modes = ['Real scale',
-                            #~ 'Spread (same gain for all)',
-                            #~ 'Spread (gain per channel)',]
-        #~ self.combo_scale_mode.addItems(self.scale_modes)
-        #~ self.combo_scale_mode.currentIndexChanged.connect(self.on_scale_mode_changed)
-        #~ self.scale_mode_index = 0
+        #~ for label, factor in [('--', 1./5.), ('-', 1./1.1), ('+', 1.1), ('++', 5.),]:
+            #~ but = QT.QPushButton(label)
+            #~ but.factor = factor
+            #~ but.clicked.connect(self.on_but_ygain_zoom)
+            #~ h.addWidget(but)
         
-        #~ for i,text in enumerate():
-            #~ but = QT.QPushButton(text)
-            #~ v.addWidget(but)
-            #~ but.mode = i
-            #~ but.clicked.connect(self.on_auto_gain_and_offset)
-        
-        
-        v.addWidget(QT.QLabel(self.tr('<b>Gain zoom (mouse wheel on graph):</b>'),self))
-        h = QT.QHBoxLayout()
-        v.addLayout(h)
-        for label, factor in [('--', 1./5.), ('-', 1./1.1), ('+', 1.1), ('++', 5.),]:
-            but = QT.QPushButton(label)
-            but.factor = factor
-            but.clicked.connect(self.on_but_ygain_zoom)
-            h.addWidget(but)
-        
-        v.addWidget(QT.QLabel('<b>Set color<\b>'))
-        h = QT.QHBoxLayout()
-        but = QT.QPushButton('Progressive')
-        but.clicked.connect(self.on_automatic_color)
-        h.addWidget(but,4)
-        self.combo_cmap = QT.QComboBox()
-        self.combo_cmap.addItems(['Accent', 'Dark2','jet', 'prism', 'hsv', ])
-        h.addWidget(self.combo_cmap,1)
-        v.addLayout(h)
-        
-        self.ygain_factor = 1.
+        #~ self.ygain_factor = 1.
         
     @property
     def selected(self):
@@ -162,55 +98,48 @@ class TraceViewer_ParamController(Base_ParamController):
         for c, v in enumerate(val):
             self.viewer.by_channel_params['ch{}'.format(c), 'offset'] = v
 
-    
-    def on_set_visible(self):
-        # apply
-        visibles = self.selected
-        for i,param in enumerate(self.viewer.by_channel_params.children()):
-            param['visible'] = visibles[i]
+        
     
     def estimate_median_mad(self):
         sigs = self.viewer.last_sigs_chunk
         assert sigs is not None, 'Need to debug this'
         self.signals_med = med = np.median(sigs, axis=0)
         self.signals_mad = np.median(np.abs(sigs-med),axis=0)*1.4826
+        #~ print('estimate_median_mad')
         #~ print('self.signals_med', self.signals_med)
 
-    
-    def on_scale_mode_changed(self):
-        
-        print('on_scale_mode_changed', self.viewer.params['scale_mode'])
-        
+    def compute_rescale(self):
         scale_mode = self.viewer.params['scale_mode']
+        print('compute_rescale', scale_mode)
         
-        #~ 'real_scale', 'spread_same_gain', 'spread_gain_per_channel'
-        
-        #~ self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
         self.viewer.all_params.blockSignals(True)
         
         gains = np.ones(self.viewer.source.nb_channel)
         offsets = np.zeros(self.viewer.source.nb_channel)
         nb_visible = np.sum(self.visible_channels)
-        self.ygain_factor = 1
+        #~ self.ygain_factor = 1
         if scale_mode=='real_scale':
             self.viewer.params['ylim_min'] = np.min(self.viewer.last_sigs_chunk)
             self.viewer.params['ylim_max'] = np.max(self.viewer.last_sigs_chunk)
         else:
-            self.estimate_median_mad()
-            if scale_mode=='spread_same_gain':
-                gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 9.
-            elif scale_mode=='spread_gain_per_channel':
-                gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / self.signals_mad[self.visible_channels] / 9.
-            offsets[self.visible_channels] = np.arange(nb_visible)[::-1] - self.signals_med[self.visible_channels]*gains[self.visible_channels]
-            self.viewer.params['ylim_min'] = -0.5
-            self.viewer.params['ylim_max'] = nb_visible-0.5
+            if self.viewer.last_sigs_chunk is not None:
+                self.estimate_median_mad()
+                if scale_mode=='same_for_all':
+                    gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 9.
+                elif scale_mode=='by_channel':
+                    gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / self.signals_mad[self.visible_channels] / 9.
+                offsets[self.visible_channels] = np.arange(nb_visible)[::-1] - self.signals_med[self.visible_channels]*gains[self.visible_channels]
+                self.viewer.params['ylim_min'] = -0.5
+                self.viewer.params['ylim_max'] = nb_visible-0.5
             
         self.gains = gains
         self.offsets = offsets
-        #~ self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
-        self.viewer.all_params.blockSignals(False)
-        
-        #~ self.viewer.refresh()
+        self.viewer.all_params.blockSignals(False)        
+
+    def on_channel_visibility_changed(self):
+        print('on_channel_visibility_changed')
+        self.compute_rescale()
+        self.viewer.refresh()
     
     def on_but_ygain_zoom(self):
         factor = self.sender().factor
@@ -222,7 +151,7 @@ class TraceViewer_ParamController(Base_ParamController):
         
         self.viewer.all_params.blockSignals(True)
         if scale_mode=='real_scale':
-            self.ygain_factor *= factor_ratio
+            #~ self.ygain_factor *= factor_ratio
             
             self.viewer.params['ylim_max'] = self.viewer.params['ylim_max']*factor_ratio
             self.viewer.params['ylim_min'] = self.viewer.params['ylim_min']*factor_ratio
@@ -230,32 +159,21 @@ class TraceViewer_ParamController(Base_ParamController):
             pass
             #TODO ylims
         else :
-            self.ygain_factor *= factor_ratio
+            #~ self.ygain_factor *= factor_ratio
             self.gains = self.gains * factor_ratio
             self.offsets = self.offsets + self.signals_med*self.gains * (1-factor_ratio)
         
         self.viewer.all_params.blockSignals(False)
         
         self.viewer.refresh()
-        print('apply_ygain_zoom', factor_ratio, 'self.ygain_factor', self.ygain_factor)
+        print('apply_ygain_zoom', factor_ratio)#, 'self.ygain_factor', self.ygain_factor)
         
     def apply_xsize_zoom(self, xmove):
         factor = xmove/100.
         newsize = self.viewer.params['xsize']*(factor+1.)
         self.viewer.params['xsize'] = newsize
 
-    def on_automatic_color(self, cmap_name = None):
-        cmap_name = str(self.combo_cmap.currentText())
-        n = np.sum(self.selected)
-        if n==0: return
-        cmap = matplotlib.cm.get_cmap(cmap_name , n)
-        
-        self.viewer.all_params.sigTreeStateChanged.disconnect(self.viewer.on_param_change)
-        for i, c in enumerate(np.nonzero(self.selected)[0]):
-            color = [ int(e*255) for e in  matplotlib.colors.ColorConverter().to_rgb(cmap(i)) ]
-            self.viewer.by_channel_params['ch{}'.format(c), 'color'] = color
-        self.viewer.all_params.sigTreeStateChanged.connect(self.viewer.on_param_change)
-        self.viewer.refresh()
+
 
 
 
@@ -325,7 +243,6 @@ class DataGrabber(QT.QObject):
         
         #~ print(data_curves.shape)
         
-            
         data_curves *= gains[visibles, None]
         data_curves += offsets[visibles, None]
         dict_curves ={}
@@ -385,7 +302,6 @@ class TraceViewer(BaseMultiChannelViewer):
         event.accept()
         self.thread.quit()
         self.thread.wait()
-        
     
     def initialize_plot(self):
         
@@ -416,12 +332,17 @@ class TraceViewer(BaseMultiChannelViewer):
         self.viewBox.ygain_zoom.connect(self.params_controller.apply_ygain_zoom)
     
     def on_param_change(self, params=None, changes=None):
+        print('on_param_change')
         #track if new scale mode
         for param, change, data in changes:
             if change != 'value': continue
             if param.name()=='scale_mode':
-                self.params_controller.on_scale_mode_changed()
+                self.params_controller.compute_rescale()
         
+        self.refresh()
+    
+    def auto_scale(self):
+        self.params_controller.compute_rescale()
         self.refresh()
     
     def refresh(self):

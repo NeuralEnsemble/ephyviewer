@@ -30,6 +30,7 @@ default_params = [
     {'name': 'colormap', 'type': 'list', 'value': 'viridis', 'values' : ['viridis', 'jet', 'gray', 'hot', ] },
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     {'name': 'show_axis', 'type': 'bool', 'value': True},
+    {'name': 'scale_mode', 'type': 'list', 'value': 'same_for_all', 'values' : ['by_channel', 'same_for_all', ] },
     {'name': 'timefreq', 'type': 'group', 'children': [
                     {'name': 'f_start', 'type': 'float', 'value': 3., 'step': 1.},
                     {'name': 'f_stop', 'type': 'float', 'value': 90., 'step': 1.},
@@ -93,8 +94,14 @@ def generate_wavelet_fourier(len_wavelet, f_start, f_stop, deltafreq, sample_rat
 class TimeFreqViewer_ParamController(Base_MultiChannel_ParamController):
     some_clim_changed = QT.pyqtSignal()
     
+    def on_channel_visibility_changed(self):
+        print('TimeFreqViewer_ParamController.on_channel_visibility_changed')
+        self.viewer.create_grid()
+        self.viewer.initialize_time_freq()
+        self.viewer.refresh()
+
     def clim_zoom(self, factor):
-        print('factor', factor)
+        #~ print('clim_zoom factor', factor)
         self.viewer.by_channel_params.blockSignals(True)
         
         for i, p in enumerate(self.viewer.by_channel_params.children()):
@@ -102,7 +109,27 @@ class TimeFreqViewer_ParamController(Base_MultiChannel_ParamController):
         
         self.viewer.by_channel_params.blockSignals(False)
         self.some_clim_changed.emit()
-
+    
+    def compute_auto_clim(self):
+        print('compute_auto_clim')
+        print(self.visible_channels)
+        
+        self.viewer.by_channel_params.blockSignals(True)
+        maxs = []
+        visibles,  = np.nonzero(self.visible_channels)
+        for chan in visibles:
+            if chan in self.viewer.last_wt_maps.keys():
+                m = np.max(self.viewer.last_wt_maps[chan])
+                if self.viewer.params['scale_mode'] == 'by_channel':
+                    self.viewer.by_channel_params['ch'+str(chan), 'clim'] = m
+                else:
+                    maxs.append(m)
+        if self.viewer.params['scale_mode'] == 'same_for_all' and len(maxs)>0:
+            for chan in visibles:
+                self.viewer.by_channel_params['ch'+str(chan), 'clim'] = max(maxs)
+        
+        self.viewer.by_channel_params.blockSignals(False)
+        self.some_clim_changed.emit()
 
 
 class TimeFreqWorker(QT.QObject):
@@ -235,6 +262,7 @@ class TimeFreqViewer(BaseMultiChannelViewer):
         
         
         self._xratio = 0.3
+        self.last_wt_maps = {}
         
         self.threads = []
         self.timefreq_makers = []
@@ -269,7 +297,14 @@ class TimeFreqViewer(BaseMultiChannelViewer):
         self.graphiclayout = pg.GraphicsLayoutWidget()
         self.mainlayout.addWidget(self.graphiclayout)
     
-    def on_param_change(self):
+    def on_param_change(self, params=None, changes=None):
+        print('on_param_change')
+        #track if new scale mode
+        #~ for param, change, data in changes:
+            #~ if change != 'value': continue
+            #~ if param.name()=='scale_mode':
+                #~ self.params_controller.compute_rescale()        
+        
         #for simplification everything is recompute
         self.change_color_scale()
         self.create_grid()
@@ -345,6 +380,11 @@ class TimeFreqViewer(BaseMultiChannelViewer):
             lut.append([r*255,g*255,b*255])
         self.lut = np.array(lut, dtype='uint8')
 
+    def auto_scale(self):
+        print('auto_scale', self.params['scale_mode'])
+        self.params_controller.compute_auto_clim()
+        self.refresh()
+
     def refresh(self):
         #~ print('TimeFreqViewer.refresh', self.t)
         visible_channels = self.params_controller.visible_channels
@@ -365,6 +405,7 @@ class TimeFreqViewer(BaseMultiChannelViewer):
         if self.images[chan] is None:
             return
         
+        self.last_wt_maps[chan] = wt_map
         f_start = self.params['timefreq', 'f_start']
         f_stop = self.params['timefreq', 'f_stop']
         

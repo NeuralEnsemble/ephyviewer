@@ -50,6 +50,8 @@ class MainViewer(QT.QMainWindow):
         
         self.navigation_toolbar.time_changed.connect(self.on_time_changed)
         self.navigation_toolbar.xsize_changed.connect(self.on_xsize_changed)
+        self.navigation_toolbar.auto_scale_requested.connect(self.on_auto_scale)
+        
 
     def add_view(self, widget, location='bottom', orientation='vertical',
                         tabify_with=None, split_with=None):
@@ -86,6 +88,8 @@ class MainViewer(QT.QMainWindow):
 
         self.viewers[name] = {'widget': widget, 'dock':dock}
         
+        self.load_one_setting(name, widget)
+        
         widget.time_changed.connect(self.on_time_changed)
         
         try:
@@ -96,10 +100,10 @@ class MainViewer(QT.QMainWindow):
         except:
             print('impossiblie to set t_start t_stop')
         
-        self.load_one_setting(name, widget)
+        
     
     def load_one_setting(self, name, widget):
-        print('self.settings_name', self.settings_name)
+        #~ print('load_one_setting', self.settings_name)
         if self.settings_name is not None:
             value = self.settings.value('viewer_'+name)
             
@@ -145,6 +149,12 @@ class MainViewer(QT.QMainWindow):
         for name , viewer in self.viewers.items():
             if hasattr(viewer['widget'], 'set_xsize'):
                 viewer['widget'].set_xsize(xsize)
+    
+    def on_auto_scale(self):
+        #~ print('on_xsize_changed', xsize)
+        for name , viewer in self.viewers.items():
+            if hasattr(viewer['widget'], 'set_xsize'):
+                viewer['widget'].auto_scale()
     
     def seek(self, t):
         for name , viewer in self.viewers.items():

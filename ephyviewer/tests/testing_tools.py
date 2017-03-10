@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 
 
 def make_fake_signals():
-    
+    np.random.seed(2205)
     signals = np.random.randn(1000000, 16)
     
     signals *= np.random.rand(16)[None,:]
