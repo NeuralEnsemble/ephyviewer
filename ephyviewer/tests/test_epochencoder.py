@@ -13,8 +13,6 @@ def test_EpochEncoder():
     
     source = WritableEpochSource(epoch=epoch, possible_labels=possible_labels)
 
-    #~ exit()
-    
     app = ephyviewer.mkQApp()
     view = ephyviewer.EpochEncoder(source=source, name='Epoch encoder')
     

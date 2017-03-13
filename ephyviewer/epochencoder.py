@@ -17,6 +17,9 @@ from .epochviewer import RectItem, DataGrabber
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
+    {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
+    {'name': 'mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
+    
     #~ {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
@@ -36,12 +39,12 @@ class EpochEncoder_ParamController(Base_ParamController):
         self.tree_label_params.header().hide()
         self.v1.addWidget(self.tree_label_params)
 
-        self.v1 = QT.QVBoxLayout()
-        h.addLayout(self.v1)
-        self.tree_params = pg.parametertree.ParameterTree()
-        self.tree_params.setParameters(self.viewer.params, showTop=True)
-        self.tree_params.header().hide()
-        self.v1.addWidget(self.tree_params)
+        #~ self.v1 = QT.QVBoxLayout()
+        #~ h.addLayout(self.v1)
+        #~ self.tree_params = pg.parametertree.ParameterTree()
+        #~ self.tree_params.setParameters(self.viewer.params, showTop=True)
+        #~ self.tree_params.header().hide()
+        #~ self.v1.addWidget(self.tree_params)
 
 
 
@@ -117,16 +120,24 @@ class EpochEncoder(ViewerBase):
         
         self.mainlayout.addSpacing(10)
         
-        g = QT.QGridLayout()
-        self.mainlayout.addLayout(g)
+        #~ g = QT.QGridLayout()
+        #~ self.mainlayout.addLayout(g)
+        
+        h = QT.QHBoxLayout()
+        self.mainlayout.addLayout(h)
         
         but = QT.PushButton('Settings')
-        g.addWidget(but, 0, 0)
+        h.addWidget(but)
         but.clicked.connect(self.show_params_controller)
         
-        g.addWidget(QT.QLabel('Step on key'), 1, 0)
-        self.spin_step = pg.SpinBox(value=.1, decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, suffix='s', int=False)
-        g.addWidget(self.spin_step, 1, 1)
+        #~ g.addWidget(QT.QLabel('Step on key'), 1, 0)
+        #~ self.spin_step = pg.SpinBox(value=.1, decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, suffix='s', int=False)
+        #~ g.addWidget(self.spin_step, 1, 1)
+
+        self.tree_params = pg.parametertree.ParameterTree()
+        self.tree_params.setParameters(self.params, showTop=True)
+        self.tree_params.header().hide()
+        self.mainlayout.addWidget(self.tree_params)        
 
  
     def make_param_controller(self):
@@ -199,7 +210,8 @@ class EpochEncoder(ViewerBase):
         label = self.shortcuts.get(self.sender(), None)
         if label is None: return
         
-        duration = self.spin_step.value()
+        #~ duration = self.spin_step.value()
+        duration = self.params['new_epoch_step']
         
         self.source.add_epoch(self.t, duration, label)
         
