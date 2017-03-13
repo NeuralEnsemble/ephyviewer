@@ -22,6 +22,8 @@ orientation_to_qt={
 }
 
 
+    
+
 class MainViewer(QT.QMainWindow):
     def __init__(self, debug=False, settings_name=None, parent=None, **navigation_params):
         QT.QMainWindow.__init__(self, parent)

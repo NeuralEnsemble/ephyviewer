@@ -17,7 +17,7 @@ from .epochviewer import RectItem, DataGrabber
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
-    {'name': 'display_labels', 'type': 'bool', 'value': True},
+    #~ {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
 
@@ -31,11 +31,17 @@ class EpochEncoder_ParamController(Base_ParamController):
         
         self.v1 = QT.QVBoxLayout()
         h.addLayout(self.v1)
+        self.tree_label_params = pg.parametertree.ParameterTree()
+        self.tree_label_params.setParameters(self.viewer.by_label_params, showTop=True)
+        self.tree_label_params.header().hide()
+        self.v1.addWidget(self.tree_label_params)
+
+        self.v1 = QT.QVBoxLayout()
+        h.addLayout(self.v1)
         self.tree_params = pg.parametertree.ParameterTree()
         self.tree_params.setParameters(self.viewer.params, showTop=True)
         self.tree_params.header().hide()
         self.v1.addWidget(self.tree_params)
-
 
 
 
@@ -70,7 +76,30 @@ class EpochEncoder(ViewerBase):
         # Create parameters
         self.params = pg.parametertree.Parameter.create(name='Global options',
                                                     type='group', children=self._default_params)
-        self.params.sigTreeStateChanged.connect(self.on_param_change)        
+        self.params.sigTreeStateChanged.connect(self.on_param_change)
+        
+        
+        keys = 'azertyuiop'
+        all = []
+        self.shortcuts = {}
+        for i, label in enumerate(self.source.possible_labels):
+            key = keys[i] if i<len(keys) else ''
+            
+            name = 'label{}'.format(i)
+            children =[{'name': 'name', 'type': 'str', 'value': self.source.possible_labels[i], 'readonly':True},
+                            {'name': 'color', 'type': 'color', 'value': self.source.color_by_label(label)},
+                            {'name': 'key', 'type': 'str', 'value': key},
+                            ]
+            all.append({'name': name, 'type': 'group', 'children': children})
+            shortcut = QT.QShortcut (self)
+            if key != '':
+                shortcut.setKey(key)
+            shortcut.activated.connect(self.on_shortcut)
+            self.shortcuts[shortcut] = label
+            
+        self.by_label_params = pg.parametertree.Parameter.create(name='Labels', type='group', children=all)
+        self.by_label_params.sigTreeStateChanged.connect(self.on_param_change)
+    
     
     def set_layout(self):
         # layout
@@ -85,6 +114,20 @@ class EpochEncoder(ViewerBase):
         self.plot = pg.PlotItem(viewBox=self.viewBox)
         self.plot.hideButtons()
         self.graphicsview.setCentralItem(self.plot)
+        
+        self.mainlayout.addSpacing(10)
+        
+        g = QT.QGridLayout()
+        self.mainlayout.addLayout(g)
+        
+        but = QT.PushButton('Settings')
+        g.addWidget(but, 0, 0)
+        but.clicked.connect(self.show_params_controller)
+        
+        g.addWidget(QT.QLabel('Step on key'), 1, 0)
+        self.spin_step = pg.SpinBox(value=.1, decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, suffix='s', int=False)
+        g.addWidget(self.spin_step, 1, 1)
+
  
     def make_param_controller(self):
         self.params_controller = EpochEncoder_ParamController(parent=self, viewer=self)
@@ -123,46 +166,47 @@ class EpochEncoder(ViewerBase):
 
     def on_data_ready(self, t_start, t_stop, visibles, data):
         #~ print('on_data_ready', self, t_start, t_stop, visibles, data)
-        #~ exit()
-        #~ return
         self.plot.clear()
         self.graphicsview.setBackground(self.params['background_color'])
         
         times, durations, labels = data[0]
         
-        #~ color = self.by_channel_params.children()[e].param('color').value()
-        color2 = QT.QColor('green')
-        color2.setAlpha(200)
-        
-        #~ ypos = visibles.size-e-1
-        
         n = len(self.source.possible_labels)
         
-        for i in range(times.size):
-            ypos = n - self.source.possible_labels.index(labels[i]) - 1
-            item = RectItem([times[i],  ypos,durations[i], .9],  border = color2, fill = color2)
+        for i, label in enumerate(labels):
+            ind = self.source.possible_labels.index(label)
+            color = self.by_label_params['label'+str(ind), 'color']
+            ypos = n - ind - 1
+            item = RectItem([times[i],  ypos,durations[i], .9],  border=color, fill=color)
+            item = RectItem([times[i],  ypos,durations[i], .9],  border='#FFFFFF', fill=color)
             item.setPos(times[i],  ypos)
             self.plot.addItem(item)
 
-        #~ if self.params['display_labels']:
-            #~ label_name = '{}: {}'.format(chan, self.source.get_channel_name(chan=chan))
-            #~ label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
-            #~ self.plot.addItem(label)
-            #~ label.setPos(t_start, ypos+0.45)
-        
-        
-        for i, label_name in enumerate(self.source.possible_labels):
-            label = pg.TextItem(label_name, color=color2, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
-            self.plot.addItem(label)
-            label.setPos(t_start, n - i - 0.55)
+        for i, label in enumerate(self.source.possible_labels):
+            color = self.by_label_params['label'+str(i), 'color']
+            label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 120)))
+            self.plot.addItem(label_item)
+            label_item.setPos(t_start, n - i - 0.55)
 
-        
-        
         self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00')
         self.plot.addItem(self.vline)
 
         self.vline.setPos(self.t)
         self.plot.setXRange( t_start, t_stop)
         self.plot.setYRange( 0, n)
-
+    
+    def on_shortcut(self):
+        label = self.shortcuts.get(self.sender(), None)
+        if label is None: return
+        
+        duration = self.spin_step.value()
+        
+        self.source.add_epoch(self.t, duration, label)
+        
+        self.t += duration
+        self.refresh()
+        self.time_changed.emit(self.t)
+        
+        
+        
 
