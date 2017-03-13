@@ -24,7 +24,7 @@ class ParamDialog(QT.QDialog):
     """
     Create a dialog with pyqtgraph params systrem.
     """
-    def __init__(self,   params, title = '', parent = None):
+    def __init__(self,   params, title='', parent=None):
         QT.QDialog.__init__(self, parent = parent)
         
         self.setWindowTitle(title)

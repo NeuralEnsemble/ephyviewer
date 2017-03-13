@@ -38,7 +38,7 @@ class InMemoryEpochSource(BaseInMemoryEventAndEpoch):
         
         i1 = np.searchsorted(ep_times, t_start, side='left')
         i2 = np.searchsorted(ep_times+ep_durations, t_stop, side='left')
-        sl = slice(i1, i2+1)
+        sl = slice(max(0, i1-1), i2+1)
         return ep_times[sl], ep_durations[sl], ep_labels[sl]
 
 
@@ -78,73 +78,102 @@ class WritableEpochSource(InMemoryEpochSource):
         return InMemoryEpochSource. get_chunk(self, chan=chan,  i_start=i_start, i_stop=i_stop)
     
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
-        print(chan)
+        #~ print(chan)
         assert chan==0
         return InMemoryEpochSource.get_chunk_by_time(self, chan=chan,  t_start=t_start, t_stop=t_stop)
     
     def color_by_label(self, label):
         return self.label_to_color[label]
 
-    def add_epoch(self, t, duration, label):
-        print('WritableEpochSource.add_epoch', t, duration, label)
+
+    def _clean_and_set(self,ep_times, ep_durations, ep_labels):
+        keep = ep_durations>0.
+        ep_times = ep_times[keep]
+        ep_durations = ep_durations[keep]
+        ep_labels = ep_labels[keep]
         
-        ep_times = self.all[0]['time']
-        ep_durations = self.all[0]['duration']
-        ep_labels = self.all[0]['label']
+        self.all[0]['time'] = ep_times
+        self.all[0]['duration'] = ep_durations
+        self.all[0]['label'] = ep_labels
+
+    
+    def add_epoch(self, t, duration, label):
+        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
         
         ind = np.searchsorted(ep_times, t, side='left')
-        #~ print('ind', ind, ep_times[ind], ep_times[ind+1])
-        ind = ind
-        print('ind', ind)
         
-        
-        new_times = insert_item(ep_times, ind, t)
-        new_durations = insert_item(ep_durations, ind, duration)
-        new_labels = insert_item(ep_labels, ind, label)
-        
-        print(new_times)
-        print(new_durations)
-        
+        ep_times = insert_item(ep_times, ind, t)
+        ep_durations = insert_item(ep_durations, ind, duration)
+        ep_labels = insert_item(ep_labels, ind, label)
         
         #previous
         prev = ind-1
-        if prev>=0 and (new_times[prev]+new_durations[prev])>new_times[ind]:
-            print('prev', prev, new_times[prev], new_durations[prev], new_times[ind])
-            new_durations[prev] = new_times[ind] - new_times[prev]
-            print(prev, new_durations[prev])
+        while prev>=0:
+            if (ep_times[prev]+ep_durations[prev])>ep_times[ind]:
+                ep_durations[prev] = ep_times[ind] - ep_times[prev]
+            else:
+                break
+            prev = prev-1
         
         #nexts
         next = ind+1
-        while next<new_times.size:
-            print('*')
-            print('next', next)
-            delta = (new_times[ind]+new_durations[ind]) - new_times[next]
+        while next<ep_times.size:
+            delta = (ep_times[ind]+ep_durations[ind]) - ep_times[next]
             if delta>0:
-                print('next', next, new_times[ind],new_durations[ind],new_times[next], 'delta', delta)
-                new_times[next] += delta
-                new_durations[next] -= delta
+                ep_times[next] += delta
+                ep_durations[next] -= delta
             else:
                 break
             next = next + 1
+        
+        self._clean_and_set(ep_times, ep_durations, ep_labels)
+        
+    def merge_neighbors(self):
+        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
+        
+        mask = ((ep_times[:-1] + ep_durations[:-1])==ep_times[1:]) & (ep_labels[:-1]==ep_labels[1:])
+        inds, = np.nonzero(mask)
+        
+        for ind in inds:
+            ep_times[ind+1] = ep_times[ind]
+            ep_durations[ind+1] = ep_durations[ind] + ep_durations[ind+1]
+            ep_durations[ind] = -1
+        
+        self._clean_and_set(ep_times, ep_durations, ep_labels)
+    
+    def fill_blank(self, method='from_left'):
+        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
+        
+        mask = ((ep_times[:-1] + ep_durations[:-1])<ep_times[1:])
+        inds,  = np.nonzero(mask)
+        
+        if method=='from_left':
+            for ind in inds:
+                ep_durations[ind] = ep_times[ind+1] - ep_times[ind]
+                
+        elif method=='from_right':
+            for ind in inds:
+                gap = ep_times[ind+1] - (ep_times[ind] + ep_durations[ind])
+                ep_times[ind+1] -= gap
+                ep_durations[ind+1] += gap
+                
+        elif method=='from_nearest':
+            for ind in inds:
+                gap = ep_times[ind+1] - (ep_times[ind] + ep_durations[ind])
+                ep_durations[ind] += gap/2.
+                ep_times[ind+1] -= gap/2.
+                ep_durations[ind+1] += gap/2.
+                
+        
+        self._clean_and_set(ep_times, ep_durations, ep_labels)
+    
+    def save(self):
+        print('WritableEpochSource.save')
+    
+
 
         
-        print('---')
-        print(new_times)
-        print(new_durations)
         
-        keep = new_durations>0.
-        print('remove', np.nonzero(~keep))
-        new_times = new_times[keep]
-        new_durations = new_durations[keep]
-        new_labels = new_labels[keep]
-        print('======')
-        print(new_times)
-        print(new_durations)
-        print()
-        
-        self.all[0]['time'] = new_times
-        self.all[0]['duration'] = new_durations
-        self.all[0]['label'] = new_labels
 
 
 def insert_item(arr, ind, value):
