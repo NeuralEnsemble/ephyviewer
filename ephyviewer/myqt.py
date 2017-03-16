@@ -26,20 +26,22 @@ class ModuleProxy(object):
 
 try:
     import PyQt5
+    from PyQt5 import QtCore, QtGui, QtWidgets
     QT_MODE = 'PyQt5'
-except ImportError:
+except :
     try:
         import PyQt4
+        from PyQt4 import QtCore, QtGui
         QT_MODE = 'PyQt4'
     except ImportError:
         print('no PyQt5/PyQt4')
-
+#~ print(QT_MODE)
 
 if QT_MODE == 'PyQt5':
-    from PyQt5 import QtCore, QtGui, QtWidgets
+    #~ from PyQt5 import QtCore, QtGui, QtWidgets
     QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
 elif QT_MODE == 'PyQt4':
-    from PyQt4 import QtCore, QtGui
+    #~ from PyQt4 import QtCore, QtGui
     QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui])
     
 

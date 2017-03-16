@@ -12,7 +12,7 @@ from . import tools
 
 import pyqtgraph as pg
 
-from .base import ViewerBase, Base_ParamController, MyViewBox
+from .base import ViewerBase, Base_ParamController, MyViewBox, same_param_tree
 from .epochviewer import RectItem, DataGrabber
 
 
@@ -90,7 +90,7 @@ class EpochEncoder(ViewerBase):
         # Create parameters
         self.params = pg.parametertree.Parameter.create(name='Global options',
                                                     type='group', children=self._default_params)
-        self.params.sigTreeStateChanged.connect(self.on_param_change)
+        
         
         
         keys = 'azertyuiop'
@@ -112,6 +112,12 @@ class EpochEncoder(ViewerBase):
             self.shortcuts[shortcut] = label
             
         self.by_label_params = pg.parametertree.Parameter.create(name='Labels', type='group', children=all)
+        
+        
+        self.all_params = pg.parametertree.Parameter.create(name='all param',
+                                    type='group', children=[self.params, self.by_label_params])
+        
+        self.params.sigTreeStateChanged.connect(self.on_param_change)
         self.by_label_params.sigTreeStateChanged.connect(self.on_change_keys)
     
     
@@ -245,13 +251,27 @@ class EpochEncoder(ViewerBase):
     def set_xsize(self, xsize):
         self.params['xsize'] = xsize
 
+
     def set_settings(self, value):
-        pass
+        #~ print('set_settings')
+        actual_value = self.all_params.saveState()
+        #~ print('same tree', same_param_tree(actual_value, value))
+        if same_param_tree(actual_value, value):
+            # this prevent restore something that is not same tree
+            # as actual. Possible when new features.
+            self.params.blockSignals(True)
+            self.by_label_params.blockSignals(True)
+            
+            self.all_params.restoreState(value)
+            
+            self.params.blockSignals(False)
+            self.by_label_params.blockSignals(False)
+        else:
+            print('Not possible to restore setiings')
     
     def get_settings(self):
-        pass
-        #~ return self.all_params.saveState()
-    
+        return self.all_params.saveState()
+
     def refresh(self):
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
