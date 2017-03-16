@@ -60,7 +60,6 @@ class DataGrabber(QT.QObject):
     def on_request_data(self, t_start, t_stop, visibles):
         data = {}
         for e, chan in enumerate(visibles):
-            print(e, chan)
             times, durations, labels = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop)
             data[chan] = (times, durations, labels)
         self.data_ready.emit(t_start, t_stop, visibles, data)

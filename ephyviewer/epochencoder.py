@@ -30,6 +30,8 @@ default_params = [
 class EpochEncoder_ParamController(Base_ParamController):
     def __init__(self, parent=None, viewer=None, with_visible=True, with_color=True):
         Base_ParamController.__init__(self, parent=parent, viewer=viewer)
+        
+        self.resize(400, 600)
 
         h = QT.QHBoxLayout()
         self.mainlayout.addLayout(h)
@@ -64,9 +66,13 @@ class EpochEncoder(ViewerBase):
         
         self.viewBox.doubleclicked.connect(self.show_params_controller)
         
+        self._xratio = 0.3
+        
         self.initialize_plot()
         
-        self._xratio = 0.3
+        self.on_range_visibility_changed(None, refresh=False)
+        
+        
         
         self.thread = QT.QThread(parent=self)
         self.datagrabber = DataGrabber(source=self.source)
@@ -76,6 +82,9 @@ class EpochEncoder(ViewerBase):
         
         self.datagrabber.data_ready.connect(self.on_data_ready)
         self.request_data.connect(self.datagrabber.on_request_data)
+        
+        self.refresh_table()
+        
 
     def make_params(self):
         # Create parameters
@@ -114,7 +123,7 @@ class EpochEncoder(ViewerBase):
         self.viewBox = MyViewBox()
         
         self.graphicsview  = pg.GraphicsView()#useOpenGL = True)
-        self.mainlayout.addWidget(self.graphicsview)
+        self.mainlayout.addWidget(self.graphicsview, 4)
         
         self.plot = pg.PlotItem(viewBox=self.viewBox)
         self.plot.hideButtons()
@@ -122,42 +131,67 @@ class EpochEncoder(ViewerBase):
         
         self.mainlayout.addSpacing(10)
         
-        #~ g = QT.QGridLayout()
-        #~ self.mainlayout.addLayout(g)
         
         h = QT.QHBoxLayout()
         self.mainlayout.addLayout(h)
-        v = QT.QVBoxLayout()
-        h.addLayout(v)
         
+        g = QT.QGridLayout()
+        h.addLayout(g)
+
         but = QT.PushButton('Colors and keys')
-        v.addWidget(but)
+        g.addWidget(but, 0, 0)
+        
         but.clicked.connect(self.show_params_controller)
         
         but = QT.PushButton('Merge neighbors')
-        v.addWidget(but)
+        g.addWidget(but, 1, 0)
         but.clicked.connect(self.on_merge_neighbors)
 
         but = QT.PushButton('Fill blank')
-        v.addWidget(but)
+        g.addWidget(but, 2, 0)
         but.clicked.connect(self.on_fill_blank)
-        
-        
-        v.addStretch()
 
         but = QT.PushButton('Save')
-        v.addWidget(but)
+        g.addWidget(but, 4, 0)
         but.clicked.connect(self.on_save)
         
         
-        #~ g.addWidget(QT.QLabel('Step on key'), 1, 0)
-        #~ self.spin_step = pg.SpinBox(value=.1, decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, suffix='s', int=False)
-        #~ g.addWidget(self.spin_step, 1, 1)
-
+        #~ v.addStretch()
+        #~ v.addWidget(QT.QFrame(frameShape=QT.QFrame.HLine, frameShadow=QT.QFrame.Sunken))
+        
+        self.but_range = QT.PushButton('Show/hide range', checkable=True)
+        g.addWidget(self.but_range, 0, 1)
+        self.but_range.clicked.connect(self.on_range_visibility_changed)
+        
+        spinboxs = []
+        for i in range(2):
+            spinbox = pg.SpinBox(value=float(i), decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, int=False)
+            g.addWidget(spinbox, 1+i, 1)
+            spinbox.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Preferred, )
+            spinbox.valueChanged.connect(self.on_spin_limit_changed)
+            spinboxs.append(spinbox)
+        self.spin_limit1, self.spin_limit2 = spinboxs
+        
+        self.combo_labels = QT.QComboBox()
+        self.combo_labels.addItems(self.source.possible_labels)
+        g.addWidget(self.combo_labels, 3, 1)
+        
+        self.but_apply_region = QT.PushButton('Apply')
+        g.addWidget(self.but_apply_region, 4, 1)
+        self.but_apply_region.clicked.connect(self.apply_region)
+        
+        
         self.tree_params = pg.parametertree.ParameterTree()
         self.tree_params.setParameters(self.params, showTop=True)
         self.tree_params.header().hide()
-        h.addWidget(self.tree_params)        
+        h.addWidget(self.tree_params)
+        
+        self.table_widget = QT.QTableWidget()
+        h.addWidget(self.table_widget)
+        self.table_widget.itemSelectionChanged.connect(self.on_seek_table)
+        self.table_widget.setSelectionMode(QT.QAbstractItemView.SingleSelection)
+        self.table_widget.setSelectionBehavior(QT.QAbstractItemView.SelectRows)
+        
 
  
     def make_param_controller(self):
@@ -172,7 +206,25 @@ class EpochEncoder(ViewerBase):
 
     
     def initialize_plot(self):
-        pass
+        self.region = pg.LinearRegionItem(brush='#FF00FF20')
+        self.region.setZValue(10)
+        self.region.setRegion((0, 1.))
+        self.plot.addItem(self.region, ignoreBounds=True)
+        self.region.sigRegionChanged.connect(self.on_region_changed)
+
+        self.vline = pg.InfiniteLine(angle=90, movable=False, pen='#00FF00')
+        self.plot.addItem(self.vline)
+        
+        self.rect_items = []
+        
+        self.label_items = []
+        for i, label in enumerate(self.source.possible_labels):
+            color = self.by_label_params['label'+str(i), 'color']
+            label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 120)))
+            self.plot.addItem(label_item)
+            self.label_items.append(label_item)
+
+        
 
     def show_params_controller(self):
         self.params_controller.show()
@@ -185,7 +237,7 @@ class EpochEncoder(ViewerBase):
         for i, label in enumerate(self.source.possible_labels):
             key = self.by_label_params['label'+str(i), 'key']
             shortcut = list(self.shortcuts.keys())[i]
-            print(shortcut)
+            #~ print(shortcut)
             shortcut.setKey(key)
         
         self.refresh()
@@ -207,7 +259,12 @@ class EpochEncoder(ViewerBase):
 
     def on_data_ready(self, t_start, t_stop, visibles, data):
         #~ print('on_data_ready', self, t_start, t_stop, visibles, data)
-        self.plot.clear()
+        #~ self.plot.clear()
+        
+        for rect_item in self.rect_items:
+            self.plot.removeItem(rect_item)
+        self.rect_items = []
+        
         self.graphicsview.setBackground(self.params['background_color'])
         
         times, durations, labels = data[0]
@@ -226,17 +283,26 @@ class EpochEncoder(ViewerBase):
             item = RectItem([times[i],  ypos,durations[i], .9],  border='#FFFFFF', fill=color)
             item.setPos(times[i],  ypos)
             self.plot.addItem(item)
+            self.rect_items.append(item)
         
-        if self.params['view_mode']=='stacked':
-            for i, label in enumerate(self.source.possible_labels):
+        
+        #~ for i, label in enumerate(self.source.possible_labels):
+        for i, label_item in enumerate(self.label_items):
+            if self.params['view_mode']=='stacked':
                 color = self.by_label_params['label'+str(i), 'color']
-                label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 120)))
-                self.plot.addItem(label_item)
+                #~ label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 120)))
+                label_item.setColor(color)
                 label_item.setPos(t_start, n - i - 0.55)
-
-        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00')
-        self.plot.addItem(self.vline)
-
+                label_item.show()
+                #~ self.plot.addItem(label_item)
+            else:
+                label_item.hide()
+        
+        if self.but_range.isChecked():
+            self.region.show()
+        else:
+            self.region.hide()
+        
         self.vline.setPos(self.t)
         self.plot.setXRange( t_start, t_stop)
         if self.params['view_mode']=='stacked':
@@ -256,6 +322,7 @@ class EpochEncoder(ViewerBase):
         self.t += duration
         self.refresh()
         self.time_changed.emit(self.t)
+        self.refresh_table()
     
     def on_merge_neighbors(self):
         self.source.merge_neighbors()
@@ -273,5 +340,71 @@ class EpochEncoder(ViewerBase):
     
     def on_save(self):
         self.source.save()
+    
+    def on_spin_limit_changed(self, v):
+        self.region.blockSignals(True)
+        rgn = (self.spin_limit1.value(), self.spin_limit2.value())
+        rgn = self.region.setRegion(rgn)
+        self.region.blockSignals(False)
+    
+    def on_region_changed(self):
+        self.spin_limit1.blockSignals(True)
+        self.spin_limit2.blockSignals(True)
+        rgn = self.region.getRegion()
+        self.spin_limit1.setValue(rgn[0])
+        self.spin_limit2.setValue(rgn[1])
+        self.spin_limit1.blockSignals(False)
+        self.spin_limit2.blockSignals(False)
+
+    def apply_region(self):
+        rgn = self.region.getRegion()
+        t = rgn[0]
+        duration = rgn[1] - rgn[0]
+        label = self.combo_labels.currentText()
+        self.source.add_epoch(t, duration, label)
+        
+        self.refresh()
+        self.refresh_table()
+    
+    def on_range_visibility_changed(self, flag, refresh=True):
+        enabled = self.but_range.isChecked()
+        #~ print(enabled)
+        for w in (self.spin_limit1, self.spin_limit2, self.combo_labels, self.but_apply_region):
+            w.setEnabled(enabled)
+            
+        if enabled:
+            rgn = self.region.getRegion()
+            rgn = (self.t, self.t + rgn[1] - rgn[0])
+            self.region.setRegion(rgn)
+        self.refresh()
+    
+    def refresh_table(self):
+        self.table_widget.clear()
+        #~ ev = self.source.all_events[ind]
+        times, durations, labels = self.source.get_chunk(chan=0,  i_start=None, i_stop=None)
+        self.table_widget.setColumnCount(4)
+        self.table_widget.setRowCount(times.size)
+        self.table_widget.setHorizontalHeaderLabels(['start', 'stop', 'duration', 'label'])
+        for r in range(times.size):
+            
+            values = [times[r], times[r]+durations[r], durations[r], labels[r]]
+            for c, value in enumerate(values):
+                item = QT.QTableWidgetItem('{}'.format(value))
+                item.setFlags(QT.ItemIsSelectable|QT.ItemIsEnabled)
+                self.table_widget.setItem(r, c, item)
+    
+    def on_seek_table(self):
+        if self.table_widget.rowCount()==0:
+            return
+        selected_ind = self.table_widget.selectedIndexes()
+        if len(selected_ind)==0:
+            return
+        i = selected_ind[0].row()
+        t, _, _= self.source.get_chunk(chan=0,  i_start=i, i_stop=i+1)
+        self.t = t[0]
+        self.refresh()
+        self.time_changed.emit(self.t)
+        
+        
 
 
