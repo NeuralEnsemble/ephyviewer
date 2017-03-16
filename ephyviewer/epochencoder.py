@@ -238,7 +238,7 @@ class EpochEncoder(ViewerBase):
     def on_param_change(self):
         self.refresh()
     
-    def on_change_keys(self):
+    def on_change_keys(self, refresh=True):
         
         for i, label in enumerate(self.source.possible_labels):
             key = self.by_label_params['label'+str(i), 'key']
@@ -266,6 +266,7 @@ class EpochEncoder(ViewerBase):
             
             self.params.blockSignals(False)
             self.by_label_params.blockSignals(False)
+            self.on_change_keys(refresh=False)
         else:
             print('Not possible to restore setiings')
     
