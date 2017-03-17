@@ -56,7 +56,9 @@ class InMemoryEventSource(BaseInMemoryEventAndEpoch):
     
     def __init__(self, all_events=[]):
         BaseInMemoryEventAndEpoch.__init__(self, all=all_events)
-        self._t_stop = max([ np.max(e['time']) for e in self.all  if len(e['time'])>0])
+        s = [ np.max(e['time']) for e in self.all  if len(e['time'])>0]
+        self._t_stop = max(s) if len(s)>0 else 0
+        
 
     def get_chunk(self, chan=0,  i_start=None, i_stop=None):
         ev_times = self.all[chan]['time'][i_start:i_stop]
