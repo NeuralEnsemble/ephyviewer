@@ -16,7 +16,10 @@ class InMemoryEpochSource(BaseInMemoryEventAndEpoch):
     
     def __init__(self, all_epochs=[]):
         BaseInMemoryEventAndEpoch.__init__(self, all=all_epochs)
-        self._t_stop = max([ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0])
+        
+        s = [ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0]
+        self._t_stop = max(s) if len(s)>0 else 0
+
 
     def get_chunk(self, chan=0,  i_start=None, i_stop=None):
         ep_times = self.all[chan]['time'][i_start:i_stop]
@@ -53,11 +56,11 @@ class WritableEpochSource(InMemoryEpochSource):
     """
     def __init__(self, epoch, possible_labels, color_labels=None):
         InMemoryEpochSource.__init__(self, all_epochs=[epoch])
-        self._t_stop = max([ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0])
+        
+        #~ self._t_stop = max([ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0])
         
         self.times = self.all[0]['time']
         self.durations = self.all[0]['duration']
-        
         
         assert np.all((self.times[:-1]+self.durations[:-1])<=self.times[1:])
         

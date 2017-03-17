@@ -24,7 +24,8 @@ class BaseInMemoryEventAndEpoch(BaseDataSource):
         
         self.all = all
         
-        self._t_start = min([ np.min(e['time']) for e in self.all if len(e['time'])>0])
+        s = [ np.min(e['time']) for e in self.all if len(e['time'])>0]
+        self._t_start = min(s) if len(s)>0 else 0
         
 
     @property

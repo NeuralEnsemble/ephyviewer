@@ -289,7 +289,7 @@ class EpochEncoder(ViewerBase):
         self.graphicsview.setBackground(self.params['background_color'])
         
         times, durations, labels = data[0]
-        
+        #~ print(data)
         n = len(self.source.possible_labels)
         
         for i, label in enumerate(labels):
@@ -381,7 +381,7 @@ class EpochEncoder(ViewerBase):
         rgn = self.region.getRegion()
         t = rgn[0]
         duration = rgn[1] - rgn[0]
-        label = self.combo_labels.currentText()
+        label = str(self.combo_labels.currentText())
         self.source.add_epoch(t, duration, label)
         
         self.refresh()
