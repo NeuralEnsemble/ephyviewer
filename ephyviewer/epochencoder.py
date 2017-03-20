@@ -185,6 +185,10 @@ class EpochEncoder(ViewerBase):
         self.but_apply_region = QT.PushButton('Apply')
         g.addWidget(self.but_apply_region, 4, 1)
         self.but_apply_region.clicked.connect(self.apply_region)
+
+        self.but_apply_region = QT.PushButton('Delete')
+        g.addWidget(self.but_apply_region, 5, 1)
+        self.but_apply_region.clicked.connect(self.delete_region)
         
         
         self.tree_params = pg.parametertree.ParameterTree()
@@ -386,6 +390,15 @@ class EpochEncoder(ViewerBase):
         
         self.refresh()
         self.refresh_table()
+    
+    def delete_region(self):
+        rgn = self.region.getRegion()
+        
+        self.source.delete_in_between(rgn[0], rgn[1])
+        
+        self.refresh()
+        self.refresh_table()
+        
     
     def on_range_visibility_changed(self, flag, refresh=True):
         enabled = self.but_range.isChecked()

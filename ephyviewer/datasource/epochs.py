@@ -100,17 +100,26 @@ class WritableEpochSource(InMemoryEpochSource):
         self.all[0]['label'] = ep_labels
 
     
-    def add_epoch(self, t, duration, label):
+    def add_epoch(self, t1, duration, label):
         ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
         
-        ind = np.searchsorted(ep_times, t, side='left')
+        t2 = t1+duration
         
-        ep_times = insert_item(ep_times, ind, t)
+        ind = np.searchsorted(ep_times, t1, side='left')
+
+        ep_times = insert_item(ep_times, ind, t1)
         ep_durations = insert_item(ep_durations, ind, duration)
         ep_labels = insert_item(ep_labels, ind, label)
         
         #previous
         prev = ind-1
+        #if the previsous ends after the new ones then add the other part
+        t2_prev = ep_times[prev]+ep_durations[prev]
+        if (t2_prev)>t2:
+            ep_times = insert_item(ep_times, ind+1, t2)
+            ep_durations = insert_item(ep_durations, ind+1, t2_prev - t2)
+            ep_labels = insert_item(ep_labels, ind+1, ep_labels[prev])
+        #short prev durations
         while prev>=0:
             if (ep_times[prev]+ep_durations[prev])>ep_times[ind]:
                 ep_durations[prev] = ep_times[ind] - ep_times[prev]
@@ -130,7 +139,47 @@ class WritableEpochSource(InMemoryEpochSource):
             next = next + 1
         
         self._clean_and_set(ep_times, ep_durations, ep_labels)
+    
+    def delete_in_between(self, t1, t2):
+        #~ print('delete_in_between', t1, t2)
+        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
         
+        ep_stops = ep_times+ep_durations
+        
+        i1 = np.searchsorted(ep_times, t1, side='left')
+        i2 = np.searchsorted(ep_times+ep_durations, t2, side='right')
+        #~ print 'i1, i2', i1, i2
+        #~ print()
+        for i in range(i1-1, i2+1):
+            #~ print i
+            if i1<0: continue
+            if i>=ep_durations.size: continue
+            
+            if ep_times[i]>=t1 and ep_stops[i]<t2:
+                #~ print 'a'
+                ep_durations[i] = -1.
+            elif ep_times[i]<t1 and (t1<ep_stops[i]<t2):
+                #~ print 'b'
+                ep_durations[i] = t1 - ep_times[i]
+            elif (t1<=ep_times[i]<t2) and ep_stops[i]>t2:
+                #~ print 'c'
+                ep_durations[i] = ep_stops[i] - t2
+                ep_times[i] = t2
+            elif ep_times[i]<=t1 and ep_stops[i]>=t2:
+                #~ print 'd'
+                ep_durations[i] = t1 - ep_times[i]
+                # and insert one
+                ep_times = insert_item(ep_times, i, t2)
+                ep_durations = insert_item(ep_durations, i, ep_stops[i]-t2)
+                ep_labels = insert_item(ep_labels,i, ep_labels[i])
+                break
+                
+        
+        self._clean_and_set(ep_times, ep_durations, ep_labels)
+        
+        
+        
+
     def merge_neighbors(self):
         ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
         
