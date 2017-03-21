@@ -224,9 +224,6 @@ class WritableEpochSource(InMemoryEpochSource):
     
 
 
-        
-        
-
 
 def insert_item(arr, ind, value):
     new_arr = np.zeros(arr.size+1, dtype=arr.dtype)

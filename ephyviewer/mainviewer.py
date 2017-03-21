@@ -165,7 +165,10 @@ class MainViewer(QT.QMainWindow):
         self.navigation_toolbar.seek(t, emit=False)
     
     def closeEvent(self, event):
-        event.accept()
+        for name , viewer in self.viewers.items():
+            viewer['widget'].close()
         self.save_all_settings()
+        event.accept()
+        
         
 
