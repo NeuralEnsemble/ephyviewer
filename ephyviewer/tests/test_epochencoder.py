@@ -36,7 +36,7 @@ def test_EpochEncoder_settings():
     app = ephyviewer.mkQApp()
     view = ephyviewer.EpochEncoder(source=source, name='Epoch encoder')
     
-    win = ephyviewer.MainViewer(show_step=False, show_global_xsize=True, debug=False, settings_name='epoch_encode_test1', )
+    win = ephyviewer.MainViewer(show_step=True, show_global_xsize=True, debug=False, settings_name='epoch_encode_test1', )
     win.add_view(view)
     win.show()
     

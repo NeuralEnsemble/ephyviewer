@@ -210,9 +210,17 @@ class EpochEncoder(ViewerBase):
 
 
     def closeEvent(self, event):
-        event.accept()
+        
+        text = 'save ?'
+        title = 'quit'
+        mb = QT.QMessageBox.question(self, title,text, 
+                QT.QMessageBox.Ok ,  QT.QMessageBox.Discard)
+        if mb==QT.QMessageBox.Ok:
+            self.source.save()
+        
         self.thread.quit()
         self.thread.wait()
+        event.accept()
 
     
     def initialize_plot(self):
@@ -362,6 +370,8 @@ class EpochEncoder(ViewerBase):
             method = d['method']
             self.source.fill_blank(method=method)
             self.refresh()
+            self.refresh_table()
+    
     
     def on_save(self):
         self.source.save()
