@@ -104,8 +104,9 @@ class WritableEpochSource(InMemoryEpochSource):
         ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
         
         t2 = t1+duration
-        
+        print('add_epoch', t1, t2)
         ind = np.searchsorted(ep_times, t1, side='left')
+        print('ind', ind)
 
         ep_times = insert_item(ep_times, ind, t1)
         ep_durations = insert_item(ep_durations, ind, duration)
@@ -113,12 +114,14 @@ class WritableEpochSource(InMemoryEpochSource):
         
         #previous
         prev = ind-1
+        
         #if the previsous ends after the new ones then add the other part
-        t2_prev = ep_times[prev]+ep_durations[prev]
-        if (t2_prev)>t2:
-            ep_times = insert_item(ep_times, ind+1, t2)
-            ep_durations = insert_item(ep_durations, ind+1, t2_prev - t2)
-            ep_labels = insert_item(ep_labels, ind+1, ep_labels[prev])
+        if ind>0:
+            t2_prev = ep_times[prev]+ep_durations[prev]
+            if (t2_prev)>t2:
+                ep_times = insert_item(ep_times, ind+1, t2)
+                ep_durations = insert_item(ep_durations, ind+1, t2_prev - t2)
+                ep_labels = insert_item(ep_labels, ind+1, ep_labels[prev])
         #short prev durations
         while prev>=0:
             if (ep_times[prev]+ep_durations[prev])>ep_times[ind]:
