@@ -104,9 +104,9 @@ class WritableEpochSource(InMemoryEpochSource):
         ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
         
         t2 = t1+duration
-        print('add_epoch', t1, t2)
+
         ind = np.searchsorted(ep_times, t1, side='left')
-        print('ind', ind)
+
 
         ep_times = insert_item(ep_times, ind, t1)
         ep_durations = insert_item(ep_durations, ind, duration)
@@ -226,6 +226,9 @@ class WritableEpochSource(InMemoryEpochSource):
         print('WritableEpochSource.save')
     
 
+
+        
+        
 
 
 def insert_item(arr, ind, value):
