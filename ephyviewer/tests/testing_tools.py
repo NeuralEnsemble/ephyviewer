@@ -26,6 +26,23 @@ def make_fake_signals():
     return source
 
 
+def make_fake_signals_with_scatter():
+    s = make_fake_signals()
+
+    s0 = s.signals[:-2, 0]
+    s1 = s.signals[1:-1,0]
+    s2 = s.signals[2:,0]
+    
+    peaks0,  = np.nonzero((s0<s1) & (s2<s1))
+    peaks1,  = np.nonzero((s0>s1) & (s2>s1))
+    
+    scatter_indexes = {0: peaks0, 1: peaks1}
+    scatter_channels = {0: np.arange(8), 1: np.arange(5,13)}
+    source = ephyviewer.AnalogSignalSourceWithScatter(s.signals, s.sample_rate, s.t_start, scatter_indexes, scatter_channels)
+    
+    return source
+
+
 
 
 def make_video_file(filename, codec='mpeg4', rate=25.): # mpeg4 mjpeg libx264

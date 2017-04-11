@@ -32,6 +32,8 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
         self.channel_names = channel_names
         if channel_names is None:
             self.channel_names = ['Channel {:3}'.format(c) for c in range(self.signals.shape[1])]
+        
+        self.with_scatter = False
     
     @property
     def nb_channel(self):
@@ -61,3 +63,15 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
         return float(ind/self.sample_rate) + self.t_start
 
 
+
+class AnalogSignalSourceWithScatter(InMemoryAnalogSignalSource):
+    def __init__(self, signals, sample_rate, t_start, scatter_indexes, scatter_channels, channel_names=None):
+        InMemoryAnalogSignalSource.__init__(self, signals, sample_rate, t_start, channel_names=channel_names)
+        self.with_scatter = True
+        
+        self.scatter_indexes = scatter_indexes
+        self.scatter_channels = scatter_channels
+    
+    
+    
+        

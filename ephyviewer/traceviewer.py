@@ -178,9 +178,9 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
 
 
 class DataGrabber(QT.QObject):
-    data_ready = QT.pyqtSignal(float, float, float, object, object, object, object)
+    data_ready = QT.pyqtSignal(float, float, float, object, object, object, object, object)
     
-    def __init__(self, source,viewer, parent=None):
+    def __init__(self, source, viewer, parent=None):
         QT.QObject.__init__(self, parent)
         self.source = source
         self.viewer = viewer
@@ -253,9 +253,23 @@ class DataGrabber(QT.QObject):
         times_curves /= 2*self.source.sample_rate/ds_ratio
         times_curves += self.source.index_to_time(i_start)
         
+        dict_scatter = None
+        if self.source.with_scatter:
+            pass
+            #~ dict_scatter = {}
+            #~ for k in self.source.labels:
+                
+                
+            #~ for i, c in enumerate(visibles):
+                
+                
+            
+            
+            
+        
         #~ print('on_request_data', threading.get_ident())
         #~ time.sleep(1.)
-        self.data_ready.emit(t, t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk)
+        self.data_ready.emit(t, t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk, dict_scatter)
 
 
 
@@ -356,7 +370,7 @@ class TraceViewer(BaseMultiChannelViewer):
         self.request_data.emit(self.t, t_start, t_stop, gains, offsets, visibles)
         
     
-    def on_data_ready(self, t,   t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk):
+    def on_data_ready(self, t,   t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk, dict_scatter):
         #~ print('on_data_ready', t, t_start, t_stop)
         
         if self.t != t:
@@ -393,6 +407,9 @@ class TraceViewer(BaseMultiChannelViewer):
                 self.curves[c].hide()
                 self.channel_labels[c].hide()
                 self.channel_offsets_line[c].hide()
+        
+        if dict_scatter is not None:
+            pass
         
         self.vline.setPos(self.t)
         self.plot.setXRange( t_start, t_stop, padding = 0.0)
