@@ -15,7 +15,7 @@ from .datasource import InMemoryEpochSource
 
 
 default_params = [
-    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
+    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
@@ -94,6 +94,8 @@ class EpochViewer(BaseMultiChannelViewer):
         
         self.datagrabber.data_ready.connect(self.on_data_ready)
         self.request_data.connect(self.datagrabber.on_request_data)
+        
+        self.params.param('xsize').setLimits((0, np.inf))
 
     @classmethod
     def from_numpy(cls, all_epochs, name):

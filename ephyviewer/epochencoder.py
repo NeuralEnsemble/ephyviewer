@@ -17,7 +17,7 @@ from .epochviewer import RectItem, DataGrabber
 
 
 default_params = [
-    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
+    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
@@ -90,7 +90,7 @@ class EpochEncoder(ViewerBase):
         # Create parameters
         self.params = pg.parametertree.Parameter.create(name='Global options',
                                                     type='group', children=self._default_params)
-        
+        self.params.param('xsize').setLimits((0, np.inf))
         
         
         keys = 'azertyuiop'

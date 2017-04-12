@@ -24,7 +24,7 @@ import threading
 
 
 default_params = [
-    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
+    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'nb_column', 'type': 'int', 'value': 4},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'colormap', 'type': 'list', 'value': 'viridis', 'values' : ['viridis', 'jet', 'gray', 'hot', ] },
@@ -245,6 +245,7 @@ class TimeFreqViewer(BaseMultiChannelViewer):
         BaseMultiChannelViewer.__init__(self, **kargs)
         
         self.make_params()
+        
         # make all not visible
         self.by_channel_params.blockSignals(True)
         for c in range(self.source.nb_channel):
@@ -276,7 +277,9 @@ class TimeFreqViewer(BaseMultiChannelViewer):
             
             
             worker.data_ready.connect(self.on_data_ready)
-            self.request_data.connect(worker.on_request_data)            
+            self.request_data.connect(worker.on_request_data)
+        
+        self.params.param('xsize').setLimits((0, np.inf))
     
     @classmethod
     def from_numpy(cls, sigs, sample_rate, t_start, name, channel_names=None):
