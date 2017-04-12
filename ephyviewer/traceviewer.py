@@ -11,7 +11,7 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
-from .datasource import InMemoryAnalogSignalSource
+from .datasource import InMemoryAnalogSignalSource, AnalogSignalSourceWithScatter
 
 
 #todo remove this
@@ -20,7 +20,7 @@ import threading
 
 
 default_params = [
-    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1, 'limits':(0,np.inf)},
+    {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'ylim_max', 'type': 'float', 'value': 10.},
     {'name': 'ylim_min', 'type': 'float', 'value': -10.},
     {'name': 'scale_mode', 'type': 'list', 'value': 'real_scale', 
@@ -198,7 +198,7 @@ class DataGrabber(QT.QObject):
         
         ds_ratio = (i_stop - i_start)//self._max_point + 1
         #~ print()
-        #~ print('ds_ratio', ds_ratio)
+        #~ print('ds_ratio', ds_ratio, 'i_start i_stop', i_start, i_stop  )
         
         if ds_ratio>1:
             i_start = i_start - (i_start%ds_ratio)
@@ -214,6 +214,8 @@ class DataGrabber(QT.QObject):
             #after clip
             i_start = i_start - (i_start%ds_ratio)
             i_stop = i_stop - (i_stop%ds_ratio)
+        
+        #~ print('final i_start i_stop', i_start, i_stop  )
         
         sigs_chunk = self.source.get_chunk(i_start=i_start, i_stop=i_stop)
         
@@ -248,24 +250,28 @@ class DataGrabber(QT.QObject):
         dict_curves ={}
         for i, c in enumerate(visibles):
             dict_curves[c] = data_curves[i, :]
-            
+        
+        #~ print(ds_ratio)
+        t_start2 = self.source.index_to_time(i_start)
         times_curves = np.arange(data_curves.shape[1], dtype='float32')
-        times_curves /= 2*self.source.sample_rate/ds_ratio
-        times_curves += self.source.index_to_time(i_start)
+        times_curves /= self.source.sample_rate/ds_ratio
+        if ds_ratio>1:
+            times_curves /=2
+        times_curves += t_start2
         
         dict_scatter = None
         if self.source.with_scatter:
             pass
-            #~ dict_scatter = {}
-            #~ for k in self.source.labels:
-                
-                
-            #~ for i, c in enumerate(visibles):
-                
-                
-            
-            
-            
+            dict_scatter = {}
+            for k in self.source.get_scatter_babels():
+                x, y = [], []
+                for i, c in enumerate(visibles):
+                    scatter_inds = self.source.get_scatter(i_start=i_start, i_stop=i_stop, chan=c, label=k)
+                    if scatter_inds is None: continue
+                    x.append((scatter_inds-i_start)/self.source.sample_rate+t_start2)
+                    y.append(sigs_chunk[scatter_inds-i_start, c]*gains[c]+offsets[c])
+                    
+                dict_scatter[k] = (np.concatenate(x), np.concatenate(y))
         
         #~ print('on_request_data', threading.get_ident())
         #~ time.sleep(1.)
@@ -305,11 +311,24 @@ class TraceViewer(BaseMultiChannelViewer):
         
         self.datagrabber.data_ready.connect(self.on_data_ready)
         self.request_data.connect(self.datagrabber.on_request_data)
+        
+        self.params.param('xsize').setLimits((0, np.inf))
+        
     
     @classmethod
-    def from_numpy(cls, sigs, sample_rate, t_start, name, channel_names=None):
-        source = InMemoryAnalogSignalSource(sigs, sample_rate, t_start, channel_names=channel_names)
+    def from_numpy(cls, sigs, sample_rate, t_start, name, channel_names=None,
+                scatter_indexes=None, scatter_channels=None, scatter_colors=None):
+        
+        if scatter_indexes is None:
+            source = InMemoryAnalogSignalSource(sigs, sample_rate, t_start, channel_names=channel_names)
+        else:
+            source = AnalogSignalSourceWithScatter(sigs, sample_rate, t_start, channel_names=channel_names,
+                                            scatter_indexes=scatter_indexes, scatter_channels=scatter_channels, scatter_colors=scatter_colors)
         view = cls(source=source, name=name)
+        
+        
+        
+        
         return view
 
     def closeEvent(self, event):
@@ -341,6 +360,12 @@ class TraceViewer(BaseMultiChannelViewer):
             offset_line = pg.InfiniteLine(angle = 0, movable = False, pen = '#7FFF00')
             self.plot.addItem(offset_line)
             self.channel_offsets_line.append(offset_line)
+        
+        if self.source.with_scatter:
+            self.scatter = pg.ScatterPlotItem(size=10, pxMode = True)
+            self.plot.addItem(self.scatter)
+                
+        
         
         self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
         self.viewBox.ygain_zoom.connect(self.params_controller.apply_ygain_zoom)
@@ -409,8 +434,22 @@ class TraceViewer(BaseMultiChannelViewer):
                 self.channel_offsets_line[c].hide()
         
         if dict_scatter is not None:
-            pass
-        
+            self.scatter.clear()
+            all_x = []
+            all_y = []
+            all_brush = []
+            for k, (x, y) in dict_scatter.items():
+                all_x.append(x)
+                all_y.append(y)
+                color = self.source.scatter_colors.get(k, '#FFFFFF')
+                all_brush.append(np.array([pg.mkBrush(color)]*len(x)))
+            
+            if len(all_x):
+                all_x = np.concatenate(all_x)
+                all_y = np.concatenate(all_y)
+                all_brush = np.concatenate(all_brush)
+                self.scatter.setData(x=all_x, y=all_y, brush=all_brush)
+
         self.vline.setPos(self.t)
         self.plot.setXRange( t_start, t_stop, padding = 0.0)
         self.plot.setYRange(self.params['ylim_min'], self.params['ylim_max'], padding = 0.0)

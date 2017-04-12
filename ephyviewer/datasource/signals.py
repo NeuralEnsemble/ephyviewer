@@ -6,6 +6,8 @@ import numpy as np
 
 from .sourcebase import BaseDataSource
 
+import matplotlib.pyplot as plt
+import matplotlib.colors
 
 
 class BaseAnalogSignalSource(BaseDataSource):
@@ -65,13 +67,33 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
 
 
 class AnalogSignalSourceWithScatter(InMemoryAnalogSignalSource):
-    def __init__(self, signals, sample_rate, t_start, scatter_indexes, scatter_channels, channel_names=None):
+    def __init__(self, signals, sample_rate, t_start, scatter_indexes, scatter_channels, scatter_colors=None, channel_names=None):
         InMemoryAnalogSignalSource.__init__(self, signals, sample_rate, t_start, channel_names=channel_names)
         self.with_scatter = True
         
+        #todo test and assert self.scatter_indexes sorted for eack k
         self.scatter_indexes = scatter_indexes
         self.scatter_channels = scatter_channels
-    
-    
-    
+        self.scatter_colors = scatter_colors
         
+        self._labels = list(self.scatter_indexes.keys())
+        
+        if self.scatter_colors is None:
+            self.scatter_colors = {}
+            n = len(self._labels)
+            colors = plt.cm.get_cmap('Accent', n)
+            for i,k in enumerate(self._labels):
+                self.scatter_colors[k] = matplotlib.colors.to_hex(colors(i))
+    
+    def get_scatter_babels(self):
+        return self._labels
+    
+    def get_scatter(self,  i_start=None, i_stop=None, chan=None, label=None):
+        if chan not in self.scatter_channels[label]:
+            return None
+        
+        inds = self.scatter_indexes[label]
+        i1 = np.searchsorted(inds, i_start, side='left')
+        i2 = np.searchsorted(inds, i_stop, side='left')
+        return inds[i1:i2]
+    

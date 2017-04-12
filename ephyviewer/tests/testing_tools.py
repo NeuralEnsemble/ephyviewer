@@ -27,18 +27,21 @@ def make_fake_signals():
 
 
 def make_fake_signals_with_scatter():
-    s = make_fake_signals()
-
-    s0 = s.signals[:-2, 0]
-    s1 = s.signals[1:-1,0]
-    s2 = s.signals[2:,0]
+    sample_rate = 10000.
+    t_start = 0.
+    times = np.arange(1000000)/sample_rate
+    signals = np.sin(times*2*np.pi*5)[:, None]
+    
+    s0 = signals[:-2, 0]
+    s1 = signals[1:-1,0]
+    s2 = signals[2:,0]
     
     peaks0,  = np.nonzero((s0<s1) & (s2<s1))
     peaks1,  = np.nonzero((s0>s1) & (s2>s1))
     
     scatter_indexes = {0: peaks0, 1: peaks1}
-    scatter_channels = {0: np.arange(8), 1: np.arange(5,13)}
-    source = ephyviewer.AnalogSignalSourceWithScatter(s.signals, s.sample_rate, s.t_start, scatter_indexes, scatter_channels)
+    scatter_channels = {0: [0], 1: [0]}
+    source = ephyviewer.AnalogSignalSourceWithScatter(signals, sample_rate, t_start, scatter_indexes, scatter_channels)
     
     return source
 
