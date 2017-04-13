@@ -155,7 +155,7 @@ class MainViewer(QT.QMainWindow):
     def on_auto_scale(self):
         #~ print('on_xsize_changed', xsize)
         for name , viewer in self.viewers.items():
-            if hasattr(viewer['widget'], 'set_xsize'):
+            if hasattr(viewer['widget'], 'auto_scale'):
                 viewer['widget'].auto_scale()
     
     def seek(self, t):
@@ -163,6 +163,11 @@ class MainViewer(QT.QMainWindow):
             viewer['widget'].seek(t)
         
         self.navigation_toolbar.seek(t, emit=False)
+    
+    def set_xsize(self, xsize):
+        if hasattr(self.navigation_toolbar, 'spinbox_xsize'):
+            self.navigation_toolbar.spinbox_xsize.setValue(xsize)
+        #~ self.on_xsize_changed(xsize)
     
     def closeEvent(self, event):
         for name , viewer in self.viewers.items():
