@@ -170,13 +170,23 @@ class EpochEncoder(ViewerBase):
         self.but_range.clicked.connect(self.on_range_visibility_changed)
         
         spinboxs = []
+        buts = []
         for i in range(2):
+            hh = QT.QHBoxLayout()
+            g.addLayout(hh, 1+i, 1)
+            but = QT.QPushButton('>')
+            buts.append(but)
+            hh.addWidget(but)
             spinbox = pg.SpinBox(value=float(i), decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, int=False)
-            g.addWidget(spinbox, 1+i, 1)
+            hh.addWidget(spinbox, 10)
+            #~ g.addWidget(spinbox, 1+i, 1)
             spinbox.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Preferred, )
             spinbox.valueChanged.connect(self.on_spin_limit_changed)
             spinboxs.append(spinbox)
         self.spin_limit1, self.spin_limit2 = spinboxs
+        buts[0].clicked.connect(self.set_limit1)
+        buts[1].clicked.connect(self.set_limit2)
+        
         
         self.combo_labels = QT.QComboBox()
         self.combo_labels.addItems(self.source.possible_labels)
@@ -186,9 +196,9 @@ class EpochEncoder(ViewerBase):
         g.addWidget(self.but_apply_region, 4, 1)
         self.but_apply_region.clicked.connect(self.apply_region)
 
-        self.but_apply_region = QT.PushButton('Delete')
-        g.addWidget(self.but_apply_region, 5, 1)
-        self.but_apply_region.clicked.connect(self.delete_region)
+        self.but_del_region = QT.PushButton('Delete')
+        g.addWidget(self.but_del_region, 5, 1)
+        self.but_del_region.clicked.connect(self.delete_region)
         
         
         self.tree_params = pg.parametertree.ParameterTree()
@@ -413,7 +423,7 @@ class EpochEncoder(ViewerBase):
     def on_range_visibility_changed(self, flag, refresh=True):
         enabled = self.but_range.isChecked()
         #~ print(enabled)
-        for w in (self.spin_limit1, self.spin_limit2, self.combo_labels, self.but_apply_region):
+        for w in (self.spin_limit1, self.spin_limit2, self.combo_labels, self.but_apply_region, self.but_del_region):
             w.setEnabled(enabled)
             
         if enabled:
@@ -421,6 +431,14 @@ class EpochEncoder(ViewerBase):
             rgn = (self.t, self.t + rgn[1] - rgn[0])
             self.region.setRegion(rgn)
         self.refresh()
+
+    def set_limit1(self):
+        if self.t<self.spin_limit2.value():
+            self.spin_limit1.setValue(self.t)
+
+    def set_limit2(self):
+        if self.t>self.spin_limit1.value():
+            self.spin_limit2.setValue(self.t)
     
     def refresh_table(self):
         self.table_widget.clear()
