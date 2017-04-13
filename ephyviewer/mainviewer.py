@@ -44,6 +44,7 @@ class MainViewer(QT.QMainWindow):
         self.viewers = OrderedDict()
         
         self.navigation_toolbar = NavigationToolBar(**navigation_params)
+        
         dock = QT.QDockWidget('navigation',self)
         dock.setObjectName( 'navigation')
         dock.setWidget(self.navigation_toolbar)
@@ -53,6 +54,8 @@ class MainViewer(QT.QMainWindow):
         self.navigation_toolbar.time_changed.connect(self.on_time_changed)
         self.navigation_toolbar.xsize_changed.connect(self.on_xsize_changed)
         self.navigation_toolbar.auto_scale_requested.connect(self.on_auto_scale)
+        
+        self.load_one_setting('navigation_toolbar', self.navigation_toolbar)
         
 
     def add_view(self, widget, location='bottom', orientation='vertical',
@@ -105,10 +108,10 @@ class MainViewer(QT.QMainWindow):
         
     
     def load_one_setting(self, name, widget):
-        #~ print('load_one_setting', self.settings_name)
+        #~ print('load_one_setting', name, self.settings_name)
         if self.settings_name is not None:
             value = self.settings.value('viewer_'+name)
-            
+            #~ print('value', value)
             if value is not None:
                 try:
                 #~ if True:
@@ -128,8 +131,12 @@ class MainViewer(QT.QMainWindow):
                 value = d['widget'].get_settings()
                 #~ print('save', name, type(value))
                 if value is not None:
-                    print('save ', name)
+                    #~ print('save ', name)
                     self.settings.setValue('viewer_'+name, pickle.dumps(value))
+            value = self.navigation_toolbar.get_settings()
+            if value is not None:
+                #~ print('save ', 'navigation_toolbar')
+                self.settings.setValue('viewer_navigation_toolbar', pickle.dumps(value))
 
     def on_time_changed(self, t):
         

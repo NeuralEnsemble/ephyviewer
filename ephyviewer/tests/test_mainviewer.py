@@ -88,6 +88,6 @@ def test_save_load_params():
     
 if __name__=='__main__':
     #~ test_mainviewer()
-    test_mainviewer2()
-    #~ test_save_load_params()
+    #~ test_mainviewer2()
+    test_save_load_params()
 

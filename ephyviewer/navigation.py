@@ -246,4 +246,16 @@ class NavigationToolBar(QT.QWidget) :
     def on_change_speed(self , speed):
         self.speed = speed
     
+    def set_settings(self, d):
+        if hasattr(self, 'spinbox_xsize') and 'xsize' in d:
+            self.spinbox_xsize.setValue(d['xsize'])
+    
+    def get_settings(self):
+        d = {}
+        if hasattr(self, 'spinbox_xsize'):
+            d['xsize'] = float(self.spinbox_xsize.value())
+        return d
+
+
+
     
