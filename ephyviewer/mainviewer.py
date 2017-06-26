@@ -53,7 +53,7 @@ class MainViewer(QT.QMainWindow):
         
         self.navigation_toolbar.time_changed.connect(self.on_time_changed)
         self.navigation_toolbar.xsize_changed.connect(self.on_xsize_changed)
-        self.navigation_toolbar.auto_scale_requested.connect(self.on_auto_scale)
+        self.navigation_toolbar.auto_scale_requested.connect(self.auto_scale)
         
         self.load_one_setting('navigation_toolbar', self.navigation_toolbar)
         
@@ -159,11 +159,12 @@ class MainViewer(QT.QMainWindow):
             if hasattr(viewer['widget'], 'set_xsize'):
                 viewer['widget'].set_xsize(xsize)
     
-    def on_auto_scale(self):
+    def auto_scale(self):
         #~ print('on_xsize_changed', xsize)
         for name , viewer in self.viewers.items():
             if hasattr(viewer['widget'], 'auto_scale'):
                 viewer['widget'].auto_scale()
+    
     
     def seek(self, t):
         for name , viewer in self.viewers.items():
