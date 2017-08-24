@@ -3,3 +3,4 @@ from .signals import *
 from .video import *
 from .events import *
 from .epochs import *
+from .neosource import *

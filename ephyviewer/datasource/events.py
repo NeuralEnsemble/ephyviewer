@@ -8,7 +8,7 @@ from .sourcebase import BaseDataSource
 
 
 
-class BaseInMemoryEventAndEpoch(BaseDataSource):
+class BaseEventAndEpoch(BaseDataSource):
     type =None
     
     """
@@ -51,11 +51,11 @@ class BaseInMemoryEventAndEpoch(BaseDataSource):
 
 
 
-class InMemoryEventSource(BaseInMemoryEventAndEpoch):
+class InMemoryEventSource(BaseEventAndEpoch):
     type = 'Event'
     
     def __init__(self, all_events=[]):
-        BaseInMemoryEventAndEpoch.__init__(self, all=all_events)
+        BaseEventAndEpoch.__init__(self, all=all_events)
         s = [ np.max(e['time']) for e in self.all  if len(e['time'])>0]
         self._t_stop = max(s) if len(s)>0 else 0
         
@@ -69,13 +69,10 @@ class InMemoryEventSource(BaseInMemoryEventAndEpoch):
         ev_times = self.all[chan]['time']
         ev_labels = self.all[chan]['label']
         
-        #~ keep = (ev_times>=t_start) & (ev_times<t_stop)
-        #~ return ev_times[keep], ev_labels[keep]
-
         i1 = np.searchsorted(ev_times, t_start, side='left')
         i2 = np.searchsorted(ev_times, t_stop, side='left')
         sl = slice(i1, i2+1)
-        return ev_times[sl], ep_durations[sl], ev_labels[sl]
+        return ev_times[sl], ev_labels[sl]
         
         
 

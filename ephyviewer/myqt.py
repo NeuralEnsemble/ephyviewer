@@ -23,7 +23,7 @@ class ModuleProxy(object):
                     return obj
         raise AttributeError(name)
 
-
+QT_MODE = None
 try:
     import PyQt5
     from PyQt5 import QtCore, QtGui, QtWidgets
@@ -43,9 +43,11 @@ if QT_MODE == 'PyQt5':
 elif QT_MODE == 'PyQt4':
     #~ from PyQt4 import QtCore, QtGui
     QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui])
-    
+else:
+    QT = None
 
+if QT is not None:
+    from pyqtgraph import mkQApp
 
-from pyqtgraph import mkQApp
 
 
