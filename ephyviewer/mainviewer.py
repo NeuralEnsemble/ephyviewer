@@ -45,7 +45,7 @@ class MainViewer(QT.QMainWindow):
         
         self.navigation_toolbar = NavigationToolBar(**navigation_params)
         
-        dock = QT.QDockWidget('navigation',self)
+        dock = self.navigation_dock =  QT.QDockWidget('navigation',self)
         dock.setObjectName( 'navigation')
         dock.setWidget(self.navigation_toolbar)
         dock.setTitleBarWidget(QT.QWidget())
