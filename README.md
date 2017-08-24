@@ -6,18 +6,23 @@ Based on PyQt5 and pyqtgraph.
 
 Can be use at two level:
 
-# standalone application to open file supported by neo.rawio
+## Standalone application 
 
-launch from console:
+For file supported by neo.rawio
+
+launch it from console:
 ```
 ephyviewer
 ```
 
 
 
-# To script in python some customs viewers for dataset with theses kind of codes:
+## To design some customs viewers for ephy dataset :
 
-```pyhton
+With theses kind of codes:
+
+```python
+
 import ephyviewer
 import numpy as np
 
