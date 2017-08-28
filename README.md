@@ -1,7 +1,7 @@
 # ephyviewer
 
 Simple viewers for ephys signals and related stuff (signal, spikes, events, triggers, video, ...)
-Based on PyQt5 and pyqtgraph.
+Based on PyQt5 (or PyQt4) and pyqtgraph.
 
 
 Can be use at two level:
