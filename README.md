@@ -8,13 +8,19 @@ Can be use at two level:
 
 ## Standalone application 
 
-For file supported by neo.rawio
+For file supported by neo.rawio (Axon, Blackrock, BrainVision, Neuralynx,
+NeuroExplorer, Plexon, Spike2, Tdt, ...)
 
-launch it from console:
+Launch it from console and use open menu:
 ```
 ephyviewer
 ```
 
+Launch it from console with filename (and optional format):
+```
+ephyviewer File_axon_1.abf
+ephyviewer File_axon_1.abf -f Axon
+```
 
 
 ## To design some customs viewers for ephy dataset :
