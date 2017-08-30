@@ -12,7 +12,7 @@ Contents
     
     overview
     installation
-    launch
+    examples
 
 
 ..
