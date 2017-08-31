@@ -187,14 +187,9 @@ class DataGrabber(QT.QObject):
         self.source = source
         self.viewer = viewer
         self._max_point = 3000
-        
-    def on_request_data(self, t, t_start, t_stop, gains, offsets, visibles):
-        #~ print('on_request_data', t_start, t_stop)
-        
-        if self.viewer.t != t:
-            #~ print('on_request_data not same t')
-            return
-        
+    
+    def get_data(self, t, t_start, t_stop, gains, offsets, visibles):
+
         i_start, i_stop = self.source.time_to_index(t_start), self.source.time_to_index(t_stop)
         #~ print(t_start, t_stop, i_start, i_stop)
         
@@ -274,6 +269,19 @@ class DataGrabber(QT.QObject):
                     y.append(sigs_chunk[scatter_inds-i_start, c]*gains[c]+offsets[c])
                     
                 dict_scatter[k] = (np.concatenate(x), np.concatenate(y))
+                    
+        return t, t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk, dict_scatter
+    
+    def on_request_data(self, t, t_start, t_stop, gains, offsets, visibles):
+        #~ print('on_request_data', t_start, t_stop)
+        
+        if self.viewer.t != t:
+            #~ print('on_request_data not same t')
+            return
+        
+        t, t_start, t_stop, visibles, dict_curves, times_curves,\
+                    sigs_chunk, dict_scatter = self.get_data(t, t_start, t_stop, gains, offsets, visibles)
+                    
         
         #~ print('on_request_data', threading.get_ident())
         #~ time.sleep(1.)
@@ -383,11 +391,21 @@ class TraceViewer(BaseMultiChannelViewer):
         self.refresh()
     
     def auto_scale(self):
+        #~ print('auto_scale', self.last_sigs_chunk)
+        if self.last_sigs_chunk is None:
+            xsize = self.params['xsize']
+            t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
+            visibles, = np.nonzero(self.params_controller.visible_channels)
+            gains = self.params_controller.gains
+            offsets = self.params_controller.offsets
+            _, _, _, _, _, _,sigs_chunk, _ = self.datagrabber.get_data(self.t, t_start, t_stop, gains, offsets, visibles)
+            self.last_sigs_chunk = sigs_chunk
+        
         self.params_controller.compute_rescale()
         self.refresh()
     
     def refresh(self):
-        #~ print('TraceViewer.refresh', 't', self.t)
+        print('TraceViewer.refresh', 't', self.t)
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
         visibles, = np.nonzero(self.params_controller.visible_channels)

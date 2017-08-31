@@ -39,6 +39,7 @@ source = AnalogSignalSourceWithScatter(signals, sample_rate, t_start, scatter_in
 view1 = TraceViewer(source=source)
 
 view1.params['scale_mode'] = 'same_for_all'
+view1.auto_scale()
 
 #put this veiwer in the main window
 win.add_view(view1)

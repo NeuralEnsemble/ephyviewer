@@ -25,10 +25,16 @@ view1.params['display_labels'] = True
 view1.by_channel_params['ch0', 'visible'] = False
 view1.by_channel_params['ch15', 'color'] = '#FF00AA'
 
+#This is needed when scale_mode='same_for_all'
+#to recompute the gain
+#this avoid to push auto_scale button
+view1.auto_scale()
 
 #put this veiwer in the main window
 win.add_view(view1)
 
 #show main window and run Qapp
 win.show()
+
+
 app.exec_()
