@@ -136,4 +136,13 @@ def make_fake_epoch_source():
     source = ephyviewer.InMemoryEpochSource(all_epochs=all_epochs)
     return source
     
+
+def make_fake_spiketrain_source():
+    all_spikes =[]
+    for c in range(30):
+        spike_times = np.arange(0, 10., .5) + c*0.2
+        all_spikes.append({ 'time':spike_times, 'name':'Unit#{}'.format(c) })
+        
+    source = ephyviewer.InMemorySpikeSource(all_spikes=all_spikes)
+    return source
     
