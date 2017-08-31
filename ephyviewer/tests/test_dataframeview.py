@@ -5,7 +5,7 @@ import pandas as pd
 
 
 
-def test_eventlist():
+def test_dataframe_view():
     
     
     df = pd.DataFrame()
@@ -27,4 +27,4 @@ def test_eventlist():
     
     
 if __name__=='__main__':
-    test_eventlist()
+    test_dataframe_view()

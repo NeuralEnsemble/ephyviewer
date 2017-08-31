@@ -76,6 +76,23 @@ def test_InMemoryEpochSource():
     assert source.get_size(0)==20
 
 
+def test_spikesource():
+    sike_times = np.arange(0, 10., .5)
+    spikes0 = { 'time':sike_times, 'name':  'Unit#0' }
+    
+    sike_times = np.arange(-6, 8., 2.)
+    spikes1 = { 'time':sike_times, 'name':  'unit#1' }
+    
+    all_spikes = [spikes0, spikes1]
+    
+    source = ephyviewer.InMemorySpikeSource(all_spikes=all_spikes)
+
+    assert source.t_start==-6.
+    assert source.t_stop==9.5
+    assert source.get_size(0)==20
+    
+    
+
 def test_neosource():
     #TODO make autorun neo tdtrawio test before
     from neo.rawio.tdtrawio import TdtRawIO
@@ -95,6 +112,12 @@ def test_neosource():
     for s in sources['epoch']:
         print(s.t_start, s.nb_channel)
         #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
+        print(s.get_chunk_by_time(chan=0,  t_start=None, t_stop=None))
+
+    for s in sources['spike']:
+        print(s.t_start, s.nb_channel)
+        print(s.get_chunk_by_time(chan=0,  t_start=None, t_stop=None))
+        #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
         
     
     
@@ -106,5 +129,6 @@ if __name__=='__main__':
     #~ test_VideoMultiFileSource()
     #~ test_InMemoryEventSource()
     #~ test_InMemoryEpochSource()
+    #~ test_spikesource()
     test_neosource()
 

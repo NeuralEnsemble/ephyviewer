@@ -10,6 +10,7 @@ import pyqtgraph as pg
 from .mainviewer import MainViewer
 from .traceviewer import TraceViewer
 from .epochviewer import EpochViewer
+from .spiketrainviewer import SpikeTrainViewer
 from.tools import get_dict_from_group_param
 
 
@@ -87,7 +88,11 @@ class StandAloneViewer(MainViewer):
         for i, ep_source in enumerate(sources['epoch']):
             view = EpochViewer(source=ep_source, name='epochs')
             self.add_view(view)
-        
+
+        for i, spike_source in enumerate(sources['spike']):
+            view = SpikeTrainViewer(source=spike_source, name='spikes')
+            self.add_view(view)
+
 
 
 

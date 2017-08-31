@@ -14,6 +14,8 @@ from .eventlist import EventList
 from .epochviewer import EpochViewer
 from .timefreqviewer import TimeFreqViewer
 from .dataframeview import DataFrameView
+from .spiketrainviewer import SpikeTrainViewer
+
 
 #Encoders
 from .epochencoder import EpochEncoder

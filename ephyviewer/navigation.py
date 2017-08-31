@@ -25,7 +25,7 @@ class NavigationToolBar(QT.QWidget) :
     def __init__(self, parent=None, show_play=True, show_step=True,
                                     show_scroll_time=True, show_spinbox=True,
                                     show_label_datetime=False, datetime0=None,
-                                    show_global_xsize=False, show_auto_scale=False,
+                                    show_global_xsize=True, show_auto_scale=True,
                                     play_interval = 0.1) :
         
         QT.QWidget.__init__(self, parent)

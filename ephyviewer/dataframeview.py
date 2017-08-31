@@ -50,18 +50,6 @@ class DataFrameView(ViewerBase):
     def refresh(self):
         pass
         
-    #~ def refresh_list(self, ind):
-        #~ self.ind = ind
-        #~ self.list_widget.clear()
-        #~ ev = self.source.all_events[ind]
-        #~ times, labels = self.source.get_chunk(chan=ind,  i_start=None, i_stop=None)
-        #~ for i in range(times.size):
-            #~ if labels is None:
-                #~ self.list_widget.addItem('{} : {:.3f}'.format(i, times[i]) )
-            #~ else:
-                #~ self.list_widget.addItem('{} : {:.3f} {}'.format(i, times[i], labels[i]) )
-
-    
     def on_selection_changed(self):
         if 'time' not in self.source.columns:
             return
@@ -70,16 +58,3 @@ class DataFrameView(ViewerBase):
             t = float(self.source['time'].iloc[ind[0]])
             self.time_changed.emit(t)
             
-        #~ print(ind)
-
-        #~ pass
-    
-    #~ def select_event(self, i):
-        
-        #~ ev = self.source.all_events[self.ind]
-        #~ t = ev['time'][i]
-        #~ times, labels = self.source.get_chunk(chan=self.ind,  i_start=i, i_stop=i+1)
-        #~ if len(times)>0:
-            #~ t = float(times[0])
-            #~ self.time_changed.emit(t)
-        
