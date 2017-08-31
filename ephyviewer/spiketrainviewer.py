@@ -14,6 +14,17 @@ from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
 from .datasource import InMemoryEpochSource
 
 
+
+#make symbol for spikes
+from pyqtgraph.graphicsItems.ScatterPlotItem import Symbols
+Symbols['|'] = QT.QPainterPath()
+Symbols['|'].moveTo(0, -0.5)
+Symbols['|'].lineTo(0, 0.5)
+Symbols['|'].closeSubpath()
+
+
+
+
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
@@ -28,26 +39,9 @@ default_by_channel_params = [
 
 
 
-class EpochViewer_ParamController(Base_MultiChannel_ParamController):
+class SpikeTrainViewer_ParamController(Base_MultiChannel_ParamController):
     pass
 
-
-
-
-#~ class RectItem(pg.GraphicsWidget):
-    #~ def __init__(self, rect, border = 'r', fill = 'g'):
-        #~ pg.GraphicsWidget.__init__(self)
-        #~ self.rect = rect
-        #~ self.border= border
-        #~ self.fill= fill
-    
-    #~ def boundingRect(self):
-        #~ return QT.QRectF(0, 0, self.rect[2], self.rect[3])
-        
-    #~ def paint(self, p, *args):
-        #~ p.setPen(pg.mkPen(self.border))
-        #~ p.setBrush(pg.mkBrush(self.fill))
-        #~ p.drawRect(self.boundingRect())
 
 
 class DataGrabber(QT.QObject):
@@ -69,7 +63,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
     _default_params = default_params
     _default_by_channel_params = default_by_channel_params
     
-    _ControllerClass = EpochViewer_ParamController
+    _ControllerClass = SpikeTrainViewer_ParamController
     
     request_data = QT.pyqtSignal(float, float, object)
     
@@ -115,7 +109,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
         self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00')
         self.plot.addItem(self.vline)
         
-        self.scatter = pg.ScatterPlotItem(size=10, pxMode = True)
+        self.scatter = pg.ScatterPlotItem(size=10, pxMode = True, symbol='|')
         self.plot.addItem(self.scatter)
         
         
@@ -149,25 +143,26 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
             all_x.append(times)
             all_y.append(np.ones(times.size)*ypos)
             color = self.by_channel_params.children()[chan].param('color').value()
-            all_brush.append(np.array([pg.mkBrush(color)]*len(times)))
+            all_brush.append(np.array([pg.mkPen(color)]*len(times)))
+            
             
             if self.params['display_labels']:
-                self.labels[chan].setPos(t_start, ypos+0.45)
+                self.labels[chan].setPos(t_start, ypos)
                 self.labels[chan].show()
                 self.labels[chan].setColor(color)
 
-        if self.params['display_labels']:
-            for chan in range(self.source.nb_channel):
-                if chan not in visibles:
-                    self.labels[chan].hide()
+        for chan in range(self.source.nb_channel):
+            if not self.params['display_labels'] or chan not in visibles:
+                self.labels[chan].hide()
 
         if len(all_x):
             all_x = np.concatenate(all_x)
             all_y = np.concatenate(all_y)
             all_brush = np.concatenate(all_brush)
-            self.scatter.setData(x=all_x, y=all_y, brush=all_brush)
+            self.scatter.setData(x=all_x, y=all_y, pen=all_brush)
 
         self.vline.setPos(self.t)
+        
         self.plot.setXRange( t_start, t_stop)
         self.plot.setYRange( 0, visibles.size)
 

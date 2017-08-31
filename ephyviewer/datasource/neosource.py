@@ -140,6 +140,8 @@ class NeoEpochSource(BaseEventAndEpoch):
         #TODO: something for multi segment
         self.block_index = 0
         self.seg_index = 0
+        
+        self._cache_event = {}
 
     @property
     def nb_channel(self):
@@ -159,7 +161,18 @@ class NeoEpochSource(BaseEventAndEpoch):
         return t_stop
 
     def get_chunk(self, chan=0,  i_start=None, i_stop=None):
-        raise(NotImplementedError)
+        k = (self.block_index , self.seg_index, chan) 
+        if k not in self._cache_event:
+            self._cache_event[k] = self.get_chunk_by_time(chan=chan,  t_start=None, t_stop=None) 
+        
+        ep_times, ep_durations, ep_labels = self._cache_event[k]
+        
+        ep_times = ep_times[i_start:i_stop]
+        if ep_durations is not None:
+            ep_durations = ep_durations[i_start:i_stop]
+        ep_labels = ep_labels[i_start:i_stop]
+        
+        return ep_times, ep_durations, ep_labels
     
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
         

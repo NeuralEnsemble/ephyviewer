@@ -45,7 +45,13 @@ class EventList(ViewerBase):
         self.ind = ind
         self.list_widget.clear()
         #~ ev = self.source.all_events[ind]
-        times, labels = self.source.get_chunk(chan=ind,  i_start=None, i_stop=None)
+        data = self.source.get_chunk(chan=ind,  i_start=None, i_stop=None)
+        
+        if len(data)==2:
+            times, labels = data
+        elif len(data)==3:
+            times, _, labels = data
+        
         for i in range(times.size):
             if labels is None:
                 self.list_widget.addItem('{} : {:.3f}'.format(i, times[i]) )
@@ -57,7 +63,13 @@ class EventList(ViewerBase):
         
         #~ ev = self.source.all_events[self.ind]
         #~ t = ev['time'][i]
-        times, labels = self.source.get_chunk(chan=self.ind,  i_start=i, i_stop=i+1)
+        data = self.source.get_chunk(chan=self.ind,  i_start=i, i_stop=i+1)
+        
+        if len(data)==2:
+            times, labels = data
+        elif len(data)==3:
+            times, _, labels = data
+        
         if len(times)>0:
             t = float(times[0])
             self.time_changed.emit(t)
