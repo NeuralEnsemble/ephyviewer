@@ -11,8 +11,6 @@ sigs = np.random.rand(100000,16)
 sample_rate = 1000.
 t_start = 0.
 
-#Create the main window that can contain several viewers
-win = MainViewer(debug=True, show_auto_scale=True)
 
 #create fake 16 signals with sinus
 sample_rate = 1000.
@@ -35,7 +33,11 @@ scatter_channels = {0: [0, 5, 8], 1: [0, 5, 10]}
 source = AnalogSignalSourceWithScatter(signals, sample_rate, t_start, scatter_indexes, scatter_channels)
 
 
+#Create the main window that can contain several viewers
+win = MainViewer(debug=True, show_auto_scale=True)
+
 #create a viewer for signal with TraceViewer
+#connected to the signal source
 view1 = TraceViewer(source=source)
 
 view1.params['scale_mode'] = 'same_for_all'

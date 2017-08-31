@@ -1,4 +1,4 @@
-from ephyviewer import mkQApp, MainViewer, TraceViewer
+from ephyviewer import mkQApp, MainViewer, TraceViewer, TimeFreqViewer
 from ephyviewer import InMemoryAnalogSignalSource
 import ephyviewer
 import numpy as np
@@ -22,13 +22,22 @@ win = MainViewer(debug=True, show_auto_scale=True)
 source = InMemoryAnalogSignalSource(sigs, sample_rate, t_start)
 
 #create a viewer for signal with TraceViewer
-# TraceViewer normally accept a AnalogSignalSource but
-# TraceViewer.from_numpy is facitilty function to bypass that
-view1 = TraceViewer(source=source)
+view1 = TraceViewer(source=source, name='trace')
+view1.params['scale_mode'] = 'same_for_all'
+view1.auto_scale()
+
+#create a time freq viewer conencted to the same source
+view2 = TimeFreqViewer(source=source, name='tfr')
+
+view2.params['show_axis'] = False
+view2.params['timefreq', 'deltafreq'] = 1
+view2.by_channel_params['ch3', 'visible'] = True
 
 
-#put this veiwer in the main window
+#add them to mainwindow
 win.add_view(view1)
+win.add_view(view2)
+
 
 #show main window and run Qapp
 win.show()
