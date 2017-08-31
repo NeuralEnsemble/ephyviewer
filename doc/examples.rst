@@ -41,8 +41,19 @@ timefreqquency viewer
 .. literalinclude:: ../examples/timefreq_viewer.py
 
 
-timefreqquency viewer
----------------------
+
+Spikes viewer
+-------------
+
+.. image:: img/spikes_viewer_example.png
+
+:download:`spikes_viewer.py <../examples/spikes_viewer.py>`
+
+.. literalinclude:: ../examples/spikes_viewer.py
+
+
+Epoch viewer
+------------
 
 .. image:: img/event_epoch_viewer_example.png
 
