@@ -7,15 +7,15 @@ import matplotlib.colors
 
 
 from .sourcebase import BaseDataSource
-from .events import BaseInMemoryEventAndEpoch
+from .events import BaseEventAndEpoch
 
 
 
-class InMemoryEpochSource(BaseInMemoryEventAndEpoch):
+class InMemoryEpochSource(BaseEventAndEpoch):
     type = 'Epoch'
     
     def __init__(self, all_epochs=[]):
-        BaseInMemoryEventAndEpoch.__init__(self, all=all_epochs)
+        BaseEventAndEpoch.__init__(self, all=all_epochs)
         
         s = [ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0]
         self._t_stop = max(s) if len(s)>0 else 0
@@ -49,7 +49,7 @@ class InMemoryEpochSource(BaseInMemoryEventAndEpoch):
 
 class WritableEpochSource(InMemoryEpochSource):
     """
-    Identique to EpochSource but onlye one channel that can be persosently saved.
+    Identique to EpochSource but onlye one channel that can be persisently saved.
     
     epoch is dict
     { 'time':np.array, 'duration':np.array, 'label':np.array, 'name':' ''}

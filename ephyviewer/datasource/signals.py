@@ -22,6 +22,12 @@ class BaseAnalogSignalSource(BaseDataSource):
     def get_chunk(self, i_start=None, i_stop=None):
         raise(NotImplementedError)
 
+    def time_to_index(self, t):
+        return int((t-self.t_start)*self.sample_rate)
+    
+    def index_to_time(self, ind):
+        return float(ind/self.sample_rate) + self.t_start
+
 
 class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
     def __init__(self, signals, sample_rate, t_start, channel_names=None):
@@ -58,11 +64,6 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
     def get_chunk(self, i_start=None, i_stop=None):
         return self.signals[i_start:i_stop, :]
     
-    def time_to_index(self, t):
-        return int((t-self.t_start)*self.sample_rate)
-    
-    def index_to_time(self, ind):
-        return float(ind/self.sample_rate) + self.t_start
 
 
 

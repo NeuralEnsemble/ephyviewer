@@ -74,6 +74,29 @@ def test_InMemoryEpochSource():
     assert source.t_start==-6.
     assert source.t_stop==9.6
     assert source.get_size(0)==20
+
+
+def test_neosource():
+    #TODO make autorun neo tdtrawio test before
+    from neo.rawio.tdtrawio import TdtRawIO
+    
+    dirname = '/tmp/files_for_testing_neo/tdt/aep_05/'
+    neorawio = TdtRawIO(dirname=dirname)
+    neorawio.parse_header()
+    print(neorawio)
+    
+    sources = ephyviewer.get_source_from_neo(neorawio)
+    #~ print(sources)
+    
+    for s in sources['signal']:
+        print(s.t_start, s.nb_channel, s.sample_rate)
+        print(s.get_chunk(i_start=0, i_stop=1024).shape)
+    
+    for s in sources['epoch']:
+        print(s.t_start, s.nb_channel)
+        #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
+        
+    
     
     
     
@@ -82,5 +105,6 @@ if __name__=='__main__':
     #~ test_InMemoryAnalogSignalSource()
     #~ test_VideoMultiFileSource()
     #~ test_InMemoryEventSource()
-    test_InMemoryEpochSource()
+    #~ test_InMemoryEpochSource()
+    test_neosource()
 
