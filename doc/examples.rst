@@ -49,3 +49,13 @@ timefreqquency viewer
 :download:`event_epoch_viewer.py <../examples/event_epoch_viewer.py>`
 
 .. literalinclude:: ../examples/event_epoch_viewer.py
+
+
+mixed viewer
+------------
+
+.. image:: img/mixed_viewer_example.png
+
+:download:`mixed_viewer.py <../examples/mixed_viewer.py>`
+
+.. literalinclude:: ../examples/mixed_viewer.py
