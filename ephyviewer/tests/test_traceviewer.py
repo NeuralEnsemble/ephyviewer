@@ -37,5 +37,5 @@ def test_traceviewer_with_scatter():
     
 
 if __name__=='__main__':
-    #~ test_traceviewer()
-    test_traceviewer_with_scatter()
+    test_traceviewer()
+    #~ test_traceviewer_with_scatter()
