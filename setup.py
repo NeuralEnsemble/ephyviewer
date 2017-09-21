@@ -5,8 +5,8 @@ import os
 install_requires = [
                     'numpy',
                     #~ 'PyQt5',
-                    'pyqtgraph',
-                    'matplotlib',
+                    'pyqtgraph>=0.10.0',
+                    'matplotlib>=2.0',
                     'scipy',
                     ]
 
