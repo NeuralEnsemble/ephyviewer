@@ -18,6 +18,8 @@ from .datasource import InMemoryAnalogSignalSource, AnalogSignalSourceWithScatte
 import time
 import threading
 
+MIN_XSIZE = 1e-6
+
 
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
@@ -28,7 +30,8 @@ default_params = [
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'display_labels', 'type': 'bool', 'value': False},
     {'name': 'display_offset', 'type': 'bool', 'value': False},
-    
+    {'name': 'antialias', 'type': 'bool', 'value': False},    
+    {'name': 'decimation_method', 'type': 'list', 'value': 'min_max', 'values': ['min_max', 'mean', 'pure_decimate',  ]},
     ]
 
 default_by_channel_params = [ 
@@ -172,10 +175,10 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         
     def apply_xsize_zoom(self, xmove):
         factor = xmove/100.
+        factor = max(factor, -0.999999999)
+        factor = min(factor, 1)
         newsize = self.viewer.params['xsize']*(factor+1.)
-        self.viewer.params['xsize'] = newsize
-
-
+        self.viewer.params['xsize'] = max(newsize, MIN_XSIZE)
 
 
 
@@ -188,7 +191,7 @@ class DataGrabber(QT.QObject):
         self.viewer = viewer
         self._max_point = 3000
     
-    def get_data(self, t, t_start, t_stop, gains, offsets, visibles):
+    def get_data(self, t, t_start, t_stop, gains, offsets, visibles, decimation_method):
 
         i_start, i_stop = self.source.time_to_index(t_start), self.source.time_to_index(t_stop)
         #~ print(t_start, t_stop, i_start, i_stop)
@@ -225,19 +228,22 @@ class DataGrabber(QT.QObject):
         
         if ds_ratio>1:
             
-            #method decimate pur
-            #data_curves = data_curves[:, ::ds_ratio]
             
-            #method min_max
-            #~ print('data_curves.shape', data_curves.shape)
-            small_size = (data_curves.shape[1]//ds_ratio)*2
-            #~ print('small_size', small_size)
+            small_size = (data_curves.shape[1]//ds_ratio)
+            if decimation_method == 'min_max':
+                small_size *= 2
+            
             small_arr = np.empty((data_curves.shape[0], small_size), dtype=data_curves.dtype)
-            #~ full_arr = data_curves[:, :data_curves.shape[1]-data_curves.shape[1]%ds_ratio]
             
-            full_arr = data_curves.reshape(data_curves.shape[0], -1, ds_ratio)
-            small_arr[:, ::2] = full_arr.max(axis=2)
-            small_arr[:, 1::2] = full_arr.min(axis=2)
+            if decimation_method == 'min_max':
+                full_arr = data_curves.reshape(data_curves.shape[0], -1, ds_ratio)
+                small_arr[:, ::2] = full_arr.max(axis=2)
+                small_arr[:, 1::2] = full_arr.min(axis=2)
+            elif decimation_method == 'mean':
+                full_arr = data_curves.reshape(data_curves.shape[0], -1, ds_ratio)
+                small_arr[:, :] = full_arr.mean(axis=2)
+            elif decimation_method == 'pure_decimate':
+                small_arr[:, :] = data_curves[:, ::ds_ratio]
             data_curves = small_arr
         
         #~ print(data_curves.shape)
@@ -252,7 +258,7 @@ class DataGrabber(QT.QObject):
         t_start2 = self.source.index_to_time(i_start)
         times_curves = np.arange(data_curves.shape[1], dtype='float32')
         times_curves /= self.source.sample_rate/ds_ratio
-        if ds_ratio>1:
+        if ds_ratio>1 and decimation_method == 'min_max':
             times_curves /=2
         times_curves += t_start2
         
@@ -272,7 +278,7 @@ class DataGrabber(QT.QObject):
                     
         return t, t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk, dict_scatter
     
-    def on_request_data(self, t, t_start, t_stop, gains, offsets, visibles):
+    def on_request_data(self, t, t_start, t_stop, gains, offsets, visibles, decimation_method):
         #~ print('on_request_data', t_start, t_stop)
         
         if self.viewer.t != t:
@@ -280,7 +286,7 @@ class DataGrabber(QT.QObject):
             return
         
         t, t_start, t_stop, visibles, dict_curves, times_curves,\
-                    sigs_chunk, dict_scatter = self.get_data(t, t_start, t_stop, gains, offsets, visibles)
+                    sigs_chunk, dict_scatter = self.get_data(t, t_start, t_stop, gains, offsets, visibles, decimation_method)
                     
         
         #~ print('on_request_data', threading.get_ident())
@@ -296,7 +302,7 @@ class TraceViewer(BaseMultiChannelViewer):
     
     _ControllerClass = TraceViewer_ParamController
     
-    request_data = QT.pyqtSignal(float, float, float, object, object, object)
+    request_data = QT.pyqtSignal(float, float, float, object, object, object, object)
     
     def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
@@ -357,7 +363,7 @@ class TraceViewer(BaseMultiChannelViewer):
         for c in range(self.source.nb_channel):
             color = self.by_channel_params['ch{}'.format(c), 'color']
             curve = pg.PlotCurveItem(pen='#7FFF00', downsampleMethod='peak', downsample=1,
-                            autoDownsample=False, clipToView=True)#, connect='finite')
+                            autoDownsample=False, clipToView=True, antialias=False)#, connect='finite')
             self.plot.addItem(curve)
             self.curves.append(curve)
             
@@ -381,12 +387,16 @@ class TraceViewer(BaseMultiChannelViewer):
         self.viewBox.ygain_zoom.connect(self.params_controller.apply_ygain_zoom)
     
     def on_param_change(self, params=None, changes=None):
-        print('on_param_change')
+        #~ print('on_param_change')
         #track if new scale mode
         for param, change, data in changes:
             if change != 'value': continue
             if param.name()=='scale_mode':
                 self.params_controller.compute_rescale()
+            if param.name()=='antialias':
+                for curve in self.curves:
+                    curve.updateData(antialias=self.params['antialias'])
+            
         
         self.refresh()
     
@@ -398,7 +408,8 @@ class TraceViewer(BaseMultiChannelViewer):
             visibles, = np.nonzero(self.params_controller.visible_channels)
             gains = self.params_controller.gains
             offsets = self.params_controller.offsets
-            _, _, _, _, _, _,sigs_chunk, _ = self.datagrabber.get_data(self.t, t_start, t_stop, gains, offsets, visibles)
+            _, _, _, _, _, _,sigs_chunk, _ = self.datagrabber.get_data(self.t, t_start, t_stop, gains, 
+                                            offsets, visibles, self.params['decimation_method'])
             self.last_sigs_chunk = sigs_chunk
         
         self.params_controller.compute_rescale()
@@ -412,7 +423,7 @@ class TraceViewer(BaseMultiChannelViewer):
         gains = self.params_controller.gains
         offsets = self.params_controller.offsets
 
-        self.request_data.emit(self.t, t_start, t_stop, gains, offsets, visibles)
+        self.request_data.emit(self.t, t_start, t_stop, gains, offsets, visibles, self.params['decimation_method'])
         
     
     def on_data_ready(self, t,   t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk, dict_scatter):

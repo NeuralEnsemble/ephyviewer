@@ -84,6 +84,9 @@ class StandAloneViewer(MainViewer):
         sources = get_source_from_neo(self.neorawio)
         for i, sig_source in enumerate(sources['signal']):
             view = TraceViewer(source=sig_source, name='signal {}'.format(i))
+            view.params['scale_mode'] = 'same_for_all'
+            view.params['display_labels'] = True
+            view.auto_scale()
             if i==0:
                 self.add_view(view)
             else:
