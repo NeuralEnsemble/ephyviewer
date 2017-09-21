@@ -1,15 +1,16 @@
 Installation
 ============
 
+ephyviewer should work with python 2.7, 3.4, 3.5, 3.6.
 
-ephyviewer should work either with PyQt4 or PyQt4 so theses depency
+ephyviewer should work either with Qt4 or Qt5 so theses depency
 are not mandatory for installation.
 
 Mandatory Dependencies:
   * numpy
   * scipy
-  * matplotlib
-  * pyqtgraph
+  * matplotlib>=2.0
+  * pyqtgraph>=0.10.0
   * PyQt4 or PyQt5
 
 
