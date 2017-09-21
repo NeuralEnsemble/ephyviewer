@@ -1,5 +1,7 @@
 # ephyviewer
 
+Doc : http://ephyviewer.readthedocs.io
+
 Simple viewers for ephys signals and related stuff (signal, spikes, events, triggers, video, ...)
 Based on PyQt5 (or PyQt4) and pyqtgraph.
 
@@ -48,4 +50,4 @@ app.exec_()
 
 ```
 
-Doc : http://ephyviewer.readthedocs.io
+
