@@ -58,5 +58,6 @@ class DataFrameView(ViewerBase):
             t = self.source['time'].iloc[ind[0]]
             if t is not None:
                 t = float(t)
-                self.time_changed.emit(t)
+                if not np.isnan(t):
+                    self.time_changed.emit(t)
             
