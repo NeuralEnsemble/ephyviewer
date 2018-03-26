@@ -113,7 +113,7 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
 
     def compute_rescale(self):
         scale_mode = self.viewer.params['scale_mode']
-        print('compute_rescale', scale_mode)
+        #~ print('compute_rescale', scale_mode)
         
         self.viewer.all_params.blockSignals(True)
         
@@ -140,7 +140,7 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         self.viewer.all_params.blockSignals(False)        
 
     def on_channel_visibility_changed(self):
-        print('on_channel_visibility_changed')
+        #~ print('on_channel_visibility_changed')
         self.compute_rescale()
         self.viewer.refresh()
     
@@ -171,7 +171,7 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         self.viewer.all_params.blockSignals(False)
         
         self.viewer.refresh()
-        print('apply_ygain_zoom', factor_ratio)#, 'self.ygain_factor', self.ygain_factor)
+        #~ print('apply_ygain_zoom', factor_ratio)#, 'self.ygain_factor', self.ygain_factor)
         
     def apply_xsize_zoom(self, xmove):
         factor = xmove/100.
@@ -416,7 +416,7 @@ class TraceViewer(BaseMultiChannelViewer):
         self.refresh()
     
     def refresh(self):
-        print('TraceViewer.refresh', 't', self.t)
+        #~ print('TraceViewer.refresh', 't', self.t)
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
         visibles, = np.nonzero(self.params_controller.visible_channels)

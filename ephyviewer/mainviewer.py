@@ -32,6 +32,7 @@ class MainViewer(QT.QMainWindow):
         #http://www.programcreek.com/python/example/86789/PyQt5.QtCore.QSettings
         
         self.debug = debug
+        print('debug', debug)
         self.settings_name = settings_name
         if self.settings_name is not None:
             pyver = '.'.join(str(e) for e in sys.version_info[0:3])
