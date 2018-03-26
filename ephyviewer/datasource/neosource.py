@@ -118,7 +118,7 @@ class NeoSpikeSource(BaseSpikeSource):
         raise(NotImplementedError)
     
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
-        spike_timestamp = self.neorawio.spike_timestamps(block_index=self.block_index,
+        spike_timestamp = self.neorawio.get_spike_timestamps(block_index=self.block_index,
                         seg_index=self.seg_index, unit_index=chan, t_start=t_start, t_stop=t_stop)
         
         spike_times = self.neorawio.rescale_spike_timestamp(spike_timestamp, dtype='float64')
@@ -176,7 +176,7 @@ class NeoEpochSource(BaseEventAndEpoch):
     
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
         
-        ep_timestamps, ep_durations, ep_labels = self.neorawio.event_timestamps(block_index=self.block_index,
+        ep_timestamps, ep_durations, ep_labels = self.neorawio.get_event_timestamps(block_index=self.block_index,
                         seg_index=self.seg_index, event_channel_index=chan, t_start=t_start, t_stop=t_stop)
         
         ep_times = self.neorawio.rescale_event_timestamp(ep_timestamps, dtype='float64')

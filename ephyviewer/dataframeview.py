@@ -55,6 +55,9 @@ class DataFrameView(ViewerBase):
             return
         ind = [e.row() for e in  self.qtable.selectedIndexes() if e.column()==0]
         if len(ind)==1:
-            t = float(self.source['time'].iloc[ind[0]])
-            self.time_changed.emit(t)
+            t = self.source['time'].iloc[ind[0]]
+            if t is not None:
+                t = float(t)
+                if not np.isnan(t):
+                    self.time_changed.emit(t)
             
