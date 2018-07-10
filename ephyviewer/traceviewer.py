@@ -134,12 +134,13 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         offsets = np.zeros(self.viewer.source.nb_channel)
         nb_visible = np.sum(self.visible_channels)
         #~ self.ygain_factor = 1
-        if scale_mode=='real_scale':
-            self.viewer.params['ylim_min'] = np.nanmin(self.signals_min[self.visible_channels])
-            self.viewer.params['ylim_max'] = np.nanmax(self.signals_max[self.visible_channels])
-        else:
-            if self.viewer.last_sigs_chunk is not None:
-                self.estimate_median_mad()
+        if self.viewer.last_sigs_chunk is not None:
+            self.estimate_median_mad()
+
+            if scale_mode=='real_scale':
+                self.viewer.params['ylim_min'] = np.nanmin(self.signals_min[self.visible_channels])
+                self.viewer.params['ylim_max'] = np.nanmax(self.signals_max[self.visible_channels])
+            else:
                 if scale_mode=='same_for_all':
                     gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 9.
                 elif scale_mode=='by_channel':
