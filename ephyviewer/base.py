@@ -218,9 +218,14 @@ class Base_MultiChannel_ParamController(Base_ParamController):
         v = QT.QVBoxLayout()
         h.addLayout(v)
         
-        but = QT.PushButton('default params')
-        v.addWidget(but)
-        but.clicked.connect(self.reset_to_default)
+        #~ but = QT.PushButton('default params')
+        #~ v.addWidget(but)
+        #~ but.clicked.connect(self.reset_to_default)
+        
+        if hasattr(self.viewer, 'auto_scale'):
+            but = QT.PushButton('Auto scale')
+            v.addWidget(but)
+            but.clicked.connect(self.auto_scale_viewer)
         
         
         if with_visible:
@@ -231,6 +236,7 @@ class Base_MultiChannel_ParamController(Base_ParamController):
                 v.addWidget(self.qlist, 2)
                 self.qlist.addItems(names)
                 self.qlist.setSelectionMode(QT.QAbstractItemView.ExtendedSelection)
+                self.qlist.doubleClicked.connect(self.on_double_clicked)
                 
                 for i in range(len(names)):
                     self.qlist.item(i).setSelected(True)            
@@ -256,12 +262,15 @@ class Base_MultiChannel_ParamController(Base_ParamController):
             
             self.channel_color_changed.connect(self.on_channel_color_changed)
     
-    def reset_to_default(self):
-        self.viewer.make_params()
-        self.tree_params.setParameters(self.viewer.params, showTop=True)
-        self.tree_by_channel_params.setParameters(self.viewer.by_channel_params, showTop=True)
-        self.viewer.on_param_change()
-        self.viewer.refresh()
+    #~ def reset_to_default(self):
+        #~ self.viewer.make_params()
+        #~ self.tree_params.setParameters(self.viewer.params, showTop=True)
+        #~ self.tree_by_channel_params.setParameters(self.viewer.by_channel_params, showTop=True)
+        #~ ## self.viewer.on_param_change()
+        #~ self.viewer.refresh()
+    
+    def auto_scale_viewer(self):
+        self.viewer.auto_scale()
     
     @property
     def selected(self):
@@ -288,6 +297,14 @@ class Base_MultiChannel_ParamController(Base_ParamController):
         self.viewer.by_channel_params.blockSignals(False)
         self.channel_visibility_changed.emit()
 
+    def on_double_clicked(self, index):
+        self.viewer.by_channel_params.blockSignals(True)
+        visibles = self.selected
+        for i,param in enumerate(self.viewer.by_channel_params.children()):
+            param['visible'] = (i==index.row())
+        self.viewer.by_channel_params.blockSignals(False)
+        self.channel_visibility_changed.emit()
+
     def on_automatic_color(self, cmap_name = None):
         cmap_name = str(self.combo_cmap.currentText())
         n = np.sum(self.selected)
@@ -307,4 +324,5 @@ class Base_MultiChannel_ParamController(Base_ParamController):
     
     def on_channel_color_changed(self):
         self.viewer.refresh()
-
+    
+        

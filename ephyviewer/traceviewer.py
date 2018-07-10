@@ -104,11 +104,24 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         
     
     def estimate_median_mad(self):
+        #~ print('estimate_median_mad')
+        #~ t0 = time.perf_counter()
         sigs = self.viewer.last_sigs_chunk
         assert sigs is not None, 'Need to debug this'
+        #~ print(sigs.shape)
+        
+        if sigs.shape[0]>1000:
+            # to fast auto scale on long signal
+            ind = np.random.randint(0, sigs.shape[0], size=1000)
+            sigs = sigs[ind, :]
+        
         self.signals_med = med = np.median(sigs, axis=0)
         self.signals_mad = np.median(np.abs(sigs-med),axis=0)*1.4826
-        #~ print('estimate_median_mad')
+        self.signals_min = np.min(sigs, axis=0)
+        self.signals_max = np.max(sigs, axis=0)
+        
+        #~ t1 = time.perf_counter()
+        #~ print('estimate_median_mad DONE', t1-t0)
         #~ print('self.signals_med', self.signals_med)
 
     def compute_rescale(self):
@@ -122,8 +135,8 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         nb_visible = np.sum(self.visible_channels)
         #~ self.ygain_factor = 1
         if scale_mode=='real_scale':
-            self.viewer.params['ylim_min'] = np.min(self.viewer.last_sigs_chunk)
-            self.viewer.params['ylim_max'] = np.max(self.viewer.last_sigs_chunk)
+            self.viewer.params['ylim_min'] = np.nanmin(self.signals_min[self.visible_channels])
+            self.viewer.params['ylim_max'] = np.nanmax(self.signals_max[self.visible_channels])
         else:
             if self.viewer.last_sigs_chunk is not None:
                 self.estimate_median_mad()
