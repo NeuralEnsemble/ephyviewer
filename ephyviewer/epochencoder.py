@@ -347,7 +347,7 @@ class EpochEncoder(ViewerBase):
             self.region.hide()
         
         self.vline.setPos(self.t)
-        self.plot.setXRange( t_start, t_stop)
+        self.plot.setXRange( t_start, t_stop, padding = 0.0)
         if self.params['view_mode']=='stacked':
             self.plot.setYRange( 0, n)
         else:
