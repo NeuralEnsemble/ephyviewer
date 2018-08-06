@@ -163,7 +163,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
 
         self.vline.setPos(self.t)
         
-        self.plot.setXRange( t_start, t_stop)
+        self.plot.setXRange( t_start, t_stop, padding = 0.0)
         self.plot.setYRange( 0, visibles.size)
 
 
