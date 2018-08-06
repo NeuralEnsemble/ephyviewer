@@ -155,8 +155,7 @@ class TimeFreqWorker(QT.QObject):
 
         ds_ratio = worker_params['downsample_ratio']
         sig_chunk_size = worker_params['sig_chunk_size']
-        filter_a = worker_params['filter_a']
-        filter_b = worker_params['filter_b']
+        filter_sos = worker_params['filter_sos']
         wavelet_fourrier = worker_params['wavelet_fourrier']
         plot_length = worker_params['plot_length']
 
@@ -184,7 +183,7 @@ class TimeFreqWorker(QT.QObject):
         sig = sigs_chunk[:, chan]
         
         if ds_ratio>1:
-            small_sig = scipy.signal.filtfilt(filter_b, filter_a, sig)
+            small_sig = scipy.signal.sosfiltfilt(filter_sos, sig)
             small_sig =small_sig[::ds_ratio].copy()  # to ensure continuity
         else:
             small_sig = sig.copy()# to ensure continuity
@@ -301,7 +300,7 @@ class TimeFreqViewer(BaseMultiChannelViewer):
         self.mainlayout.addWidget(self.graphiclayout)
     
     def on_param_change(self, params=None, changes=None):
-        print('on_param_change')
+        #~ print('on_param_change')
         #track if new scale mode
         #~ for param, change, data in changes:
             #~ if change != 'value': continue
@@ -366,11 +365,11 @@ class TimeFreqViewer(BaseMultiChannelViewer):
                             tfr_params['deltafreq'], d['sub_sample_rate'], tfr_params['f0'], tfr_params['normalisation'])
         
         if d['downsample_ratio']>1:
-            d['filter_b'] = scipy.signal.firwin(9, 1. / d['downsample_ratio'], window='hamming')
-            d['filter_a'] = np.array([1.])
+            n = 8
+            q = d['downsample_ratio']
+            d['filter_sos'] = scipy.signal.cheby1(n, 0.05, 0.8 / q, output='sos')
         else:
-            d['filter_b'] = None
-            d['filter_a'] = None
+            d['filter_sos'] = None
     
     def change_color_scale(self):
         N = 512

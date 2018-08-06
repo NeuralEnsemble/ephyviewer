@@ -62,6 +62,8 @@ class WritableEpochSource(InMemoryEpochSource):
         self.times = self.all[0]['time']
         self.durations = self.all[0]['duration']
         
+        assert self.all[0]['time'].dtype.kind=='f'
+        assert self.all[0]['duration'].dtype.kind=='f'
         assert np.all((self.times[:-1]+self.durations[:-1])<=self.times[1:])
         
         assert np.all(np.in1d(epoch['label'], possible_labels))
