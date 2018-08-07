@@ -53,13 +53,16 @@ class FrameGrabber:
         self.file = None
         self.stream = None
         self.frame = None
-        #~ self.active_frame = None
+        
         self.start_time = 0
         self.pts_seen = False
         self.nb_frames = None
         
         self.rate = None
         self.time_base = None
+        
+        self.last_frame = None
+        self.last_frame_index = None
         
     def next_frame(self):
         
@@ -71,12 +74,12 @@ class FrameGrabber:
         self.pts_seen = False
         
         for packet in self.file.demux(self.stream):
-            #print "    pkt", packet.pts, packet.dts, packet
+            #~ print("    pkt", packet.pts, packet.dts, packet)
             if packet.pts:
                 self.pts_seen = True
             
             for frame in packet.decode():
-                
+                #~ print('   frame', frame)
                 if frame_index is None:
                     
                     if self.pts_seen:
@@ -93,9 +96,33 @@ class FrameGrabber:
                 
                 yield frame_index, frame
     
-    
     def get_frame(self, target_frame):
         #~ print('get_frame', target_frame)
+        
+        if self.last_frame_index is None or \
+                (target_frame < self.last_frame_index) or \
+                (target_frame > self.last_frame_index + 300):
+            frame = self.get_frame_absolut_seek(target_frame)
+        elif target_frame == self.last_frame_index:
+            frame = self.last_frame
+        else:
+            frame = None
+            for i, (frame_index, next_frame) in enumerate(self.next_frame()):
+                #~ print("   ", i, "NEXT at frame", next_frame, "at ts:", next_frame.pts,next_frame.dts)
+                if frame_index >= target_frame:
+                    frame = next_frame
+                    break
+        
+        if frame is not None:
+            self.last_frame = frame
+            self.last_frame_index = target_frame
+        
+        return frame
+        
+        
+        
+    def get_frame_absolut_seek(self, target_frame):
+        #~ print('get_frame_absolut_seek', target_frame)
         #~ print('self.active_frame', self.active_frame)
 
         #~ if target_frame != self.active_frame:
@@ -138,7 +165,7 @@ class FrameGrabber:
                     #~ print('YEP0 target_frame != self.active_frame', target_frame, self.active_frame)
                     #~ return
                 
-                #~ print "   ", i, "at frame", frame_index, "at ts:", frame.pts,frame.dts,"target:", target_pts, 'orig', original_target_frame_pts
+                #~ print("   ", i, "at frame", frame_index, "at ts:", frame.pts,frame.dts,"target:", target_pts, 'orig', original_target_frame_pts)
 
                 if frame_index is None:
                     pass
