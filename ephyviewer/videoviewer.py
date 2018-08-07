@@ -190,6 +190,7 @@ class VideoViewer(BaseMultiChannelViewer):
                 self.images.append(None)
 
     def refresh(self):
+        #~ print('videoviewer.refresh', self.t)
         visible_channels = self.params_controller.visible_channels
         
         #~ print()
@@ -197,9 +198,10 @@ class VideoViewer(BaseMultiChannelViewer):
         for c in range(self.source.nb_channel):
             if visible_channels[c]:
                 frame_index = self.source.time_to_frame_index(c, self.t)
-                #~ print( 'c', c, 'frame_index', frame_index)
+                #~ print( 'c', c, 'frame_index', frame_index, 'self.qframe_grabbers[c].last_frame', self.qframe_grabbers[c].last_frame)
                 
                 #~ if self.qframe_grabbers[c].active_frame != frame_index:
+                #~ print('self.qframe_grabbers[c].last_frame != frame_index', self.qframe_grabbers[c].last_frame != frame_index)
                 if self.qframe_grabbers[c].last_frame != frame_index:
                 
                     #~ self.qframe_grabbers[c].active_frame = frame_index
@@ -208,9 +210,11 @@ class VideoViewer(BaseMultiChannelViewer):
                     #~ self.qframe_grabbers[c].queue_request_frame(frame_index)
                     #~ print('enque frame', threading.get_ident(), 'frame_index', frame_index)
                     with self.qframe_grabbers[c].mutex:
+                        
                         self.qframe_grabbers[c].request_list.append(frame_index)
-                        if len(self.qframe_grabbers[c].request_list)>1:
+                        if len(self.qframe_grabbers[c].request_list)>=1:
                             self.request_frame.emit(c)
+                            #~ print('EMIT!!!!!')
 
 
                     
