@@ -98,13 +98,14 @@ class MainViewer(QT.QMainWindow):
         
         widget.time_changed.connect(self.on_time_changed)
         
-        try:
+
+        if len(self.viewers) ==1:
+            # first widget
+            t_start, t_stop = widget.source.t_start, widget.source.t_stop
+        else:
             t_start = min(self.navigation_toolbar.t_start, widget.source.t_start)
             t_stop = max(self.navigation_toolbar.t_stop, widget.source.t_stop)
-            #~ print('t_start, t_stop', t_start, t_stop, name)
-            self.navigation_toolbar.set_start_stop(t_start, t_stop, seek=True)
-        except:
-            print('impossiblie to set t_start t_stop')
+        self.navigation_toolbar.set_start_stop(t_start, t_stop, seek=True)
         
         
     

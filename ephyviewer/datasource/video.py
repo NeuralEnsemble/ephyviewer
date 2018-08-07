@@ -53,7 +53,7 @@ class FrameGrabber:
         self.file = None
         self.stream = None
         self.frame = None
-        self.active_frame = None
+        #~ self.active_frame = None
         self.start_time = 0
         self.pts_seen = False
         self.nb_frames = None
@@ -95,9 +95,12 @@ class FrameGrabber:
     
     
     def get_frame(self, target_frame):
+        #~ print('get_frame', target_frame)
+        #~ print('self.active_frame', self.active_frame)
 
-        if target_frame != self.active_frame:
-            return
+        #~ if target_frame != self.active_frame:
+            #~ print('YEP')
+            #~ return
         #~ print 'seeking to', target_frame
         
         seek_frame = target_frame
@@ -130,9 +133,10 @@ class FrameGrabber:
             
             for i, (frame_index, frame) in enumerate(self.next_frame()):
                 
-                # optimization if the time slider has changed, the requested frame no longer valid
-                if target_frame != self.active_frame:
-                    return
+                #~ # optimization if the time slider has changed, the requested frame no longer valid
+                #~ if target_frame != self.active_frame:
+                    #~ print('YEP0 target_frame != self.active_frame', target_frame, self.active_frame)
+                    #~ return
                 
                 #~ print "   ", i, "at frame", frame_index, "at ts:", frame.pts,frame.dts,"target:", target_pts, 'orig', original_target_frame_pts
 
@@ -168,7 +172,9 @@ class FrameGrabber:
             else:
                 break
         
+        #~ print('ici frame', frame)
         if reseek < 0:
+            #~ print('YEP reseek < 0')
             #~ raise ValueError("seeking failed %i" % frame_index)
             return None
             
