@@ -9,10 +9,13 @@ import matplotlib.colors
 
 from .myqt import QT
 import pyqtgraph as pg
+from pyqtgraph.util.mutex import Mutex
 
 from .base import ViewerBase, BaseMultiChannelViewer,  Base_MultiChannel_ParamController
 from .datasource import FrameGrabber, MultiVideoFileSource
 from .tools import create_plot_grid
+
+import threading
 
 default_params = [
     {'name': 'nb_column', 'type': 'int', 'value': 4},
@@ -38,27 +41,69 @@ default_by_channel_params = [
 
 class QFrameGrabber(QT.QObject):
     frame_ready = QT.pyqtSignal(int, object)
+    
     def __init__(self, frame_grabber, video_index, parent=None):
         QT.QObject.__init__(self, parent)
         
         self.fg = frame_grabber
         self.video_index = video_index
+        
+        self.mutex = Mutex()
+        self.request_list = []
+        self._last_frame = None
+        
+    #~ def on_request_frame(self, video_index, target_frame):
+        #~ if self.video_index!=video_index:
+            #~ return
+        #~ frame = self.fg.get_frame(target_frame)
+        #~ if frame is None:
+            #~ return
+        #~ self.frame_ready.emit(self.video_index, frame)
+
+    @property
+    def last_frame(self):
+        with self.mutex:
+            return self._last_frame
     
-    def on_request_frame(self, video_index, target_frame):
+    #~ @property
+    #~ def active_frame(self):
+        #~ return self.fg.active_frame
+
+    #~ @active_frame.setter
+    #~ def active_frame(self, value):
+        #~ self.fg.active_frame = value
+    
+    #~ def queue_request_frame(self, target_frame):
+        #~ print('queue_request_frame', threading.get_ident())
+        #~ with self.mutex:
+            #~ self.request_list.append(target_frame)
+            #~ if len(self.request_list)>1:
+                #~ self.request_frame.emit()
+    
+    def on_request_frame(self, video_index):
         if self.video_index!=video_index:
             return
-        frame = self.fg.get_frame(target_frame)
-        if not frame:
-            return
-        self.frame_ready.emit(self.video_index, frame)
-    
-    @property
-    def active_frame(self):
-        return self.fg.active_frame
+        
+        #~ print('on_request_frame', threading.get_ident())
+        
+        with self.mutex:
+            #~ print('len(self.request_list)', len(self.request_list))
+            if len(self.request_list)==0:
+                return
+            target_frame = self.request_list[-1]
+            self.request_list = []
 
-    @active_frame.setter
-    def active_frame(self, value):
-        self.fg.active_frame = value
+            if target_frame == self._last_frame:
+                return
+            
+        frame = self.fg.get_frame(target_frame)
+        if frame is not None:
+            with self.mutex:
+                self._last_frame = target_frame
+                #~ print('new self._last_frame', self._last_frame)
+            #~ self.fg.active_frame = target_frame
+            self.frame_ready.emit(self.video_index, frame)
+            
 
 
 
@@ -73,7 +118,7 @@ class VideoViewer(BaseMultiChannelViewer):
     
     _ControllerClass = VideoViewer_ParamController
     
-    request_frame = QT.pyqtSignal(int, int)
+    request_frame = QT.pyqtSignal(int)
     
     def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
@@ -145,6 +190,7 @@ class VideoViewer(BaseMultiChannelViewer):
                 self.images.append(None)
 
     def refresh(self):
+        #~ print('videoviewer.refresh', self.t)
         visible_channels = self.params_controller.visible_channels
         
         #~ print()
@@ -152,11 +198,29 @@ class VideoViewer(BaseMultiChannelViewer):
         for c in range(self.source.nb_channel):
             if visible_channels[c]:
                 frame_index = self.source.time_to_frame_index(c, self.t)
-                #~ print( 'c', c, 'frame_index', frame_index)
+                #~ print( 'c', c, 'frame_index', frame_index, 'self.qframe_grabbers[c].last_frame', self.qframe_grabbers[c].last_frame)
                 
-                if self.qframe_grabbers[c].active_frame != frame_index:
-                    self.qframe_grabbers[c].active_frame = frame_index
-                    self.request_frame.emit(c, frame_index)
+                #~ if self.qframe_grabbers[c].active_frame != frame_index:
+                #~ print('self.qframe_grabbers[c].last_frame != frame_index', self.qframe_grabbers[c].last_frame != frame_index)
+                if self.qframe_grabbers[c].last_frame != frame_index:
+                
+                    #~ self.qframe_grabbers[c].active_frame = frame_index
+                    #~ self.request_frame.emit(c, frame_index)
+                    
+                    #~ self.qframe_grabbers[c].queue_request_frame(frame_index)
+                    #~ print('enque frame', threading.get_ident(), 'frame_index', frame_index)
+                    with self.qframe_grabbers[c].mutex:
+                        
+                        self.qframe_grabbers[c].request_list.append(frame_index)
+                        if len(self.qframe_grabbers[c].request_list)>=1:
+                            self.request_frame.emit(c)
+                            #~ print('EMIT!!!!!')
+
+
+                    
+                    
+                    
+                    
     
     def update_frame(self, video_index, frame):
         #~ print('update_frame', video_index, frame)
