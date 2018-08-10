@@ -16,7 +16,7 @@ import numpy as np
 import pandas as pd 
 
 
-class CvsEpochSource(WritableEpochSource):
+class CsvEpochSource(WritableEpochSource):
     def __init__(self, output_filename, possible_labels):
         self.output_filename = output_filename
         self.filename = output_filename
@@ -67,7 +67,7 @@ class CvsEpochSource(WritableEpochSource):
 possible_labels = ['euphoric', 'nervous', 'hungry',  'triumphant']
 
 filename = 'example_dev_mood_encoder.csv'
-source_epoch = CvsEpochSource(filename, possible_labels)
+source_epoch = CsvEpochSource(filename, possible_labels)
 
 
 
