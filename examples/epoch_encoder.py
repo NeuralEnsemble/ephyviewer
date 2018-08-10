@@ -3,63 +3,17 @@ ephyviewer also propose an epoch encoder.
 which can be used with key short cuts to encode levels or with the mouse 
 defining limits.
 
-The main trick is that the source must subclasse because the write method
-is not writen, so it let flexibility for the ouput format.
+ephyviewer makes available a CsvEpochSource class, which inherits from
+WritableEpochSource. If you would like to customize reading and writing epochs
+to files, you can write your own subclass of WritableEpochSource that
+implements the __init__() (for reading) and save() (for writing) methods.
 
-Here an example of epoch encode that same file with simple csv.
+Here is an example of an epoch encoder that uses CsvEpochSource.
 
 """
 
-import os
-from ephyviewer import mkQApp, MainViewer, TraceViewer, WritableEpochSource, EpochEncoder
+from ephyviewer import mkQApp, MainViewer, TraceViewer, CsvEpochSource, EpochEncoder
 import numpy as np
-import pandas as pd 
-
-
-class CsvEpochSource(WritableEpochSource):
-    def __init__(self, output_filename, possible_labels):
-        self.output_filename = output_filename
-        self.filename = output_filename
-        
-        
-        if os.path.exists(self.filename):
-            # if file already exists load previous epoch
-            df = pd.read_csv(self.filename,  index_col=None)
-            times = df['time'].values
-            durations = df['duration'].values
-            labels = df['label'].values
-
-            # fix due to rounding errors with CSV for some epoch
-            # time[i]+duration[i]>time[i+1]
-            # which to lead errors in GUI
-            # so make a patch here
-            mask1 = (times[:-1]+durations[:-1])>times[1:]
-            mask2 = (times[:-1]+durations[:-1])<(times[1:]+1e-9)
-            mask = mask1 & mask2
-            errors, = np.nonzero(mask)
-            durations[errors] = times[errors+1] - times[errors]
-            # end fix
-
-            epoch = {'time': times,
-                            'duration':durations,
-                            'label':labels,
-                            'name': 'animal_state'}
-        else:
-            # if file NOT exists take empty.
-            s = max([len(l) for l in possible_labels])
-            epoch = {'time': np.array([], dtype='float64'),
-                            'duration':np.array([], dtype='float64'),
-                            'label': np.array([], dtype='U'+str(s)),
-                            'name': 'animal_state'}
-
-        WritableEpochSource.__init__(self, epoch, possible_labels)
-
-    def save(self):
-        df = pd.DataFrame()
-        df['time'] = self.all[0]['time']
-        df['duration'] = self.all[0]['duration']
-        df['label'] = self.all[0]['label']
-        df.to_csv(self.filename, index=False)
 
 
 

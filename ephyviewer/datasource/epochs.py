@@ -1,9 +1,16 @@
 # -*- coding: utf-8 -*-
 #~ from __future__ import (unicode_literals, print_function, division, absolute_import)
+import os
 import numpy as np
 
 import matplotlib.cm
 import matplotlib.colors
+
+try:
+    import pandas as pd
+    HAVE_PANDAS = True
+except ImportError:
+    HAVE_PANDAS = False
 
 
 from .sourcebase import BaseDataSource
@@ -229,8 +236,53 @@ class WritableEpochSource(InMemoryEpochSource):
     
 
 
+class CsvEpochSource(WritableEpochSource):
+    def __init__(self, output_filename, possible_labels):
+        assert HAVE_PANDAS, 'Pandas is not installed'
         
+        self.output_filename = output_filename
+        self.filename = output_filename
         
+        if os.path.exists(self.filename):
+            # if file already exists load previous epoch
+            df = pd.read_csv(self.filename,  index_col=None)
+            times = df['time'].values
+            durations = df['duration'].values
+            labels = df['label'].values
+
+            # fix due to rounding errors with CSV for some epoch
+            # time[i]+duration[i]>time[i+1]
+            # which to lead errors in GUI
+            # so make a patch here
+            mask1 = (times[:-1]+durations[:-1])>times[1:]
+            mask2 = (times[:-1]+durations[:-1])<(times[1:]+1e-9)
+            mask = mask1 & mask2
+            errors, = np.nonzero(mask)
+            durations[errors] = times[errors+1] - times[errors]
+            # end fix
+
+            epoch = {'time': times,
+                     'duration':durations,
+                     'label':labels,
+                     'name': ''}
+        else:
+            # if file NOT exists take empty.
+            s = max([len(l) for l in possible_labels])
+            epoch = {'time': np.array([], dtype='float64'),
+                     'duration':np.array([], dtype='float64'),
+                     'label': np.array([], dtype='U'+str(s)),
+                     'name': ''}
+
+        WritableEpochSource.__init__(self, epoch, possible_labels)
+
+    def save(self):
+        df = pd.DataFrame()
+        df['time'] = self.all[0]['time']
+        df['duration'] = self.all[0]['duration']
+        df['label'] = self.all[0]['label']
+        df.to_csv(self.filename, index=False)
+
+
 
 
 def insert_item(arr, ind, value):
