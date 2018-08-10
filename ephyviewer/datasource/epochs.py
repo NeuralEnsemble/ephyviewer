@@ -237,7 +237,7 @@ class WritableEpochSource(InMemoryEpochSource):
 
 
 class CsvEpochSource(WritableEpochSource):
-    def __init__(self, output_filename, possible_labels, color_labels=None):
+    def __init__(self, output_filename, possible_labels, color_labels=None, channel_name=''):
         assert HAVE_PANDAS, 'Pandas is not installed'
         
         self.output_filename = output_filename
@@ -264,14 +264,14 @@ class CsvEpochSource(WritableEpochSource):
             epoch = {'time': times,
                      'duration':durations,
                      'label':labels,
-                     'name': ''}
+                     'name': channel_name}
         else:
             # if file NOT exists take empty.
             s = max([len(l) for l in possible_labels])
             epoch = {'time': np.array([], dtype='float64'),
                      'duration':np.array([], dtype='float64'),
                      'label': np.array([], dtype='U'+str(s)),
-                     'name': ''}
+                     'name': channel_name}
 
         WritableEpochSource.__init__(self, epoch, possible_labels, color_labels)
 
