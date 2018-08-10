@@ -237,7 +237,7 @@ class WritableEpochSource(InMemoryEpochSource):
 
 
 class CsvEpochSource(WritableEpochSource):
-    def __init__(self, output_filename, possible_labels):
+    def __init__(self, output_filename, possible_labels, color_labels=None):
         assert HAVE_PANDAS, 'Pandas is not installed'
         
         self.output_filename = output_filename
@@ -273,7 +273,7 @@ class CsvEpochSource(WritableEpochSource):
                      'label': np.array([], dtype='U'+str(s)),
                      'name': ''}
 
-        WritableEpochSource.__init__(self, epoch, possible_labels)
+        WritableEpochSource.__init__(self, epoch, possible_labels, color_labels)
 
     def save(self):
         df = pd.DataFrame()
