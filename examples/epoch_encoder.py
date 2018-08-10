@@ -24,7 +24,7 @@ class CvsEpochSource(WritableEpochSource):
         
         if os.path.exists(self.filename):
             # if file already exists load previous epoch
-            df = pd.read_csv(self.filename,  index_col=None, sep='\t')
+            df = pd.read_csv(self.filename,  index_col=None)
             times = df['time'].values
             durations = df['duration'].values
             labels = df['label'].values
@@ -59,7 +59,7 @@ class CvsEpochSource(WritableEpochSource):
         df['time'] = self.all[0]['time']
         df['duration'] = self.all[0]['duration']
         df['label'] = self.all[0]['label']
-        df.to_csv(self.filename, index=False, sep='\t')
+        df.to_csv(self.filename, index=False)
 
 
 
