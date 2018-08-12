@@ -238,11 +238,10 @@ class WritableEpochSource(InMemoryEpochSource):
 
 
 class CsvEpochSource(WritableEpochSource):
-    def __init__(self, output_filename, possible_labels, color_labels=None, channel_name=''):
+    def __init__(self, filename, possible_labels, color_labels=None, channel_name=''):
         assert HAVE_PANDAS, 'Pandas is not installed'
         
-        self.output_filename = output_filename
-        self.filename = output_filename
+        self.filename = filename
         
         if os.path.exists(self.filename):
             # if file already exists load previous epoch
