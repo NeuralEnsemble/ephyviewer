@@ -233,6 +233,7 @@ class WritableEpochSource(InMemoryEpochSource):
     
     def save(self):
         print('WritableEpochSource.save')
+        raise NotImplementedError()
     
 
 
