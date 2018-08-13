@@ -41,7 +41,24 @@ def test_EpochEncoder_settings():
     win.show()
     
     app.exec_()
+
+
+def test_EpochEncoder_empty():
+    possible_labels = ['AAA', 'BBB', 'CCC', 'DDD']
+    
+    source = WritableEpochSource(epoch=None, possible_labels=possible_labels)
+    source._t_stop = 10 # set to positive value so navigation has a finite range
+
+    app = ephyviewer.mkQApp()
+    view = ephyviewer.EpochEncoder(source=source, name='Epoch encoder')
+    
+    win = ephyviewer.MainViewer(show_step=False, show_global_xsize=True, debug=False)
+    win.add_view(view)
+    win.show()
+    
+    app.exec_()
     
 if __name__=='__main__':
     test_EpochEncoder()
     #~ test_EpochEncoder_settings()
+    test_EpochEncoder_empty()
