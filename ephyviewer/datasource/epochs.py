@@ -61,7 +61,14 @@ class WritableEpochSource(InMemoryEpochSource):
     epoch is dict
     { 'time':np.array, 'duration':np.array, 'label':np.array, 'name':' ''}
     """
-    def __init__(self, epoch, possible_labels, color_labels=None):
+    def __init__(self, epoch=None, possible_labels=[], color_labels=None, channel_name=''):
+        
+        self.possible_labels = possible_labels
+        self.channel_name = channel_name
+        
+        if epoch is None:
+            epoch = self.load()
+        
         InMemoryEpochSource.__init__(self, all_epochs=[epoch])
         
         #~ self._t_stop = max([ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0])
@@ -73,11 +80,10 @@ class WritableEpochSource(InMemoryEpochSource):
         assert self.all[0]['duration'].dtype.kind=='f'
         assert np.all((self.times[:-1]+self.durations[:-1])<=self.times[1:])
         
-        assert np.all(np.in1d(epoch['label'], possible_labels))
-        self.possible_labels = possible_labels
+        assert np.all(np.in1d(epoch['label'], self.possible_labels))
         
         if color_labels is None:
-            n = len(possible_labels)
+            n = len(self.possible_labels)
             cmap = matplotlib.cm.get_cmap('Dark2' , n)
             color_labels = [ matplotlib.colors.ColorConverter().to_rgb(cmap(i)) for i in  range(n)]
             color_labels = (np.array(color_labels)*255).astype(int)
@@ -231,6 +237,29 @@ class WritableEpochSource(InMemoryEpochSource):
         
         self._clean_and_set(ep_times, ep_durations, ep_labels)
     
+    def load(self):
+        """
+        Returns a dictionary containing the data for an epoch.
+        
+        Derived subclasses of WritableEpochSource override this method to
+        implement loading a file or importing data from objects in memory. The
+        superclass implementation WritableEpochSource.load() creates an empty
+        dictionary with the correct keys and types. It can be called from the
+        subclass implementation using super().load() if, for example, the file
+        to be loaded does not exist.
+        
+        The method returns a dictionary containing the loaded data in this form:
+        
+        { 'time': np.array, 'duration': np.array, 'label': np.array, 'name': string }
+        """
+        
+        s = max([len(l) for l in self.possible_labels])
+        epoch = {'time':     np.array([], dtype='float64'),
+                 'duration': np.array([], dtype='float64'),
+                 'label':    np.array([], dtype='U'+str(s)),
+                 'name':     self.channel_name}
+        return epoch
+    
     def save(self):
         print('WritableEpochSource.save')
         raise NotImplementedError()
@@ -242,15 +271,24 @@ class CsvEpochSource(WritableEpochSource):
         assert HAVE_PANDAS, 'Pandas is not installed'
         
         self.filename = filename
-        self.possible_labels = possible_labels
-        self.channel_name = channel_name
         
-        epoch = self.load()
-        WritableEpochSource.__init__(self, epoch, self.possible_labels, color_labels)
+        WritableEpochSource.__init__(self, epoch=None, possible_labels=possible_labels, color_labels=color_labels, channel_name=channel_name)
         
     def load(self):
+        """
+        Returns a dictionary containing the data for an epoch.
+        
+        Data is loaded from the CSV file if it exists; otherwise the superclass
+        implementation in WritableEpochSource.load() is called to create an
+        empty dictionary with the correct keys and types.
+        
+        The method returns a dictionary containing the loaded data in this form:
+        
+        { 'time': np.array, 'duration': np.array, 'label': np.array, 'name': string }
+        """
+        
         if os.path.exists(self.filename):
-            # if file already exists load previous epoch
+            # if file already exists, load previous epoch
             df = pd.read_csv(self.filename,  index_col=None)
             times = df['time'].values
             durations = df['duration'].values
@@ -267,17 +305,14 @@ class CsvEpochSource(WritableEpochSource):
             durations[errors] = times[errors+1] - times[errors]
             # end fix
 
-            epoch = {'time': times,
-                     'duration':durations,
-                     'label':labels,
-                     'name': self.channel_name}
+            epoch = {'time':     times,
+                     'duration': durations,
+                     'label':    labels,
+                     'name':     self.channel_name}
         else:
-            # if file NOT exists take empty.
-            s = max([len(l) for l in self.possible_labels])
-            epoch = {'time': np.array([], dtype='float64'),
-                     'duration':np.array([], dtype='float64'),
-                     'label': np.array([], dtype='U'+str(s)),
-                     'name': self.channel_name}
+            # if file does NOT already exist, use superclass method for creating
+            # an empty dictionary
+            epoch = super().load()
         
         return epoch
 
