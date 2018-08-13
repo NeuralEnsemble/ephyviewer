@@ -242,7 +242,13 @@ class CsvEpochSource(WritableEpochSource):
         assert HAVE_PANDAS, 'Pandas is not installed'
         
         self.filename = filename
+        self.possible_labels = possible_labels
+        self.channel_name = channel_name
         
+        epoch = self.load()
+        WritableEpochSource.__init__(self, epoch, self.possible_labels, color_labels)
+        
+    def load(self):
         if os.path.exists(self.filename):
             # if file already exists load previous epoch
             df = pd.read_csv(self.filename,  index_col=None)
@@ -264,16 +270,16 @@ class CsvEpochSource(WritableEpochSource):
             epoch = {'time': times,
                      'duration':durations,
                      'label':labels,
-                     'name': channel_name}
+                     'name': self.channel_name}
         else:
             # if file NOT exists take empty.
-            s = max([len(l) for l in possible_labels])
+            s = max([len(l) for l in self.possible_labels])
             epoch = {'time': np.array([], dtype='float64'),
                      'duration':np.array([], dtype='float64'),
                      'label': np.array([], dtype='U'+str(s)),
-                     'name': channel_name}
-
-        WritableEpochSource.__init__(self, epoch, possible_labels, color_labels)
+                     'name': self.channel_name}
+        
+        return epoch
 
     def save(self):
         df = pd.DataFrame()
