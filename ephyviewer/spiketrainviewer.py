@@ -106,7 +106,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
 
     
     def initialize_plot(self):
-        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00')
+        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00AA')
         self.plot.addItem(self.vline)
         
         self.scatter = pg.ScatterPlotItem(size=10, pxMode = True, symbol='|')
