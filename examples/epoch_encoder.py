@@ -6,7 +6,7 @@ defining limits.
 ephyviewer makes available a CsvEpochSource class, which inherits from
 WritableEpochSource. If you would like to customize reading and writing epochs
 to files, you can write your own subclass of WritableEpochSource that
-implements the __init__() (for reading) and save() (for writing) methods.
+implements the load() and save() methods.
 
 Here is an example of an epoch encoder that uses CsvEpochSource.
 
@@ -38,11 +38,11 @@ win = MainViewer(debug=True, show_auto_scale=True)
 
 #create a viewer for signal
 view1 = TraceViewer.from_numpy(sigs, sample_rate, t_start, 'Signals')
-win.add_view(view1)
 view1.params['scale_mode'] = 'same_for_all'
-view1.params['display_labels'] = True
+view1.auto_scale()
+win.add_view(view1)
 
-#create a viewer for the encoder itselfd
+#create a viewer for the encoder itself
 view2 = EpochEncoder(source=source_epoch, name='Dev mood states along day')
 win.add_view(view2)
 
@@ -55,7 +55,7 @@ app.exec_()
 
 
 # press 'a', 'z', 'e', 'r' to encode state.
-# or press 'sho/hide range' and 'apply'
+# or press 'show/hide range' and 'apply'
 
 
 
