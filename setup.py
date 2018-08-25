@@ -25,6 +25,7 @@ setup(
     name = "ephyviewer",
     version=version,
     packages = ['ephyviewer', 'ephyviewer.datasource', 'ephyviewer.tests'],
+    include_package_data=True,
     install_requires=install_requires,
     author = "S.Garcia",
     author_email = "sam.garcia.die@gmail.com",

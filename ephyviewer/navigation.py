@@ -7,6 +7,7 @@ import numpy as np
 
 from collections import OrderedDict
 
+import os
 import time
 import datetime
 
@@ -71,12 +72,13 @@ class NavigationToolBar(QT.QWidget) :
         self.mainlayout.addLayout(h)
         
         if show_play:
-            but = QT.QPushButton(icon=QT.QIcon.fromTheme('media-playback-start'))
+            but = QT.QPushButton(icon=QT.QIcon.fromTheme('media-playback-start',
+                    QT.QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'play-icon.png'))))
             but.clicked.connect(self.on_play)
             h.addWidget(but)
             
-            but = QT.QPushButton(icon=QT.QIcon.fromTheme('media-playback-stop'))
-            #~ but = QT.QPushButton(QT.QIcon(':/media-playback-stop.png'), '')
+            but = QT.QPushButton(icon=QT.QIcon.fromTheme('media-playback-stop',
+                    QT.QIcon(os.path.join(os.path.dirname(__file__), 'icons', 'stop-icon.png'))))
             but.clicked.connect(self.on_stop_pause)
             h.addWidget(but)
             
