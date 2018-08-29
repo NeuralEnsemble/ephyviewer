@@ -105,7 +105,7 @@ class WritableEpochSource(InMemoryEpochSource):
 
 
     def _clean_and_set(self,ep_times, ep_durations, ep_labels):
-        keep = ep_durations>0.
+        keep = ep_durations >= 1e-6 # discard epochs shorter than 1 microsecond
         ep_times = ep_times[keep]
         ep_durations = ep_durations[keep]
         ep_labels = ep_labels[keep]
@@ -318,8 +318,8 @@ class CsvEpochSource(WritableEpochSource):
 
     def save(self):
         df = pd.DataFrame()
-        df['time'] = self.all[0]['time']
-        df['duration'] = self.all[0]['duration']
+        df['time'] = np.round(self.all[0]['time'], 6)         # round to nearest microsecond
+        df['duration'] = np.round(self.all[0]['duration'], 6) # round to nearest microsecond
         df['label'] = self.all[0]['label']
         df.to_csv(self.filename, index=False)
 

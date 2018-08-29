@@ -449,7 +449,12 @@ class EpochEncoder(ViewerBase):
         self.table_widget.setHorizontalHeaderLabels(['start', 'stop', 'duration', 'label'])
         for r in range(times.size):
             
-            values = [times[r], times[r]+durations[r], durations[r], labels[r]]
+            values = [
+                np.round(times[r], 6),              # round to nearest microsecond
+                np.round(times[r]+durations[r], 6), # round to nearest microsecond
+                np.round(durations[r], 6),          # round to nearest microsecond
+                labels[r],
+            ]
             for c, value in enumerate(values):
                 item = QT.QTableWidgetItem('{}'.format(value))
                 item.setFlags(QT.ItemIsSelectable|QT.ItemIsEnabled)
