@@ -93,7 +93,7 @@ class EpochEncoder(ViewerBase):
         self.params.param('xsize').setLimits((0, np.inf))
         
         
-        keys = 'azertyuiop'
+        keys = '1234567890'
         all = []
         self.shortcuts = OrderedDict()
         for i, label in enumerate(self.source.possible_labels):
@@ -473,5 +473,3 @@ class EpochEncoder(ViewerBase):
         self.time_changed.emit(self.t)
         
         
-
-

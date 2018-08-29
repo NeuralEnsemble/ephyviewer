@@ -54,20 +54,5 @@ win.show()
 app.exec_()
 
 
-# press 'a', 'z', 'e', 'r' to encode state.
+# press '1', '2', '3', '4' to encode state.
 # or press 'show/hide range' and 'apply'
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
