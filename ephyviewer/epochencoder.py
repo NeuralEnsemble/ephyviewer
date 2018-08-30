@@ -38,17 +38,15 @@ class EpochEncoder_ParamController(Base_ParamController):
         
         self.v1 = QT.QVBoxLayout()
         h.addLayout(self.v1)
+        self.tree_params = pg.parametertree.ParameterTree()
+        self.tree_params.setParameters(self.viewer.params, showTop=True)
+        self.tree_params.header().hide()
+        self.v1.addWidget(self.tree_params, stretch = 1)
+
         self.tree_label_params = pg.parametertree.ParameterTree()
         self.tree_label_params.setParameters(self.viewer.by_label_params, showTop=True)
         self.tree_label_params.header().hide()
-        self.v1.addWidget(self.tree_label_params)
-
-        #~ self.v1 = QT.QVBoxLayout()
-        #~ h.addLayout(self.v1)
-        #~ self.tree_params = pg.parametertree.ParameterTree()
-        #~ self.tree_params.setParameters(self.viewer.params, showTop=True)
-        #~ self.tree_params.header().hide()
-        #~ self.v1.addWidget(self.tree_params)
+        self.v1.addWidget(self.tree_label_params, stretch = 3)
 
 
 
@@ -144,9 +142,8 @@ class EpochEncoder(ViewerBase):
         g = QT.QGridLayout()
         h.addLayout(g)
 
-        but = QT.PushButton('Colors and keys')
+        but = QT.PushButton('Options')
         g.addWidget(but, 0, 0)
-        
         but.clicked.connect(self.show_params_controller)
         
         but = QT.PushButton('Merge neighbors')
@@ -200,11 +197,6 @@ class EpochEncoder(ViewerBase):
         g.addWidget(self.but_del_region, 5, 1)
         self.but_del_region.clicked.connect(self.delete_region)
         
-        
-        self.tree_params = pg.parametertree.ParameterTree()
-        self.tree_params.setParameters(self.params, showTop=True)
-        self.tree_params.header().hide()
-        h.addWidget(self.tree_params)
         
         self.table_widget = QT.QTableWidget()
         h.addWidget(self.table_widget)
