@@ -352,6 +352,10 @@ class EpochEncoder(ViewerBase):
         #~ duration = self.spin_step.value()
         duration = self.params['new_epoch_step']
         
+        # delete existing epochs in the region where the new epoch will be inserted
+        self.source.delete_in_between(self.t, self.t + duration)
+        
+        # create the new epoch
         self.source.add_epoch(self.t, duration, label)
         
         self.t += duration
@@ -399,6 +403,11 @@ class EpochEncoder(ViewerBase):
         t = rgn[0]
         duration = rgn[1] - rgn[0]
         label = str(self.combo_labels.currentText())
+        
+        # delete existing epochs in the region where the new epoch will be inserted
+        self.source.delete_in_between(rgn[0], rgn[1])
+        
+        # create the new epoch
         self.source.add_epoch(t, duration, label)
         
         self.refresh()

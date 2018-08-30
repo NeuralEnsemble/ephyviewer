@@ -39,17 +39,12 @@ class InMemoryEpochSource(BaseEventAndEpoch):
         ep_durations = self.all[chan]['duration']
         ep_labels = self.all[chan]['label']
         
-        #~ keep1 = (ep_times>=t_start) & (ep_times<t_stop)#begin inside
-        #~ keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_duqrations<t_stop) #end inside
-        #~ keep3 = (ep_times<=t_start) & (ep_times+ep_durations>t_stop) # overlap
-        #~ keep = keep1|  keep2 | keep3
+        keep1 = (ep_times>=t_start) & (ep_times<t_stop) # epochs that start inside range
+        keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_durations<t_stop) # epochs that end inside range
+        keep3 = (ep_times<=t_start) & (ep_times+ep_durations>t_stop) # epochs that span the range
+        keep = keep1 | keep2 | keep3
         
-        #~ return ep_times[keep], ep_durations[keep], ep_labels[keep]
-        
-        i1 = np.searchsorted(ep_times, t_start, side='left')
-        i2 = np.searchsorted(ep_times+ep_durations, t_stop, side='left')
-        sl = slice(max(0, i1-1), i2+1)
-        return ep_times[sl], ep_durations[sl], ep_labels[sl]
+        return ep_times[keep], ep_durations[keep], ep_labels[keep]
 
 
 
@@ -102,114 +97,88 @@ class WritableEpochSource(InMemoryEpochSource):
     
     def color_by_label(self, label):
         return self.label_to_color[label]
-
-
+    
     def _clean_and_set(self,ep_times, ep_durations, ep_labels):
-        keep = ep_durations >= 1e-6 # discard epochs shorter than 1 microsecond
+        
+        # remove bad epochs
+        keep = ep_durations >= 1e-6 # discard epochs shorter than 1 microsecond or with negative duration
         ep_times = ep_times[keep]
         ep_durations = ep_durations[keep]
         ep_labels = ep_labels[keep]
         
+        # sort epochs by start time
+        ordering = np.argsort(ep_times)
+        ep_times = ep_times[ordering]
+        ep_durations = ep_durations[ordering]
+        ep_labels = ep_labels[ordering]
+        
+        # set epochs for the WritableEpochSource
         self.all[0]['time'] = ep_times
         self.all[0]['duration'] = ep_durations
         self.all[0]['label'] = ep_labels
-
     
     def add_epoch(self, t1, duration, label):
+        
         ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
-        
-        t2 = t1+duration
-
-        ind = np.searchsorted(ep_times, t1, side='left')
-
-
-        ep_times = insert_item(ep_times, ind, t1)
-        ep_durations = insert_item(ep_durations, ind, duration)
-        ep_labels = insert_item(ep_labels, ind, label)
-        
-        #previous
-        prev = ind-1
-        
-        #if the previsous ends after the new ones then add the other part
-        if ind>0:
-            t2_prev = ep_times[prev]+ep_durations[prev]
-            if (t2_prev)>t2:
-                ep_times = insert_item(ep_times, ind+1, t2)
-                ep_durations = insert_item(ep_durations, ind+1, t2_prev - t2)
-                ep_labels = insert_item(ep_labels, ind+1, ep_labels[prev])
-        #short prev durations
-        while prev>=0:
-            if (ep_times[prev]+ep_durations[prev])>ep_times[ind]:
-                ep_durations[prev] = ep_times[ind] - ep_times[prev]
-            else:
-                break
-            prev = prev-1
-        
-        #nexts
-        next = ind+1
-        while next<ep_times.size:
-            delta = (ep_times[ind]+ep_durations[ind]) - ep_times[next]
-            if delta>0:
-                ep_times[next] += delta
-                ep_durations[next] -= delta
-            else:
-                break
-            next = next + 1
+        ep_times = np.append(ep_times, t1)
+        ep_durations = np.append(ep_durations, duration)
+        ep_labels = np.append(ep_labels, label)
         
         self._clean_and_set(ep_times, ep_durations, ep_labels)
     
     def delete_in_between(self, t1, t2):
-        #~ print('delete_in_between', t1, t2)
+        
         ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
+        ep_stops = ep_times + ep_durations
         
-        ep_stops = ep_times+ep_durations
-        
-        i1 = np.searchsorted(ep_times, t1, side='left')
-        i2 = np.searchsorted(ep_times+ep_durations, t2, side='right')
-        #~ print 'i1, i2', i1, i2
-        #~ print()
-        for i in range(i1-1, i2+1):
-            #~ print i
-            if i1<0: continue
-            if i>=ep_durations.size: continue
+        for i in range(len(ep_times)):
             
+            # if epoch starts and ends inside range, delete it
             if ep_times[i]>=t1 and ep_stops[i]<t2:
-                #~ print 'a'
-                ep_durations[i] = -1.
+                ep_durations[i] = -1 # non-positive duration flags this epoch for clean up
+            
+            # if epoch starts before and ends inside range, truncate it
             elif ep_times[i]<t1 and (t1<ep_stops[i]<t2):
-                #~ print 'b'
                 ep_durations[i] = t1 - ep_times[i]
+            
+            # if epoch starts inside and ends after range, truncate it
             elif (t1<=ep_times[i]<t2) and ep_stops[i]>t2:
-                #~ print 'c'
                 ep_durations[i] = ep_stops[i] - t2
                 ep_times[i] = t2
+            
+            # if epoch starts before and ends after range,
+            # truncate the first part and add a new epoch for the end part
             elif ep_times[i]<=t1 and ep_stops[i]>=t2:
-                #~ print 'd'
                 ep_durations[i] = t1 - ep_times[i]
-                # and insert one
-                ep_times = insert_item(ep_times, i, t2)
-                ep_durations = insert_item(ep_durations, i, ep_stops[i]-t2)
-                ep_labels = insert_item(ep_labels,i, ep_labels[i])
-                break
-                
+                ep_times = np.append(ep_times, t2)
+                ep_durations = np.append(ep_durations, ep_stops[i]-t2)
+                ep_labels = np.append(ep_labels, ep_labels[i])
         
         self._clean_and_set(ep_times, ep_durations, ep_labels)
-        
-        
-        
-
+    
     def merge_neighbors(self):
+        
         ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
+        ep_stops = ep_times + ep_durations
         
-        mask = ((ep_times[:-1] + ep_durations[:-1])==ep_times[1:]) & (ep_labels[:-1]==ep_labels[1:])
-        inds, = np.nonzero(mask)
-        
-        for ind in inds:
-            ep_times[ind+1] = ep_times[ind]
-            ep_durations[ind+1] = ep_durations[ind] + ep_durations[ind+1]
-            ep_durations[ind] = -1
+        for label in self.possible_labels:
+            inds, = np.nonzero(ep_labels == label)
+            for i in range(len(inds)-1):
+                
+                # if two sequentially adjacent epochs with the same label
+                # overlap or have less than 1 microsecond separation, merge them
+                if ep_times[inds[i+1]] - ep_stops[inds[i]] < 1e-6:
+                    
+                    # stretch the second epoch to cover the range of both epochs
+                    ep_times[inds[i+1]] = min(ep_times[inds[i]], ep_times[inds[i+1]])
+                    ep_stops[inds[i+1]] = max(ep_stops[inds[i]], ep_stops[inds[i+1]])
+                    ep_durations[inds[i+1]] = ep_stops[inds[i+1]] - ep_times[inds[i+1]]
+                    
+                    # delete the first epoch
+                    ep_durations[inds[i]] = -1 # non-positive duration flags this epoch for clean up
         
         self._clean_and_set(ep_times, ep_durations, ep_labels)
+    
     
     def fill_blank(self, method='from_left'):
         ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
