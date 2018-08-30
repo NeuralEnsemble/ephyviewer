@@ -96,6 +96,7 @@ class EpochEncoder(ViewerBase):
         all = []
         self.shortcuts = OrderedDict()
         for i, label in enumerate(self.source.possible_labels):
+            # get string for shortcut key
             key = keys[i] if i<len(keys) else ''
             
             name = 'label{}'.format(i)
@@ -104,11 +105,17 @@ class EpochEncoder(ViewerBase):
                             {'name': 'key', 'type': 'str', 'value': key},
                             ]
             all.append({'name': name, 'type': 'group', 'children': children})
-            shortcut = QT.QShortcut (self)
+            
+            # assign shortcuts without and with modifier key
+            shortcut_without_modifer = QT.QShortcut(self)
+            shortcut_with_modifier   = QT.QShortcut(self)
             if key != '':
-                shortcut.setKey(key)
-            shortcut.activated.connect(self.on_shortcut)
-            self.shortcuts[shortcut] = label
+                shortcut_without_modifer.setKey(key)
+                shortcut_with_modifier  .setKey('Shift+' + key)
+            shortcut_without_modifer.activated.connect(self.on_shortcut)
+            shortcut_with_modifier  .activated.connect(self.on_shortcut)
+            self.shortcuts[shortcut_without_modifer] = (label, False) # boolean indicates modifier use
+            self.shortcuts[shortcut_with_modifier]   = (label, True)  # boolean indicates modifier use
             
         self.by_label_params = pg.parametertree.Parameter.create(name='Labels', type='group', children=all)
         
@@ -256,10 +263,14 @@ class EpochEncoder(ViewerBase):
     def on_change_keys(self, refresh=True):
         
         for i, label in enumerate(self.source.possible_labels):
+            # get string for shortcut key
             key = self.by_label_params['label'+str(i), 'key']
-            shortcut = list(self.shortcuts.keys())[i]
-            #~ print(shortcut)
-            shortcut.setKey(key)
+            
+            # assign shortcuts without and with modifier key
+            shortcut_without_modifer = list(self.shortcuts.keys())[2*i]
+            shortcut_with_modifier   = list(self.shortcuts.keys())[2*i+1]
+            shortcut_without_modifer.setKey(key)
+            shortcut_with_modifier  .setKey('Shift+' + key)
         
         self.refresh()
     
@@ -347,14 +358,14 @@ class EpochEncoder(ViewerBase):
             self.plot.setYRange( 0, 1)
     
     def on_shortcut(self):
-        label = self.shortcuts.get(self.sender(), None)
+        label, modifier_used = self.shortcuts.get(self.sender(), None)
         if label is None: return
         
         #~ duration = self.spin_step.value()
         duration = self.params['new_epoch_step']
         
         # delete existing epochs in the region where the new epoch will be inserted
-        if self.params['remove_old_when_inserting_new']:
+        if (self.params['remove_old_when_inserting_new'] and not modifier_used) or (not self.params['remove_old_when_inserting_new'] and modifier_used):
             self.source.delete_in_between(self.t, self.t + duration)
         
         # create the new epoch
