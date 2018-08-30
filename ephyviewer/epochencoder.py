@@ -20,6 +20,7 @@ default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
+    {'name': 'remove_old_when_inserting_new', 'type': 'bool', 'value': True},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
     
     #~ {'name': 'display_labels', 'type': 'bool', 'value': True},
@@ -31,7 +32,7 @@ class EpochEncoder_ParamController(Base_ParamController):
     def __init__(self, parent=None, viewer=None, with_visible=True, with_color=True):
         Base_ParamController.__init__(self, parent=parent, viewer=viewer)
         
-        self.resize(400, 600)
+        self.resize(400, 700)
 
         h = QT.QHBoxLayout()
         self.mainlayout.addLayout(h)
@@ -353,7 +354,8 @@ class EpochEncoder(ViewerBase):
         duration = self.params['new_epoch_step']
         
         # delete existing epochs in the region where the new epoch will be inserted
-        self.source.delete_in_between(self.t, self.t + duration)
+        if self.params['remove_old_when_inserting_new']:
+            self.source.delete_in_between(self.t, self.t + duration)
         
         # create the new epoch
         self.source.add_epoch(self.t, duration, label)
@@ -405,7 +407,8 @@ class EpochEncoder(ViewerBase):
         label = str(self.combo_labels.currentText())
         
         # delete existing epochs in the region where the new epoch will be inserted
-        self.source.delete_in_between(rgn[0], rgn[1])
+        if self.params['remove_old_when_inserting_new']:
+            self.source.delete_in_between(rgn[0], rgn[1])
         
         # create the new epoch
         self.source.add_epoch(t, duration, label)

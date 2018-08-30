@@ -73,7 +73,6 @@ class WritableEpochSource(InMemoryEpochSource):
         
         assert self.all[0]['time'].dtype.kind=='f'
         assert self.all[0]['duration'].dtype.kind=='f'
-        assert np.all((self.times[:-1]+self.durations[:-1])<=self.times[1:])
         
         assert np.all(np.in1d(epoch['label'], self.possible_labels))
         
@@ -259,24 +258,9 @@ class CsvEpochSource(WritableEpochSource):
         if os.path.exists(self.filename):
             # if file already exists, load previous epoch
             df = pd.read_csv(self.filename,  index_col=None)
-            times = df['time'].values
-            durations = df['duration'].values
-            labels = df['label'].values
-
-            # fix due to rounding errors with CSV for some epoch
-            # time[i]+duration[i]>time[i+1]
-            # which to lead errors in GUI
-            # so make a patch here
-            mask1 = (times[:-1]+durations[:-1])>times[1:]
-            mask2 = (times[:-1]+durations[:-1])<(times[1:]+1e-9)
-            mask = mask1 & mask2
-            errors, = np.nonzero(mask)
-            durations[errors] = times[errors+1] - times[errors]
-            # end fix
-
-            epoch = {'time':     times,
-                     'duration': durations,
-                     'label':    labels,
+            epoch = {'time':     df['time'].values,
+                     'duration': df['duration'].values,
+                     'label':    df['label'].values,
                      'name':     self.channel_name}
         else:
             # if file does NOT already exist, use superclass method for creating
