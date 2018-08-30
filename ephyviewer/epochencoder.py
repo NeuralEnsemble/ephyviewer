@@ -362,6 +362,7 @@ class EpochEncoder(ViewerBase):
     def on_merge_neighbors(self):
         self.source.merge_neighbors()
         self.refresh()
+        self.refresh_table()
     
     def on_fill_blank(self):
         params = [{'name': 'method', 'type': 'list', 'value':'from_left', 'values' : ['from_left', 'from_right', 'from_nearest']}]
