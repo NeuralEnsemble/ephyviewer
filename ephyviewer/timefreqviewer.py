@@ -332,7 +332,7 @@ class TimeFreqViewer(BaseMultiChannelViewer):
                 self.plots[c].addItem(image)                
                 self.images.append(image)
                 
-                vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00AA')
+                vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
                 self.plots[c].addItem(vline)
                 self.vlines.append(vline)
                 
