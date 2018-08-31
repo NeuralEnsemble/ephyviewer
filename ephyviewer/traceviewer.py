@@ -369,6 +369,7 @@ class TraceViewer(BaseMultiChannelViewer):
     def initialize_plot(self):
         
         self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
+        self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
         
         self.curves = []

@@ -143,6 +143,7 @@ class EpochViewer(BaseMultiChannelViewer):
                 label.setPos(t_start, ypos+0.45)
         
         self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
+        self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
 
         self.vline.setPos(self.t)
