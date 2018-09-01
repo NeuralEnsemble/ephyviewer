@@ -481,7 +481,9 @@ class EpochEncoder(ViewerBase):
             self.spin_limit2.setValue(self.t)
     
     def refresh_table(self):
+        self.table_widget.blockSignals(True)
         self.table_widget.clear()
+        self.table_widget.blockSignals(False)
         #~ ev = self.source.all_events[ind]
         times, durations, labels = self.source.get_chunk(chan=0,  i_start=None, i_stop=None)
         self.table_widget.setColumnCount(4)
