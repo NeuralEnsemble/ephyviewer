@@ -489,16 +489,19 @@ class EpochEncoder(ViewerBase):
         self.table_widget.setHorizontalHeaderLabels(['start', 'stop', 'duration', 'label'])
         for r in range(times.size):
             
-            values = [
-                np.round(times[r], 6),              # round to nearest microsecond
-                np.round(times[r]+durations[r], 6), # round to nearest microsecond
-                np.round(durations[r], 6),          # round to nearest microsecond
-                labels[r],
-            ]
+            # start, stop, duration
+            values = np.round([times[r], times[r]+durations[r], durations[r]], 6) # round to nearest microsecond
             for c, value in enumerate(values):
                 item = QT.QTableWidgetItem('{}'.format(value))
                 item.setFlags(QT.ItemIsSelectable|QT.ItemIsEnabled)
                 self.table_widget.setItem(r, c, item)
+    
+            # label
+            combo_labels = QT.QComboBox()
+            combo_labels.addItems(self.source.possible_labels)
+            combo_labels.setCurrentText(labels[r])
+            combo_labels.currentIndexChanged.connect(self.on_change_label)
+            self.table_widget.setCellWidget(r, 3, combo_labels)
     
     def on_seek_table(self):
         if self.table_widget.rowCount()==0:
@@ -512,4 +515,10 @@ class EpochEncoder(ViewerBase):
         self.refresh()
         self.time_changed.emit(self.t)
         
+    def on_change_label(self):
+        labels = []
+        for r in range(self.table_widget.rowCount()):
+            labels.append(self.table_widget.cellWidget(r, 3).currentText())
+        self.source.change_labels(np.asarray(labels))
+        self.refresh()
         

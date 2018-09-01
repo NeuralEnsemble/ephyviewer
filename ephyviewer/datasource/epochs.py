@@ -125,6 +125,13 @@ class WritableEpochSource(InMemoryEpochSource):
         
         self._clean_and_set(ep_times, ep_durations, ep_labels)
     
+    def change_labels(self, new_labels):
+        
+        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
+        assert(ep_labels.size == new_labels.size)
+        ep_labels = new_labels
+        self._clean_and_set(ep_times, ep_durations, ep_labels)
+    
     def delete_in_between(self, t1, t2):
         
         ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
