@@ -20,7 +20,7 @@ default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
-    {'name': 'remove_old_when_inserting_new', 'type': 'bool', 'value': True},
+    {'name': 'exclusive_mode', 'type': 'bool', 'value': True},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
     
     #~ {'name': 'display_labels', 'type': 'bool', 'value': True},
@@ -162,8 +162,28 @@ class EpochEncoder(ViewerBase):
         g.addWidget(but, 2, 0)
         but.clicked.connect(self.on_fill_blank)
 
+        # Epoch insertion mode box
+
+        group_box = QT.QGroupBox('Epoch insertion mode')
+        group_box.setToolTip('Hold Shift when using shortcut keys to temporarily switch modes')
+        group_box_layout = QT.QVBoxLayout()
+        group_box.setLayout(group_box_layout)
+        g.addWidget(group_box, 3, 0, 2, 1)
+
+        # Epoch insertion mode buttons
+
+        self.btn_insertion_mode_exclusive = QT.QRadioButton('Mutually exclusive')
+        self.btn_insertion_mode_overlapping = QT.QRadioButton('Overlapping')
+        group_box_layout.addWidget(self.btn_insertion_mode_exclusive)
+        group_box_layout.addWidget(self.btn_insertion_mode_overlapping)
+        self.btn_insertion_mode_exclusive.toggled.connect(self.params.param('exclusive_mode').setValue)
+        if self.params['exclusive_mode']:
+            self.btn_insertion_mode_exclusive.setChecked(True)
+        else:
+            self.btn_insertion_mode_overlapping.setChecked(True)
+
         but = QT.PushButton('Save')
-        g.addWidget(but, 4, 0)
+        g.addWidget(but, 5, 0)
         but.clicked.connect(self.on_save)
         
         
@@ -258,6 +278,10 @@ class EpochEncoder(ViewerBase):
         self.params_controller.show()
     
     def on_param_change(self):
+        if self.params['exclusive_mode']:
+            self.btn_insertion_mode_exclusive.setChecked(True)
+        else:
+            self.btn_insertion_mode_overlapping.setChecked(True)
         self.refresh()
     
     def on_change_keys(self, refresh=True):
@@ -365,7 +389,7 @@ class EpochEncoder(ViewerBase):
         duration = self.params['new_epoch_step']
         
         # delete existing epochs in the region where the new epoch will be inserted
-        if (self.params['remove_old_when_inserting_new'] and not modifier_used) or (not self.params['remove_old_when_inserting_new'] and modifier_used):
+        if (self.params['exclusive_mode'] and not modifier_used) or (not self.params['exclusive_mode'] and modifier_used):
             self.source.delete_in_between(self.t, self.t + duration)
         
         # create the new epoch
@@ -418,7 +442,7 @@ class EpochEncoder(ViewerBase):
         label = str(self.combo_labels.currentText())
         
         # delete existing epochs in the region where the new epoch will be inserted
-        if self.params['remove_old_when_inserting_new']:
+        if self.params['exclusive_mode']:
             self.source.delete_in_between(rgn[0], rgn[1])
         
         # create the new epoch
