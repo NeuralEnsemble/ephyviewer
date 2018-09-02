@@ -352,6 +352,7 @@ class EpochEncoder(ViewerBase):
                 ypos = 0
             item = RectItem([times[i],  ypos,durations[i], .9],  border='#FFFFFF', fill=color, id=ids[i])
             item.clicked.connect(self.on_rect_clicked)
+            item.doubleclicked.connect(self.on_rect_doubleclicked)
             item.setPos(times[i],  ypos)
             self.plot.addItem(item)
             self.rect_items.append(item)
@@ -512,12 +513,17 @@ class EpochEncoder(ViewerBase):
         self.table_widget.setCurrentCell(id, 3) # select the label combo box
         self.table_widget.blockSignals(False)
         
-        # set region to epoch start and stop and set time to epoch start
-        t, dur, _, _= self.source.get_chunk(chan=0,  i_start=id, i_stop=id+1)
-        self.region.setRegion((t[0], t[0]+dur[0]))
+        # set time to epoch start
+        t, _, _, _= self.source.get_chunk(chan=0,  i_start=id, i_stop=id+1)
         self.t = t[0]
         self.refresh()
         self.time_changed.emit(self.t)
+    
+    def on_rect_doubleclicked(self, id):
+        
+        # set region to epoch start and stop
+        t, dur, _, _= self.source.get_chunk(chan=0,  i_start=id, i_stop=id+1)
+        self.region.setRegion((t[0], t[0]+dur[0]))
     
     def on_seek_table(self):
         if self.table_widget.rowCount()==0:

@@ -37,6 +37,7 @@ class EpochViewer_ParamController(Base_MultiChannel_ParamController):
 class RectItem(pg.GraphicsWidget):
     
     clicked = QT.pyqtSignal(int)
+    doubleclicked = QT.pyqtSignal(int)
     
     def __init__(self, rect, border = 'r', fill = 'g', id = -1):
         pg.GraphicsWidget.__init__(self)
@@ -59,6 +60,10 @@ class RectItem(pg.GraphicsWidget):
     def mouseReleaseEvent(self, event):
         event.accept()
         self.clicked.emit(self.id)
+
+    def mouseDoubleClickEvent(self, event):
+        event.accept()
+        self.doubleclicked.emit(self.id)
 
 
 class DataGrabber(QT.QObject):
@@ -159,5 +164,3 @@ class EpochViewer(BaseMultiChannelViewer):
         self.vline.setPos(self.t)
         self.plot.setXRange( t_start, t_stop, padding = 0.0)
         self.plot.setYRange( 0, visibles.size)
-
-
