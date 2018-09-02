@@ -512,8 +512,9 @@ class EpochEncoder(ViewerBase):
         self.table_widget.setCurrentCell(id, 3) # select the label combo box
         self.table_widget.blockSignals(False)
         
-        # set time to epoch start
-        t, _, _, _= self.source.get_chunk(chan=0,  i_start=id, i_stop=id+1)
+        # set region to epoch start and stop and set time to epoch start
+        t, dur, _, _= self.source.get_chunk(chan=0,  i_start=id, i_stop=id+1)
+        self.region.setRegion((t[0], t[0]+dur[0]))
         self.t = t[0]
         self.refresh()
         self.time_changed.emit(self.t)
