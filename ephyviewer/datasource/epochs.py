@@ -142,11 +142,11 @@ class WritableEpochSource(InMemoryEpochSource):
         for i in range(len(ep_times)):
             
             # if epoch starts and ends inside range, delete it
-            if ep_times[i]>=t1 and ep_stops[i]<t2:
+            if ep_times[i]>=t1 and ep_stops[i]<=t2:
                 ep_durations[i] = -1 # non-positive duration flags this epoch for clean up
             
             # if epoch starts before and ends inside range, truncate it
-            elif ep_times[i]<t1 and (t1<ep_stops[i]<t2):
+            elif ep_times[i]<t1 and (t1<ep_stops[i]<=t2):
                 ep_durations[i] = t1 - ep_times[i]
             
             # if epoch starts inside and ends after range, truncate it
