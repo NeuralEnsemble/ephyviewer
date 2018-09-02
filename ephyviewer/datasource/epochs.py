@@ -32,19 +32,21 @@ class InMemoryEpochSource(BaseEventAndEpoch):
         ep_times = self.all[chan]['time'][i_start:i_stop]
         ep_durations = self.all[chan]['duration'][i_start:i_stop]
         ep_labels = self.all[chan]['label'][i_start:i_stop]
-        return ep_times, ep_durations, ep_labels
+        ep_ids = np.arange(len(ep_times))[i_start:i_stop]
+        return ep_times, ep_durations, ep_labels, ep_ids
     
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
         ep_times = self.all[chan]['time']
         ep_durations = self.all[chan]['duration']
         ep_labels = self.all[chan]['label']
+        ep_ids = np.arange(len(ep_times))
         
         keep1 = (ep_times>=t_start) & (ep_times<t_stop) # epochs that start inside range
         keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_durations<t_stop) # epochs that end inside range
         keep3 = (ep_times<=t_start) & (ep_times+ep_durations>t_stop) # epochs that span the range
         keep = keep1 | keep2 | keep3
         
-        return ep_times[keep], ep_durations[keep], ep_labels[keep]
+        return ep_times[keep], ep_durations[keep], ep_labels[keep], ep_ids[keep]
 
 
 

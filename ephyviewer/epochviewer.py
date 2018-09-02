@@ -35,11 +35,15 @@ class EpochViewer_ParamController(Base_MultiChannel_ParamController):
 
 
 class RectItem(pg.GraphicsWidget):
-    def __init__(self, rect, border = 'r', fill = 'g'):
+    
+    clicked = QT.pyqtSignal(int)
+    
+    def __init__(self, rect, border = 'r', fill = 'g', id = -1):
         pg.GraphicsWidget.__init__(self)
         self.rect = rect
         self.border= border
         self.fill= fill
+        self.id = id
     
     def boundingRect(self):
         return QT.QRectF(0, 0, self.rect[2], self.rect[3])
@@ -48,6 +52,13 @@ class RectItem(pg.GraphicsWidget):
         p.setPen(pg.mkPen(self.border))
         p.setBrush(pg.mkBrush(self.fill))
         p.drawRect(self.boundingRect())
+
+    def mousePressEvent(self, event):
+        event.accept()
+
+    def mouseReleaseEvent(self, event):
+        event.accept()
+        self.clicked.emit(self.id)
 
 
 class DataGrabber(QT.QObject):
@@ -60,8 +71,8 @@ class DataGrabber(QT.QObject):
     def on_request_data(self, t_start, t_stop, visibles):
         data = {}
         for e, chan in enumerate(visibles):
-            times, durations, labels = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop)
-            data[chan] = (times, durations, labels)
+            times, durations, labels, ids = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop)
+            data[chan] = (times, durations, labels, ids)
         self.data_ready.emit(t_start, t_stop, visibles, data)
     
 
@@ -123,7 +134,7 @@ class EpochViewer(BaseMultiChannelViewer):
         self.graphicsview.setBackground(self.params['background_color'])
         
         for e, chan in enumerate(visibles):
-            times, durations, labels = data[chan]
+            times, durations, labels, _ = data[chan]
             
             color = self.by_channel_params.children()[e].param('color').value()
             color2 = QT.QColor(color)

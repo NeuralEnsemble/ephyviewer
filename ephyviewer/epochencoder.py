@@ -338,7 +338,7 @@ class EpochEncoder(ViewerBase):
         
         self.graphicsview.setBackground(self.params['background_color'])
         
-        times, durations, labels = data[0]
+        times, durations, labels, ids = data[0]
         #~ print(data)
         n = len(self.source.possible_labels)
         
@@ -350,8 +350,8 @@ class EpochEncoder(ViewerBase):
                 ypos = n - ind - 1
             else:
                 ypos = 0
-            item = RectItem([times[i],  ypos,durations[i], .9],  border=color, fill=color)
-            item = RectItem([times[i],  ypos,durations[i], .9],  border='#FFFFFF', fill=color)
+            item = RectItem([times[i],  ypos,durations[i], .9],  border='#FFFFFF', fill=color, id=ids[i])
+            item.clicked.connect(self.on_rect_clicked)
             item.setPos(times[i],  ypos)
             self.plot.addItem(item)
             self.rect_items.append(item)
@@ -485,7 +485,7 @@ class EpochEncoder(ViewerBase):
         self.table_widget.clear()
         self.table_widget.blockSignals(False)
         #~ ev = self.source.all_events[ind]
-        times, durations, labels = self.source.get_chunk(chan=0,  i_start=None, i_stop=None)
+        times, durations, labels, _ = self.source.get_chunk(chan=0,  i_start=None, i_stop=None)
         self.table_widget.setColumnCount(4)
         self.table_widget.setRowCount(times.size)
         self.table_widget.setHorizontalHeaderLabels(['start', 'stop', 'duration', 'label'])
@@ -505,6 +505,19 @@ class EpochEncoder(ViewerBase):
             combo_labels.currentIndexChanged.connect(self.on_change_label)
             self.table_widget.setCellWidget(r, 3, combo_labels)
     
+    def on_rect_clicked(self, id):
+        
+        # select the epoch in the data table
+        self.table_widget.blockSignals(True)
+        self.table_widget.setCurrentCell(id, 3) # select the label combo box
+        self.table_widget.blockSignals(False)
+        
+        # set time to epoch start
+        t, _, _, _= self.source.get_chunk(chan=0,  i_start=id, i_stop=id+1)
+        self.t = t[0]
+        self.refresh()
+        self.time_changed.emit(self.t)
+    
     def on_seek_table(self):
         if self.table_widget.rowCount()==0:
             return
@@ -512,7 +525,7 @@ class EpochEncoder(ViewerBase):
         if len(selected_ind)==0:
             return
         i = selected_ind[0].row()
-        t, _, _= self.source.get_chunk(chan=0,  i_start=i, i_stop=i+1)
+        t, _, _, _= self.source.get_chunk(chan=0,  i_start=i, i_stop=i+1)
         self.t = t[0]
         self.refresh()
         self.time_changed.emit(self.t)
