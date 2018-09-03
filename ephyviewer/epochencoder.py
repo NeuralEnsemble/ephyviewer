@@ -486,7 +486,7 @@ class EpochEncoder(ViewerBase):
         self.table_widget.clear()
         self.table_widget.blockSignals(False)
         #~ ev = self.source.all_events[ind]
-        times, durations, labels, _ = self.source.get_chunk(chan=0,  i_start=None, i_stop=None)
+        times, durations, labels, ids = self.source.ep_times, self.source.ep_durations, self.source.ep_labels, self.source.ep_ids
         self.table_widget.setColumnCount(4)
         self.table_widget.setRowCount(times.size)
         self.table_widget.setHorizontalHeaderLabels(['start', 'stop', 'duration', 'label'])
@@ -503,27 +503,33 @@ class EpochEncoder(ViewerBase):
             combo_labels = QT.QComboBox()
             combo_labels.addItems(self.source.possible_labels)
             combo_labels.setCurrentText(labels[r])
-            combo_labels.currentIndexChanged.connect(self.on_change_label)
+            combo_labels.currentIndexChanged.connect(
+                lambda label_index, ep_id=ids[r]: self.on_change_label(ep_id, self.source.possible_labels[label_index])
+            )
             self.table_widget.setCellWidget(r, 3, combo_labels)
     
     def on_rect_clicked(self, id):
         
+        # get index corresponding to epoch id
+        ind = self.source.id_to_ind[id]
+        
         # select the epoch in the data table
         self.table_widget.blockSignals(True)
-        self.table_widget.setCurrentCell(id, 3) # select the label combo box
+        self.table_widget.setCurrentCell(ind, 3) # select the label combo box
         self.table_widget.blockSignals(False)
         
         # set time to epoch start
-        t, _, _, _= self.source.get_chunk(chan=0,  i_start=id, i_stop=id+1)
-        self.t = t[0]
+        self.t = self.source.ep_times[ind]
         self.refresh()
         self.time_changed.emit(self.t)
     
     def on_rect_doubleclicked(self, id):
         
+        # get index corresponding to epoch id
+        ind = self.source.id_to_ind[id]
+        
         # set region to epoch start and stop
-        t, dur, _, _= self.source.get_chunk(chan=0,  i_start=id, i_stop=id+1)
-        self.region.setRegion((t[0], t[0]+dur[0]))
+        self.region.setRegion((self.source.ep_times[ind], self.source.ep_stops[ind]))
     
     def on_seek_table(self):
         if self.table_widget.rowCount()==0:
@@ -531,16 +537,18 @@ class EpochEncoder(ViewerBase):
         selected_ind = self.table_widget.selectedIndexes()
         if len(selected_ind)==0:
             return
-        i = selected_ind[0].row()
-        t, _, _, _= self.source.get_chunk(chan=0,  i_start=i, i_stop=i+1)
-        self.t = t[0]
+        ind = selected_ind[0].row()
+        self.t = self.source.ep_times[ind]
         self.refresh()
         self.time_changed.emit(self.t)
         
-    def on_change_label(self):
-        labels = []
-        for r in range(self.table_widget.rowCount()):
-            labels.append(self.table_widget.cellWidget(r, 3).currentText())
-        self.source.change_labels(np.asarray(labels))
+    def on_change_label(self, id, new_label):
+        
+        # get index corresponding to epoch id
+        ind = self.source.id_to_ind[id]
+        
+        # change epoch label and update plot
+        self.source.ep_labels[ind] = new_label
         self.refresh()
+        # refresh_table is not called to avoid deselecting table cell
         

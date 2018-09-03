@@ -27,19 +27,24 @@ class InMemoryEpochSource(BaseEventAndEpoch):
         s = [ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0]
         self._t_stop = max(s) if len(s)>0 else 0
 
+        # assign each epoch a fixed, unique integer id
+        self.next_id = 0
+        for chan in self.all:
+            chan['id'] = np.arange(self.next_id, self.next_id + len(chan['time']))
+            self.next_id += len(chan['time'])
 
     def get_chunk(self, chan=0,  i_start=None, i_stop=None):
         ep_times = self.all[chan]['time'][i_start:i_stop]
         ep_durations = self.all[chan]['duration'][i_start:i_stop]
         ep_labels = self.all[chan]['label'][i_start:i_stop]
-        ep_ids = np.arange(len(ep_times))[i_start:i_stop]
+        ep_ids = self.all[chan]['id'][i_start:i_stop]
         return ep_times, ep_durations, ep_labels, ep_ids
     
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
         ep_times = self.all[chan]['time']
         ep_durations = self.all[chan]['duration']
         ep_labels = self.all[chan]['label']
-        ep_ids = np.arange(len(ep_times))
+        ep_ids = self.all[chan]['id']
         
         keep1 = (ep_times>=t_start) & (ep_times<t_stop) # epochs that start inside range
         keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_durations<t_stop) # epochs that end inside range
@@ -68,15 +73,12 @@ class WritableEpochSource(InMemoryEpochSource):
         
         InMemoryEpochSource.__init__(self, all_epochs=[epoch])
         
-        #~ self._t_stop = max([ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0])
-        
-        self.times = self.all[0]['time']
-        self.durations = self.all[0]['duration']
-        
         assert self.all[0]['time'].dtype.kind=='f'
         assert self.all[0]['duration'].dtype.kind=='f'
-        
         assert np.all(np.in1d(epoch['label'], self.possible_labels))
+        
+        # put the epochs into a canonical order after loading
+        self._clean_and_set(self.all[0]['time'], self.all[0]['duration'], self.all[0]['label'], self.all[0]['id'])
         
         if color_labels is None:
             n = len(self.possible_labels)
@@ -87,6 +89,46 @@ class WritableEpochSource(InMemoryEpochSource):
         self.color_labels = color_labels
         self.label_to_color = dict(zip(self.possible_labels, self.color_labels))
         
+    @property
+    def ep_times(self):
+        return self.all[0]['time']
+    
+    @ep_times.setter
+    def ep_times(self, arr):
+        self.all[0]['time'] = arr
+
+    @property
+    def ep_durations(self):
+        return self.all[0]['duration']
+    
+    @ep_durations.setter
+    def ep_durations(self, arr):
+        self.all[0]['duration'] = arr
+
+    @property
+    def ep_labels(self):
+        return self.all[0]['label']
+    
+    @ep_labels.setter
+    def ep_labels(self, arr):
+        self.all[0]['label'] = arr
+
+    @property
+    def ep_ids(self):
+        return self.all[0]['id']
+    
+    @ep_ids.setter
+    def ep_ids(self, arr):
+        self.all[0]['id'] = arr
+    
+    @property
+    def ep_stops(self):
+        return self.ep_times + self.ep_durations
+
+    @property
+    def id_to_ind(self):
+        return dict((id,ind) for ind,id in enumerate(self.ep_ids))
+    
     def get_chunk(self, chan=0,  i_start=None, i_stop=None):
         assert chan==0
         return InMemoryEpochSource. get_chunk(self, chan=chan,  i_start=i_start, i_stop=i_stop)
@@ -99,45 +141,42 @@ class WritableEpochSource(InMemoryEpochSource):
     def color_by_label(self, label):
         return self.label_to_color[label]
     
-    def _clean_and_set(self,ep_times, ep_durations, ep_labels):
+    def _clean_and_set(self, ep_times, ep_durations, ep_labels, ep_ids):
         
         # remove bad epochs
         keep = ep_durations >= 1e-6 # discard epochs shorter than 1 microsecond or with negative duration
         ep_times = ep_times[keep]
         ep_durations = ep_durations[keep]
         ep_labels = ep_labels[keep]
+        ep_ids = ep_ids[keep]
         
         # sort epochs by start time
         ordering = np.argsort(ep_times)
         ep_times = ep_times[ordering]
         ep_durations = ep_durations[ordering]
         ep_labels = ep_labels[ordering]
+        ep_ids = ep_ids[ordering]
         
         # set epochs for the WritableEpochSource
-        self.all[0]['time'] = ep_times
-        self.all[0]['duration'] = ep_durations
-        self.all[0]['label'] = ep_labels
+        self.ep_times = ep_times
+        self.ep_durations = ep_durations
+        self.ep_labels = ep_labels
+        self.ep_ids = ep_ids
     
     def add_epoch(self, t1, duration, label):
         
-        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
+        ep_times, ep_durations, ep_labels, ep_ids = self.ep_times, self.ep_durations, self.ep_labels, self.ep_ids
         ep_times = np.append(ep_times, t1)
         ep_durations = np.append(ep_durations, duration)
         ep_labels = np.append(ep_labels, label)
+        ep_ids = np.append(ep_ids, self.next_id)
+        self.next_id += 1
         
-        self._clean_and_set(ep_times, ep_durations, ep_labels)
-    
-    def change_labels(self, new_labels):
-        
-        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
-        assert(ep_labels.size == new_labels.size)
-        ep_labels = new_labels
-        self._clean_and_set(ep_times, ep_durations, ep_labels)
+        self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
     
     def delete_in_between(self, t1, t2):
         
-        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
-        ep_stops = ep_times + ep_durations
+        ep_times, ep_durations, ep_stops, ep_labels, ep_ids = self.ep_times, self.ep_durations, self.ep_stops, self.ep_labels, self.ep_ids
         
         for i in range(len(ep_times)):
             
@@ -161,13 +200,14 @@ class WritableEpochSource(InMemoryEpochSource):
                 ep_times = np.append(ep_times, t2)
                 ep_durations = np.append(ep_durations, ep_stops[i]-t2)
                 ep_labels = np.append(ep_labels, ep_labels[i])
+                ep_ids = np.append(ep_ids, self.next_id)
+                self.next_id += 1
         
-        self._clean_and_set(ep_times, ep_durations, ep_labels)
+        self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
     
     def merge_neighbors(self):
         
-        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
-        ep_stops = ep_times + ep_durations
+        ep_times, ep_durations, ep_stops, ep_labels, ep_ids = self.ep_times, self.ep_durations, self.ep_stops, self.ep_labels, self.ep_ids
         
         for label in self.possible_labels:
             inds, = np.nonzero(ep_labels == label)
@@ -185,11 +225,12 @@ class WritableEpochSource(InMemoryEpochSource):
                     # delete the first epoch
                     ep_durations[inds[i]] = -1 # non-positive duration flags this epoch for clean up
         
-        self._clean_and_set(ep_times, ep_durations, ep_labels)
+        self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
     
     
     def fill_blank(self, method='from_left'):
-        ep_times, ep_durations, ep_labels = self.all[0]['time'], self.all[0]['duration'], self.all[0]['label']
+        
+        ep_times, ep_durations, ep_labels, ep_ids = self.ep_times, self.ep_durations, self.ep_labels, self.ep_ids
         
         mask = ((ep_times[:-1] + ep_durations[:-1])<ep_times[1:])
         inds,  = np.nonzero(mask)
@@ -212,7 +253,7 @@ class WritableEpochSource(InMemoryEpochSource):
                 ep_durations[ind+1] += gap/2.
                 
         
-        self._clean_and_set(ep_times, ep_durations, ep_labels)
+        self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
     
     def load(self):
         """
@@ -280,19 +321,7 @@ class CsvEpochSource(WritableEpochSource):
 
     def save(self):
         df = pd.DataFrame()
-        df['time'] = np.round(self.all[0]['time'], 6)         # round to nearest microsecond
-        df['duration'] = np.round(self.all[0]['duration'], 6) # round to nearest microsecond
-        df['label'] = self.all[0]['label']
+        df['time'] = np.round(self.ep_times, 6)         # round to nearest microsecond
+        df['duration'] = np.round(self.ep_durations, 6) # round to nearest microsecond
+        df['label'] = self.ep_labels
         df.to_csv(self.filename, index=False)
-
-
-
-
-def insert_item(arr, ind, value):
-    new_arr = np.zeros(arr.size+1, dtype=arr.dtype)
-    
-    new_arr[:ind] = arr[:ind]
-    new_arr[ind] = value
-    new_arr[ind+1:] = arr[ind:]
-    
-    return new_arr
