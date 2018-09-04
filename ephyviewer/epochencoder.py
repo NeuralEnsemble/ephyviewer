@@ -226,6 +226,28 @@ class EpochEncoder(ViewerBase):
         self.but_del_region.clicked.connect(self.delete_region)
         
         
+        # Table operations box
+        
+        group_box = QT.QGroupBox('Table operations')
+        group_box_layout = QT.QVBoxLayout()
+        group_box.setLayout(group_box_layout)
+        g.addWidget(group_box, 0, 2, 3, 1)
+        
+        # Table operations buttons
+        
+        but = QT.PushButton('Delete')
+        group_box_layout.addWidget(but)
+        but.clicked.connect(self.delete_selected_epoch)
+        
+        but = QT.PushButton('Duplicate')
+        group_box_layout.addWidget(but)
+        but.clicked.connect(self.duplicate_selected_epoch)
+        
+        but = QT.PushButton('Split')
+        group_box_layout.addWidget(but)
+        but.clicked.connect(self.split_selected_epoch)
+        
+        
         self.table_widget = QT.QTableWidget()
         h.addWidget(self.table_widget)
         self.table_widget.itemSelectionChanged.connect(self.on_seek_table)
@@ -518,11 +540,6 @@ class EpochEncoder(ViewerBase):
         self.table_widget.setCurrentCell(ind, 3) # select the label combo box
         self.table_widget.blockSignals(False)
         
-        # set time to epoch start
-        self.t = self.source.ep_times[ind]
-        self.refresh()
-        self.time_changed.emit(self.t)
-    
     def on_rect_doubleclicked(self, id):
         
         # get index corresponding to epoch id
@@ -552,3 +569,37 @@ class EpochEncoder(ViewerBase):
         self.refresh()
         # refresh_table is not called to avoid deselecting table cell
         
+    def delete_selected_epoch(self):
+        if self.table_widget.rowCount()==0:
+            return
+        selected_ind = self.table_widget.selectedIndexes()
+        if len(selected_ind)==0:
+            return
+        ind = selected_ind[0].row()
+        self.source.delete_epoch(ind)
+        self.refresh()
+        self.refresh_table()
+    
+    def duplicate_selected_epoch(self):
+        if self.table_widget.rowCount()==0:
+            return
+        selected_ind = self.table_widget.selectedIndexes()
+        if len(selected_ind)==0:
+            return
+        ind = selected_ind[0].row()
+        self.source.add_epoch(self.source.ep_times[ind], self.source.ep_durations[ind], self.source.ep_labels[ind])
+        self.refresh()
+        self.refresh_table()
+    
+    def split_selected_epoch(self):
+        if self.table_widget.rowCount()==0:
+            return
+        selected_ind = self.table_widget.selectedIndexes()
+        if len(selected_ind)==0:
+            return
+        ind = selected_ind[0].row()
+        if self.t <= self.source.ep_times[ind] or self.source.ep_stops[ind] <= self.t:
+            return
+        self.source.split_epoch(ind, self.t)
+        self.refresh()
+        self.refresh_table()

@@ -174,6 +174,16 @@ class WritableEpochSource(InMemoryEpochSource):
         
         self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
     
+    def delete_epoch(self, ind):
+        
+        ep_times, ep_durations, ep_labels, ep_ids = self.ep_times, self.ep_durations, self.ep_labels, self.ep_ids
+        ep_times = np.delete(ep_times, ind)
+        ep_durations = np.delete(ep_durations, ind)
+        ep_labels = np.delete(ep_labels, ind)
+        ep_ids = np.delete(ep_ids, ind)
+        
+        self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
+    
     def delete_in_between(self, t1, t2):
         
         ep_times, ep_durations, ep_stops, ep_labels, ep_ids = self.ep_times, self.ep_durations, self.ep_stops, self.ep_labels, self.ep_ids
@@ -227,6 +237,21 @@ class WritableEpochSource(InMemoryEpochSource):
         
         self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
     
+    def split_epoch(self, ind, t_split):
+        
+        ep_times, ep_durations, ep_stops, ep_labels, ep_ids = self.ep_times, self.ep_durations, self.ep_stops, self.ep_labels, self.ep_ids
+        
+        if t_split <= ep_times[ind] or ep_stops[ind] <= t_split:
+            return
+        
+        ep_durations[ind] = t_split - ep_times[ind]
+        ep_times = np.append(ep_times, t_split)
+        ep_durations = np.append(ep_durations, ep_stops[ind]-t_split)
+        ep_labels = np.append(ep_labels, ep_labels[ind])
+        ep_ids = np.append(ep_ids, self._next_id)
+        self._next_id += 1
+        
+        self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
     
     def fill_blank(self, method='from_left'):
         
