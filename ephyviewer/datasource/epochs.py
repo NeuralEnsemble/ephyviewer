@@ -28,10 +28,10 @@ class InMemoryEpochSource(BaseEventAndEpoch):
         self._t_stop = max(s) if len(s)>0 else 0
 
         # assign each epoch a fixed, unique integer id
-        self.next_id = 0
+        self._next_id = 0
         for chan in self.all:
-            chan['id'] = np.arange(self.next_id, self.next_id + len(chan['time']))
-            self.next_id += len(chan['time'])
+            chan['id'] = np.arange(self._next_id, self._next_id + len(chan['time']))
+            self._next_id += len(chan['time'])
 
     def get_chunk(self, chan=0,  i_start=None, i_stop=None):
         ep_times = self.all[chan]['time'][i_start:i_stop]
@@ -169,8 +169,8 @@ class WritableEpochSource(InMemoryEpochSource):
         ep_times = np.append(ep_times, t1)
         ep_durations = np.append(ep_durations, duration)
         ep_labels = np.append(ep_labels, label)
-        ep_ids = np.append(ep_ids, self.next_id)
-        self.next_id += 1
+        ep_ids = np.append(ep_ids, self._next_id)
+        self._next_id += 1
         
         self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
     
@@ -200,8 +200,8 @@ class WritableEpochSource(InMemoryEpochSource):
                 ep_times = np.append(ep_times, t2)
                 ep_durations = np.append(ep_durations, ep_stops[i]-t2)
                 ep_labels = np.append(ep_labels, ep_labels[i])
-                ep_ids = np.append(ep_ids, self.next_id)
-                self.next_id += 1
+                ep_ids = np.append(ep_ids, self._next_id)
+                self._next_id += 1
         
         self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
     
