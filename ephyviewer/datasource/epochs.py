@@ -27,31 +27,23 @@ class InMemoryEpochSource(BaseEventAndEpoch):
         s = [ np.max(e['time']+e['duration']) for e in self.all if len(e['time'])>0]
         self._t_stop = max(s) if len(s)>0 else 0
 
-        # assign each epoch a fixed, unique integer id
-        self._next_id = 0
-        for chan in self.all:
-            chan['id'] = np.arange(self._next_id, self._next_id + len(chan['time']))
-            self._next_id += len(chan['time'])
-
     def get_chunk(self, chan=0,  i_start=None, i_stop=None):
         ep_times = self.all[chan]['time'][i_start:i_stop]
         ep_durations = self.all[chan]['duration'][i_start:i_stop]
         ep_labels = self.all[chan]['label'][i_start:i_stop]
-        ep_ids = self.all[chan]['id'][i_start:i_stop]
-        return ep_times, ep_durations, ep_labels, ep_ids
+        return ep_times, ep_durations, ep_labels
     
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
         ep_times = self.all[chan]['time']
         ep_durations = self.all[chan]['duration']
         ep_labels = self.all[chan]['label']
-        ep_ids = self.all[chan]['id']
         
         keep1 = (ep_times>=t_start) & (ep_times<t_stop) # epochs that start inside range
         keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_durations<t_stop) # epochs that end inside range
         keep3 = (ep_times<=t_start) & (ep_times+ep_durations>t_stop) # epochs that span the range
         keep = keep1 | keep2 | keep3
         
-        return ep_times[keep], ep_durations[keep], ep_labels[keep], ep_ids[keep]
+        return ep_times[keep], ep_durations[keep], ep_labels[keep]
 
 
 
@@ -72,6 +64,12 @@ class WritableEpochSource(InMemoryEpochSource):
             epoch = self.load()
         
         InMemoryEpochSource.__init__(self, all_epochs=[epoch])
+        
+        # assign each epoch a fixed, unique integer id
+        self._next_id = 0
+        for chan in self.all:
+            chan['id'] = np.arange(self._next_id, self._next_id + len(chan['time']))
+            self._next_id += len(chan['time'])
         
         assert self.all[0]['time'].dtype.kind=='f'
         assert self.all[0]['duration'].dtype.kind=='f'
@@ -131,12 +129,26 @@ class WritableEpochSource(InMemoryEpochSource):
     
     def get_chunk(self, chan=0,  i_start=None, i_stop=None):
         assert chan==0
-        return InMemoryEpochSource. get_chunk(self, chan=chan,  i_start=i_start, i_stop=i_stop)
+        ep_times = self.all[chan]['time'][i_start:i_stop]
+        ep_durations = self.all[chan]['duration'][i_start:i_stop]
+        ep_labels = self.all[chan]['label'][i_start:i_stop]
+        ep_ids = self.all[chan]['id'][i_start:i_stop]
+        return ep_times, ep_durations, ep_labels, ep_ids
+
     
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
-        #~ print(chan)
         assert chan==0
-        return InMemoryEpochSource.get_chunk_by_time(self, chan=chan,  t_start=t_start, t_stop=t_stop)
+        ep_times = self.all[chan]['time']
+        ep_durations = self.all[chan]['duration']
+        ep_labels = self.all[chan]['label']
+        ep_ids = self.all[chan]['id']
+
+        keep1 = (ep_times>=t_start) & (ep_times<t_stop) # epochs that start inside range
+        keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_durations<t_stop) # epochs that end inside range
+        keep3 = (ep_times<=t_start) & (ep_times+ep_durations>t_stop) # epochs that span the range
+        keep = keep1 | keep2 | keep3
+
+        return ep_times[keep], ep_durations[keep], ep_labels[keep], ep_ids[keep]
     
     def color_by_label(self, label):
         return self.label_to_color[label]

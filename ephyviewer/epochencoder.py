@@ -14,6 +14,7 @@ import pyqtgraph as pg
 
 from .base import ViewerBase, Base_ParamController, MyViewBox, same_param_tree
 from .epochviewer import RectItem, DataGrabber
+from .datasource import WritableEpochSource
 
 
 default_params = [
@@ -58,6 +59,8 @@ class EpochEncoder(ViewerBase):
     
     def __init__(self, **kargs):
         ViewerBase.__init__(self, **kargs)
+        
+        assert isinstance(self.source, WritableEpochSource)
         
         self.make_params()
         self.set_layout()

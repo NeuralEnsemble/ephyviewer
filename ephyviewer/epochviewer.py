@@ -76,8 +76,7 @@ class DataGrabber(QT.QObject):
     def on_request_data(self, t_start, t_stop, visibles):
         data = {}
         for e, chan in enumerate(visibles):
-            times, durations, labels, ids = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop)
-            data[chan] = (times, durations, labels, ids)
+            data[chan] = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop)
         self.data_ready.emit(t_start, t_stop, visibles, data)
     
 
@@ -139,7 +138,13 @@ class EpochViewer(BaseMultiChannelViewer):
         self.graphicsview.setBackground(self.params['background_color'])
         
         for e, chan in enumerate(visibles):
-            times, durations, labels, _ = data[chan]
+            
+            if len(data[chan])==3:
+                times, durations, labels = data[chan]
+            elif len(data[chan])==4:
+                times, durations, labels, _ = data[chan]
+            else:
+                raise ValueError("data has unexpected dimensions")
             
             color = self.by_channel_params.children()[e].param('color').value()
             color2 = QT.QColor(color)

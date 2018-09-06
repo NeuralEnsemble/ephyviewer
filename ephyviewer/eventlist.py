@@ -51,6 +51,10 @@ class EventList(ViewerBase):
             times, labels = data
         elif len(data)==3:
             times, _, labels = data
+        elif len(data)==4:
+            times, _, labels, _ = data
+        else:
+            raise ValueError("data has unexpected dimensions")
         
         for i in range(times.size):
             if labels is None:
@@ -69,6 +73,10 @@ class EventList(ViewerBase):
             times, labels = data
         elif len(data)==3:
             times, _, labels = data
+        elif len(data)==4:
+            times, _, labels, _ = data
+        else:
+            raise ValueError("data has unexpected dimensions")
         
         if len(times)>0:
             t = float(times[0])
