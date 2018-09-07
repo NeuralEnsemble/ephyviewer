@@ -168,6 +168,9 @@ def same_param_tree(tree1, tree2):
 
 
 class Base_ParamController(QT.QWidget):
+    
+    xsize_zoomed = QT.pyqtSignal(float)
+    
     def __init__(self, parent=None, viewer=None):
         QT.QWidget.__init__(self, parent)
         
@@ -198,6 +201,7 @@ class Base_ParamController(QT.QWidget):
         factor = min(factor, 1)
         newsize = self.viewer.params['xsize']*(factor+1.)
         self.viewer.params['xsize'] = max(newsize, MIN_XSIZE)
+        self.xsize_zoomed.emit(self.viewer.params['xsize'])
 
 
 
