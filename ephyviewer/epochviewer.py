@@ -54,16 +54,15 @@ class RectItem(pg.GraphicsWidget):
         p.setBrush(pg.mkBrush(self.fill))
         p.drawRect(self.boundingRect())
 
-    def mousePressEvent(self, event):
-        event.accept()
-
-    def mouseReleaseEvent(self, event):
-        event.accept()
-        self.clicked.emit(self.id)
-
-    def mouseDoubleClickEvent(self, event):
-        event.accept()
-        self.doubleclicked.emit(self.id)
+    def mouseClickEvent(self, event):
+        if event.button()== QT.LeftButton:
+            event.accept()
+            if event.double():
+                self.doubleclicked.emit(self.id)
+            else:
+                self.clicked.emit(self.id)
+        else:
+            event.ignore()
 
 
 class DataGrabber(QT.QObject):

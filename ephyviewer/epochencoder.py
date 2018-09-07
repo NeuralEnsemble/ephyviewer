@@ -486,13 +486,12 @@ class EpochEncoder(ViewerBase):
         self.refresh_table()
         
     
-    def on_range_visibility_changed(self, flag, refresh=True):
+    def on_range_visibility_changed(self, flag, refresh=True, shift_region=True):
         enabled = self.but_range.isChecked()
         #~ print(enabled)
         for w in (self.spin_limit1, self.spin_limit2, self.combo_labels, self.but_apply_region, self.but_del_region):
             w.setEnabled(enabled)
-            
-        if enabled:
+        if enabled and shift_region:
             rgn = self.region.getRegion()
             rgn = (self.t, self.t + rgn[1] - rgn[0])
             self.region.setRegion(rgn)
@@ -550,6 +549,10 @@ class EpochEncoder(ViewerBase):
         
         # set region to epoch start and stop
         self.region.setRegion((self.source.ep_times[ind], self.source.ep_stops[ind]))
+    
+        # show the region if it isn't already visible
+        self.but_range.setChecked(True)
+        self.on_range_visibility_changed(None, shift_region = False)
     
     def on_seek_table(self):
         if self.table_widget.rowCount()==0:
