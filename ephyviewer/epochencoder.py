@@ -252,6 +252,7 @@ class EpochEncoder(ViewerBase):
             self.plot.addItem(label_item)
             self.label_items.append(label_item)
 
+        self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
         
 
     def show_params_controller(self):
