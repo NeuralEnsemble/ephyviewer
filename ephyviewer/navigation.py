@@ -117,6 +117,14 @@ class NavigationToolBar(QT.QWidget) :
             #trick for separator
             h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
 
+            # add arrow key shortcuts for stepping through time
+            prev_step_shortcut = QT.QShortcut(self)
+            next_step_shortcut = QT.QShortcut(self)
+            prev_step_shortcut.setKey(QT.Qt.Key_Left)
+            next_step_shortcut.setKey(QT.Qt.Key_Right)
+            prev_step_shortcut.activated.connect(self.prev_step)
+            next_step_shortcut.activated.connect(self.next_step)
+
         
 
         
