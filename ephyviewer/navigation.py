@@ -90,6 +90,10 @@ class NavigationToolBar(QT.QWidget) :
             #trick for separator
             h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
             
+            # add spacebar shortcut for play/pause
+            play_pause_shortcut = QT.QShortcut(self)
+            play_pause_shortcut.setKey(' ')
+            play_pause_shortcut.activated.connect(self.on_play_pause_shortcut)
         
         self.steps = ['60s','10s', '1s', '100ms', '50ms', '5ms' ]
         
@@ -168,6 +172,12 @@ class NavigationToolBar(QT.QWidget) :
     def on_stop_pause(self):
         self.timer_play.stop()
         self.seek(self.t)
+    
+    def on_play_pause_shortcut(self):
+        if self.timer_play.isActive():
+            self.on_stop_pause()
+        else:
+            self.on_play()
     
     def on_timer_play_interval(self):
         actual_time = time.time()
