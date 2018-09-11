@@ -138,7 +138,7 @@ class EpochViewer(BaseMultiChannelViewer):
 
             if self.params['display_labels']:
                 label_name = '{}: {}'.format(chan, self.source.get_channel_name(chan=chan))
-                label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+                label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
                 self.plot.addItem(label)
                 label.setPos(t_start, ypos+0.45)
         

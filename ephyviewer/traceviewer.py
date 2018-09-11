@@ -382,7 +382,7 @@ class TraceViewer(BaseMultiChannelViewer):
             self.curves.append(curve)
             
             ch_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
-            label = pg.TextItem(ch_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+            label = pg.TextItem(ch_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
             
             self.plot.addItem(label)
             self.channel_labels.append(label)
