@@ -383,6 +383,7 @@ class TraceViewer(BaseMultiChannelViewer):
             
             ch_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
             label = pg.TextItem(ch_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
+            label.setZValue(2) # ensure labels are drawn above scatter
             
             self.plot.addItem(label)
             self.channel_labels.append(label)
