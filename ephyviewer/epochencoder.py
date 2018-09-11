@@ -294,6 +294,7 @@ class EpochEncoder(ViewerBase):
         for i, label in enumerate(self.source.possible_labels):
             color = self.by_label_params['label'+str(i), 'color']
             label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 120)))
+            label_item.setZValue(11)
             self.plot.addItem(label_item)
             self.label_items.append(label_item)
 
