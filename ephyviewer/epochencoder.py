@@ -240,7 +240,8 @@ class EpochEncoder(ViewerBase):
         self.plot.addItem(self.region, ignoreBounds=True)
         self.region.sigRegionChanged.connect(self.on_region_changed)
 
-        self.vline = pg.InfiniteLine(angle=90, movable=False, pen='#00FF00')
+        self.vline = pg.InfiniteLine(angle=90, movable=False, pen='#FFFFFFAA')
+        self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
         
         self.rect_items = []
