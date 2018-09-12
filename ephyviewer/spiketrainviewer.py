@@ -106,7 +106,8 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
 
     
     def initialize_plot(self):
-        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF00')
+        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
+        self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
         
         self.scatter = pg.ScatterPlotItem(size=10, pxMode = True, symbol='|')
@@ -117,7 +118,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
         for c in range(self.source.nb_channel):
             label_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
             color = self.by_channel_params.children()[c].param('color').value()
-            label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+            label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
             self.plot.addItem(label)
             self.labels.append(label)
     

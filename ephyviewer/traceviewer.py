@@ -368,7 +368,8 @@ class TraceViewer(BaseMultiChannelViewer):
     
     def initialize_plot(self):
         
-        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF0055')
+        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
+        self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
         
         self.curves = []
@@ -382,7 +383,8 @@ class TraceViewer(BaseMultiChannelViewer):
             self.curves.append(curve)
             
             ch_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
-            label = pg.TextItem(ch_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+            label = pg.TextItem(ch_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
+            label.setZValue(2) # ensure labels are drawn above scatter
             
             self.plot.addItem(label)
             self.channel_labels.append(label)

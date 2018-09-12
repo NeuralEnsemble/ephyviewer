@@ -285,7 +285,8 @@ class EpochEncoder(ViewerBase):
         self.plot.addItem(self.region, ignoreBounds=True)
         self.region.sigRegionChanged.connect(self.on_region_changed)
 
-        self.vline = pg.InfiniteLine(angle=90, movable=False, pen='#00FF00')
+        self.vline = pg.InfiniteLine(angle=90, movable=False, pen='#FFFFFFAA')
+        self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
         
         self.rect_items = []
@@ -293,7 +294,7 @@ class EpochEncoder(ViewerBase):
         self.label_items = []
         for i, label in enumerate(self.source.possible_labels):
             color = self.by_label_params['label'+str(i), 'color']
-            label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 120)))
+            label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
             label_item.setZValue(11)
             self.plot.addItem(label_item)
             self.label_items.append(label_item)

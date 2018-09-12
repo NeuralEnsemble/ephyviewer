@@ -158,11 +158,12 @@ class EpochViewer(BaseMultiChannelViewer):
 
             if self.params['display_labels']:
                 label_name = '{}: {}'.format(chan, self.source.get_channel_name(chan=chan))
-                label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 180)))
+                label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
                 self.plot.addItem(label)
                 label.setPos(t_start, ypos+0.45)
         
-        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#00FF0055')
+        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
+        self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
 
         self.vline.setPos(self.t)
