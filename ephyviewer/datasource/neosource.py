@@ -26,12 +26,87 @@ except ImportError:
 
 from .signals import BaseAnalogSignalSource
 from .events import BaseEventAndEpoch
-from .spikes import BaseSpikeSource
+from .spikes import BaseSpikeSource, InMemorySpikeSource
 
 
 logger = logging.getLogger()
 
 #~ print('HAVE_NEO', HAVE_NEO)
+
+
+
+## neo.core stuff
+
+class NeoAnalogSignalSource(BaseAnalogSignalSource):
+    def __init__(self, neo_sig):
+        assert isinstance(neo_sig, neo.AnalogSignal), 'Not an neo.AnalogSignal'
+        self.neo_sig = neo_sig
+        
+        self.sample_rate = float(neo_sig.sampling_rate.rescale('Hz').magnitude)
+        
+    @property
+    def nb_channel(self):
+        return self.neo_sig.shape[1]
+
+    def get_channel_name(self, chan=0):
+        if self.neo_sig.channelindex is not None:
+            return neo_sig.channelindex.channel_names[chan]
+        else:
+            return 'NoName{}'.format(chan)
+
+    @property
+    def t_start(self):
+        return float(self.neo_sig.t_start.rescale('s').magnitude)
+
+    @property
+    def t_stop(self):
+        return float(self.neo_sig.t_stop.rescale('s').magnitude)
+    
+    def get_length(self):
+        return self.neo_sig.shape[0]
+
+    def get_shape(self):
+        return self.neo_sig.shape
+
+    def get_chunk(self, i_start=None, i_stop=None):
+        sigs = self.neo_sig[i_start:i_stop].magnitude
+        return sigs
+
+
+#~ class NeoSpikeTrainSource(InMemorySpikeSource):
+    #~ def __init__(self, neo_spiketrains=[]):
+        
+        #~ all_spikes = []
+        #~ for neo_spiketrain in neo_spiketrains:
+            #~ name = neo_spiketrain.name
+            #~ if name is None:
+                #~ name = ''
+            #~ print(neo_spiketrain.times.rescale('s').magnitude)
+            #~ all_spikes.append({'time' : neo_spiketrain.times.rescale('s').magnitude,
+                                        #~ 'name' : name})
+        
+        #~ InMemorySpikeSource.__init__(self, all_spikes=all_spikes)
+
+
+def get_sources_from_neo_segment(neo_seg):
+    assert HAVE_NEO
+    assert isinstance(neo_seg, neo.Segment)
+    
+    sources = {'signal':[], 'epoch':[], 'spike':[]}
+    
+    for neo_sig in neo_seg.analogsignals:
+        # noramly neo signals are group by same sampling rate
+        sources['signal'].append(NeoAnalogSignalSource(neo_sig))
+
+    #~ sources['spike'].append(NeoSpikeTrainSource(neo_seg.spiketrains))
+    
+    return sources
+    
+
+
+
+
+## neo.rawio stuff
 
 class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
     def __init__(self, neorawio, channel_indexes=None):
@@ -83,7 +158,7 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
         
         #TODO add an option to pre load evrything in memory for short length
         
-        return sigs
+        return sigs                                        
         
 
 class SpikeFromNeoRawIOSource(BaseSpikeSource):

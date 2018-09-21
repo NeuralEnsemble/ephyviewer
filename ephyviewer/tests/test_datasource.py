@@ -118,7 +118,38 @@ def test_neo_rawio_sources():
         print(s.t_start, s.nb_channel)
         print(s.get_chunk_by_time(chan=0,  t_start=None, t_stop=None))
         #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
-        
+
+def test_neo_object_sources():
+    #~ from neo.io.tdtio import TdtIO
+    
+    #~ dirname = '/tmp/files_for_testing_neo/tdt/aep_05/'
+    #~ reader = TdtIO(dirname=dirname)
+    #~ neo_seg = reader.read_segment()
+    
+    
+    from neo.test.generate_datasets import generate_one_simple_segment
+    import neo
+
+    neo_seg = generate_one_simple_segment(supported_objects=[neo.Segment, neo.AnalogSignal, neo.Event, neo.Epoch, neo.SpikeTrain])
+    print(neo_seg)
+    #~ print(neo_seg.analogsignals)
+    
+    sources = ephyviewer.get_sources_from_neo_segment(neo_seg)
+                            
+
+    for s in sources['signal']:
+        print(s.t_start, s.nb_channel, s.sample_rate)
+        print(s.get_chunk(i_start=0, i_stop=1024).shape)
+    
+    for s in sources['epoch']:
+        print(s.t_start, s.nb_channel)
+        #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
+        print(s.get_chunk_by_time(chan=0,  t_start=None, t_stop=None))
+
+    for s in sources['spike']:
+        print(s.t_start, s.nb_channel)
+        print(s.get_chunk_by_time(chan=0,  t_start=None, t_stop=None))
+        #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
     
     
     
@@ -130,5 +161,6 @@ if __name__=='__main__':
     #~ test_InMemoryEventSource()
     #~ test_InMemoryEpochSource()
     #~ test_spikesource()
-    test_neo_rawio_sources()
+    #~ test_neo_rawio_sources()
+    test_neo_object_sources()
 
