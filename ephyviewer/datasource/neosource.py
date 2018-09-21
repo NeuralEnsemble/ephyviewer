@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-
+This module include some facilities to make data source from:
+  * neo.rawio so on disk sources (signals, spikes, epoch...)
+  * neo objects (neo.AnalogSignal, neo.Epoch, neo.SpikeTrain
 
 """
 
@@ -31,7 +33,7 @@ logger = logging.getLogger()
 
 #~ print('HAVE_NEO', HAVE_NEO)
 
-class NeoAnalogSignalSource(BaseAnalogSignalSource):
+class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
     def __init__(self, neorawio, channel_indexes=None):
         
         BaseAnalogSignalSource.__init__(self)
@@ -84,7 +86,7 @@ class NeoAnalogSignalSource(BaseAnalogSignalSource):
         return sigs
         
 
-class NeoSpikeSource(BaseSpikeSource):
+class SpikeFromNeoRawIOSource(BaseSpikeSource):
     def __init__(self, neorawio, channel_indexes=None):
         self.neorawio =neorawio
         if channel_indexes is None:
@@ -128,7 +130,7 @@ class NeoSpikeSource(BaseSpikeSource):
     
 
 
-class NeoEpochSource(BaseEventAndEpoch):
+class EpochFromNeoRawIOSource(BaseEventAndEpoch):
     def __init__(self, neorawio, channel_indexes=None):
         self.neorawio =neorawio
         if channel_indexes is None:
@@ -192,7 +194,7 @@ class NeoEpochSource(BaseEventAndEpoch):
     
     
     
-def get_source_from_neo(neorawio):
+def get_sources_from_neo_rawio(neorawio):
     assert HAVE_NEO
     assert isinstance(neorawio, BaseRawIO)
     
@@ -206,17 +208,17 @@ def get_source_from_neo(neorawio):
         #Signals
         for channel_indexes in neorawio.get_group_channel_indexes():
             #one soure by channel group
-            sources['signal'].append(NeoAnalogSignalSource(neorawio, channel_indexes))
+            sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, channel_indexes))
             
         
     
     if neorawio.unit_channels_count()>0:
         #Spikes: TODO
-        sources['spike'].append(NeoSpikeSource(neorawio, None))
+        sources['spike'].append(SpikeFromNeoRawIOSource(neorawio, None))
     
     
     if neorawio.event_channels_count()>0:
-        sources['epoch'].append(NeoEpochSource(neorawio, None))
+        sources['epoch'].append(EpochFromNeoRawIOSource(neorawio, None))
         
     
     

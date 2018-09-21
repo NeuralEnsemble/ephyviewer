@@ -15,7 +15,7 @@ from .spiketrainviewer import SpikeTrainViewer
 from.tools import get_dict_from_group_param
 
 
-from .datasource import get_source_from_neo
+from .datasource import get_sources_from_neo_rawio
 
 # browse neo.rawios and add some gui_params
 from neo.rawio import rawiolist
@@ -81,7 +81,7 @@ class StandAloneViewer(MainViewer):
         self.navigation_dock.show()
         
         #TODO clear all
-        sources = get_source_from_neo(self.neorawio)
+        sources = get_sources_from_neo_rawio(self.neorawio)
         for i, sig_source in enumerate(sources['signal']):
             view = TraceViewer(source=sig_source, name='signal {}'.format(i))
             view.params['scale_mode'] = 'same_for_all'

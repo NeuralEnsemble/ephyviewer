@@ -93,7 +93,7 @@ def test_spikesource():
     
     
 
-def test_neosource():
+def test_neo_rawio_sources():
     #TODO make autorun neo tdtrawio test before
     from neo.rawio.tdtrawio import TdtRawIO
     
@@ -102,7 +102,7 @@ def test_neosource():
     neorawio.parse_header()
     print(neorawio)
     
-    sources = ephyviewer.get_source_from_neo(neorawio)
+    sources = ephyviewer.get_sources_from_neo_rawio(neorawio)
     #~ print(sources)
     
     for s in sources['signal']:
@@ -130,5 +130,5 @@ if __name__=='__main__':
     #~ test_InMemoryEventSource()
     #~ test_InMemoryEpochSource()
     #~ test_spikesource()
-    test_neosource()
+    test_neo_rawio_sources()
 
