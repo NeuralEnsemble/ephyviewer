@@ -4,7 +4,7 @@ from .version import version as __version__
 #common tools
 from .myqt import *
 from .datasource import *
-from .mainviewer import MainViewer
+from .mainviewer import MainViewer, compose_mainviewer_from_sources
 from .navigation import NavigationToolBar
 
 #Viewers

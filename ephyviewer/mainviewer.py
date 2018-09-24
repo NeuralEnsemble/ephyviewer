@@ -9,6 +9,11 @@ import pickle
 from .myqt import QT, QT_MODE
 from .navigation import NavigationToolBar
 
+from .traceviewer import TraceViewer
+from .epochviewer import EpochViewer
+from .eventlist import EventList
+from .spiketrainviewer import SpikeTrainViewer
+
 location_to_qt={
     'left': QT.LeftDockWidgetArea,
     'right': QT.RightDockWidgetArea,
@@ -186,4 +191,48 @@ class MainViewer(QT.QMainWindow):
         event.accept()
         
         
+
+
+
+def compose_mainviewer_from_sources(sources, mainviewer=None):
+    """
+    Helper that compose a windows from several source with basic rules.
+    
+    Use internally in:
+      * standalone
+      * when generating mainviewer from neo segment
+    
+    """
+    
+    if mainviewer is None:
+        mainviewer = MainViewer(show_auto_scale=True)
+    
+    for i, sig_source in enumerate(sources['signal']):
+        view = TraceViewer(source=sig_source, name='signal {}'.format(i))
+        view.params['scale_mode'] = 'same_for_all'
+        view.params['display_labels'] = True
+        view.auto_scale()
+        if i==0:
+            mainviewer.add_view(view)
+        else:
+            mainviewer.add_view(view, tabify_with='signal {}'.format(i-1))
+        
+
+    for i, spike_source in enumerate(sources['spike']):
+        view = SpikeTrainViewer(source=spike_source, name='spikes')
+        mainviewer.add_view(view)
+
+    for i, ep_source in enumerate(sources['epoch']):
+        view = EpochViewer(source=ep_source, name='epochs')
+        mainviewer.add_view(view)
+
+        view = EventList(source=ep_source, name='Event list')
+        mainviewer.add_view(view, location='bottom',  orientation='horizontal')
+    
+    
+    
+    
+    
+    return mainviewer
+
 

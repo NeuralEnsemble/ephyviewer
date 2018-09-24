@@ -114,11 +114,13 @@ class BaseMultiChannelViewer(ViewerBase):
  
     def make_param_controller(self):
         if self.with_user_dialog and self._ControllerClass:
+            self.all_params.blockSignals(True)
             self.params_controller = self._ControllerClass(parent=self, viewer=self)
             self.params_controller.setWindowFlags(QT.Qt.Window)
+            self.all_params.blockSignals(False)
         else:
             self.params_controller = None
-
+        
     def show_params_controller(self):
         self.params_controller.show()
     

@@ -43,7 +43,7 @@ class NeoAnalogSignalSource(InMemoryAnalogSignalSource):
     def __init__(self, neo_sig):
         signals = neo_sig.magnitude
         sample_rate = float(neo_sig.sampling_rate.rescale('Hz').magnitude)
-        t_start = float(neo_sig.sampling_rate.rescale('Hz').magnitude)
+        t_start = float(neo_sig.t_start.rescale('s').magnitude)
         
         InMemoryAnalogSignalSource.__init__(self, signals, sample_rate, t_start, channel_names=None)
 

@@ -111,7 +111,7 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         #~ t0 = time.perf_counter()
         sigs = self.viewer.last_sigs_chunk
         assert sigs is not None, 'Need to debug this'
-        print(sigs)
+        #~ print(sigs)
         #~ print(sigs.shape)
         
         if sigs.shape[0]>1000:

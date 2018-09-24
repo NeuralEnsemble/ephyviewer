@@ -7,11 +7,11 @@ from .myqt import QT, QT_MODE
 import pyqtgraph as pg
 
 
-from .mainviewer import MainViewer
-from .traceviewer import TraceViewer
-from .epochviewer import EpochViewer
-from .eventlist import EventList
-from .spiketrainviewer import SpikeTrainViewer
+from .mainviewer import MainViewer, compose_mainviewer_from_sources
+#~ from .traceviewer import TraceViewer
+#~ from .epochviewer import EpochViewer
+#~ from .eventlist import EventList
+#~ from .spiketrainviewer import SpikeTrainViewer
 from.tools import get_dict_from_group_param
 
 
@@ -82,27 +82,31 @@ class StandAloneViewer(MainViewer):
         
         #TODO clear all
         sources = get_sources_from_neo_rawio(self.neorawio)
-        for i, sig_source in enumerate(sources['signal']):
-            view = TraceViewer(source=sig_source, name='signal {}'.format(i))
-            view.params['scale_mode'] = 'same_for_all'
-            view.params['display_labels'] = True
-            view.auto_scale()
-            if i==0:
-                self.add_view(view)
-            else:
-                self.add_view(view, tabify_with='signal {}'.format(i-1))
+        
+        
+        compose_mainviewer_from_sources(sources, mainviewer=self)
+        
+        #~ for i, sig_source in enumerate(sources['signal']):
+            #~ view = TraceViewer(source=sig_source, name='signal {}'.format(i))
+            #~ view.params['scale_mode'] = 'same_for_all'
+            #~ view.params['display_labels'] = True
+            #~ view.auto_scale()
+            #~ if i==0:
+                #~ self.add_view(view)
+            #~ else:
+                #~ self.add_view(view, tabify_with='signal {}'.format(i-1))
             
 
-        for i, spike_source in enumerate(sources['spike']):
-            view = SpikeTrainViewer(source=spike_source, name='spikes')
-            self.add_view(view)
+        #~ for i, spike_source in enumerate(sources['spike']):
+            #~ view = SpikeTrainViewer(source=spike_source, name='spikes')
+            #~ self.add_view(view)
 
-        for i, ep_source in enumerate(sources['epoch']):
-            view = EpochViewer(source=ep_source, name='epochs')
-            self.add_view(view)
+        #~ for i, ep_source in enumerate(sources['epoch']):
+            #~ view = EpochViewer(source=ep_source, name='epochs')
+            #~ self.add_view(view)
 
-            view = EventList(source=ep_source, name='Event list')
-            self.add_view(view, location='bottom',  orientation='horizontal')
+            #~ view = EventList(source=ep_source, name='Event list')
+            #~ self.add_view(view, location='bottom',  orientation='horizontal')
 
 
 
