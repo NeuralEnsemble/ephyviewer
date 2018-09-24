@@ -24,9 +24,11 @@ try:
 except ImportError:
     HAVE_NEO = False
 
-from .signals import BaseAnalogSignalSource
-from .events import BaseEventAndEpoch
+from .signals import BaseAnalogSignalSource, InMemoryAnalogSignalSource
 from .spikes import BaseSpikeSource, InMemorySpikeSource
+from .events import BaseEventAndEpoch, InMemoryEventSource
+from .epochs import InMemoryEpochSource
+
 
 
 logger = logging.getLogger()
@@ -37,68 +39,68 @@ logger = logging.getLogger()
 
 ## neo.core stuff
 
-class NeoAnalogSignalSource(BaseAnalogSignalSource):
+class NeoAnalogSignalSource(InMemoryAnalogSignalSource):
     def __init__(self, neo_sig):
-        assert isinstance(neo_sig, neo.AnalogSignal), 'Not an neo.AnalogSignal'
-        self.neo_sig = neo_sig
+        signals = neo_sig.magnitude
+        sample_rate = float(neo_sig.sampling_rate.rescale('Hz').magnitude)
+        t_start = float(neo_sig.sampling_rate.rescale('Hz').magnitude)
         
-        self.sample_rate = float(neo_sig.sampling_rate.rescale('Hz').magnitude)
-        
-    @property
-    def nb_channel(self):
-        return self.neo_sig.shape[1]
-
-    def get_channel_name(self, chan=0):
-        if self.neo_sig.channelindex is not None:
-            return neo_sig.channelindex.channel_names[chan]
-        else:
-            return 'NoName{}'.format(chan)
-
-    @property
-    def t_start(self):
-        return float(self.neo_sig.t_start.rescale('s').magnitude)
-
-    @property
-    def t_stop(self):
-        return float(self.neo_sig.t_stop.rescale('s').magnitude)
-    
-    def get_length(self):
-        return self.neo_sig.shape[0]
-
-    def get_shape(self):
-        return self.neo_sig.shape
-
-    def get_chunk(self, i_start=None, i_stop=None):
-        sigs = self.neo_sig[i_start:i_stop].magnitude
-        return sigs
+        InMemoryAnalogSignalSource.__init__(self, signals, sample_rate, t_start, channel_names=None)
 
 
-#~ class NeoSpikeTrainSource(InMemorySpikeSource):
-    #~ def __init__(self, neo_spiketrains=[]):
-        
-        #~ all_spikes = []
-        #~ for neo_spiketrain in neo_spiketrains:
-            #~ name = neo_spiketrain.name
-            #~ if name is None:
-                #~ name = ''
-            #~ print(neo_spiketrain.times.rescale('s').magnitude)
-            #~ all_spikes.append({'time' : neo_spiketrain.times.rescale('s').magnitude,
-                                        #~ 'name' : name})
-        
-        #~ InMemorySpikeSource.__init__(self, all_spikes=all_spikes)
+class NeoSpikeTrainSource(InMemorySpikeSource):
+    def __init__(self, neo_spiketrains=[]):
+        all_spikes = []
+        for neo_spiketrain in neo_spiketrains:
+            name = neo_spiketrain.name
+            if name is None:
+                name = ''
+            all_spikes.append({'time' : neo_spiketrain.times.rescale('s').magnitude,
+                                        'name' : name})
+        InMemorySpikeSource.__init__(self, all_spikes=all_spikes)
+
+class NeoEventSource(InMemoryEventSource):
+    def __init__(self, neo_events=[]):
+        all_events = []
+        for neo_event in neo_events:
+            all_events.append({
+                'name': neo_event.name,
+                'time': neo_event.times.rescale('s').magnitude,
+                'label': np.array(neo_event.labels),
+            })
+        InMemoryEventSource.__init__(self, all_events = all_events)
+
+class NeoEpochSource(InMemoryEpochSource):
+    def __init__(self, neo_epochs=[]):
+        all_epochs = []
+        for neo_epoch in neo_epochs:
+            all_epochs.append({
+                'name': neo_epoch.name,
+                'time': neo_epoch.times.rescale('s').magnitude,
+                'duration': neo_epoch.durations.rescale('s').magnitude,
+                'label': np.array(neo_epoch.labels),
+            })
+        epoch_source = InMemoryEpochSource.__init__(self, all_epochs = all_epochs)
+
+
+
 
 
 def get_sources_from_neo_segment(neo_seg):
     assert HAVE_NEO
     assert isinstance(neo_seg, neo.Segment)
     
-    sources = {'signal':[], 'epoch':[], 'spike':[]}
+    sources = {'signal':[], 'epoch':[], 'spike':[],'event':[],}
     
     for neo_sig in neo_seg.analogsignals:
-        # noramly neo signals are group by same sampling rate
+        # noramly neo signals are group by same sampling rate in one AnalogSignal
+        # with shape (nb_channel, nb_sample)
         sources['signal'].append(NeoAnalogSignalSource(neo_sig))
 
-    #~ sources['spike'].append(NeoSpikeTrainSource(neo_seg.spiketrains))
+    sources['spike'].append(NeoSpikeTrainSource(neo_seg.spiketrains))
+    sources['event'].append(NeoEventSource(neo_seg.events))
+    sources['epoch'].append(NeoEpochSource(neo_seg.epochs))
+    
     
     return sources
     
