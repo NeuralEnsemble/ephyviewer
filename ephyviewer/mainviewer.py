@@ -30,7 +30,7 @@ orientation_to_qt={
     
 
 class MainViewer(QT.QMainWindow):
-    def __init__(self, debug=False, settings_name=None, parent=None, **navigation_params):
+    def __init__(self, debug=False, settings_name=None, parent=None, global_xsize_zoom=False, **navigation_params):
         QT.QMainWindow.__init__(self, parent)
 
         #TODO settings
@@ -43,6 +43,7 @@ class MainViewer(QT.QMainWindow):
             pyver = '.'.join(str(e) for e in sys.version_info[0:3])
             appname = 'ephyviewer'+'_py'+pyver
             self.settings = QT.QSettings(appname, self.settings_name)
+        self.global_xsize_zoom = global_xsize_zoom
         
         self.setDockNestingEnabled(True) 
         
@@ -102,6 +103,8 @@ class MainViewer(QT.QMainWindow):
         self.load_one_setting(name, widget)
         
         widget.time_changed.connect(self.on_time_changed)
+        if self.global_xsize_zoom and hasattr(widget, 'params_controller'):
+            widget.params_controller.xsize_zoomed.connect(self.on_xsize_changed)
         
 
         if len(self.viewers) ==1:
@@ -230,9 +233,5 @@ def compose_mainviewer_from_sources(sources, mainviewer=None):
         mainviewer.add_view(view, location='bottom',  orientation='horizontal')
     
     
-    
-    
-    
     return mainviewer
-
 

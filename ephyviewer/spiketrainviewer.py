@@ -128,6 +128,9 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
             self.plot.addItem(label)
             self.labels.append(label)
     
+        self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
+        
+    
     def refresh(self):
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)

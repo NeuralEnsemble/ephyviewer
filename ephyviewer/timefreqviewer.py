@@ -323,6 +323,7 @@ class TimeFreqViewer(BaseMultiChannelViewer):
             if plot is not None:
                 plot.vb.doubleclicked.connect(self.show_params_controller)
                 plot.vb.ygain_zoom.connect(self.params_controller.clim_zoom)
+                # plot.vb.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
     
         self.images = []
         self.vlines = []

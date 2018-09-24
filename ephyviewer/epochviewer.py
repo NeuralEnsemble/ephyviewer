@@ -114,7 +114,7 @@ class EpochViewer(BaseMultiChannelViewer):
 
     
     def initialize_plot(self):
-        pass
+        self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
     
     def refresh(self):
         xsize = self.params['xsize']

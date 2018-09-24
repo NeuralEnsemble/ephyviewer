@@ -21,7 +21,6 @@ from .datasource import InMemoryAnalogSignalSource, AnalogSignalSourceWithScatte
 import time
 import threading
 
-MIN_XSIZE = 1e-6
 
 
 default_params = [
@@ -191,12 +190,6 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         self.viewer.refresh()
         #~ print('apply_ygain_zoom', factor_ratio)#, 'self.ygain_factor', self.ygain_factor)
         
-    def apply_xsize_zoom(self, xmove):
-        factor = xmove/100.
-        factor = max(factor, -0.999999999)
-        factor = min(factor, 1)
-        newsize = self.viewer.params['xsize']*(factor+1.)
-        self.viewer.params['xsize'] = max(newsize, MIN_XSIZE)
 
 
 
