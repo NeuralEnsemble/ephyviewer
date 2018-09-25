@@ -7,7 +7,7 @@ There are two approach:
 
 
 """
-from ephyviewer import mkQApp, MainViewer, TraceViewer, SpikeTrainViewer, EpochViewer
+from ephyviewer import mkQApp, MainViewer, TraceViewer, SpikeTrainViewer, EpochViewer, EventList
 from ephyviewer import get_sources_from_neo_segment, compose_mainviewer_from_sources
 import numpy as np
 
@@ -18,7 +18,7 @@ import neo
 
 # here with generate a segment with several object
 # (this is a bad example because it mimics old neo behavior for signals (one channel=one object))
-neo_seg = generate_one_simple_segment(supported_objects=[neo.Segment, neo.AnalogSignal, neo.Epoch, neo.SpikeTrain])
+neo_seg = generate_one_simple_segment(supported_objects=[neo.Segment, neo.AnalogSignal, neo.Event, neo.Epoch, neo.SpikeTrain])
 
 # the global QT app
 app = mkQApp()
@@ -39,6 +39,10 @@ win.add_view(view2)
 # from several neo.Epoch 
 view3 = EpochViewer.from_neo_epochs(neo_seg.epochs, 'epochs')
 win.add_view(view3)
+
+# from several neo.Event
+view4 = EventList.from_neo_events(neo_seg.events, 'events')
+win.add_view(view4, location='bottom',  orientation='horizontal')
 
 win.show()
 
