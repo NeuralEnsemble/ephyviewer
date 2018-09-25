@@ -2,7 +2,7 @@
 """
 This module include some facilities to make data source from:
   * neo.rawio so on disk sources (signals, spikes, epoch...)
-  * neo objects (neo.AnalogSignal, neo.Epoch, neo.SpikeTrain
+  * neo objects in memory (neo.AnalogSignal, neo.Epoch, neo.SpikeTrain)
 
 """
 
@@ -93,7 +93,7 @@ def get_sources_from_neo_segment(neo_seg):
     sources = {'signal':[], 'epoch':[], 'spike':[],'event':[],}
     
     for neo_sig in neo_seg.analogsignals:
-        # noramly neo signals are group by same sampling rate in one AnalogSignal
+        # normally neo signals are grouped by same sampling rate in one AnalogSignal
         # with shape (nb_channel, nb_sample)
         sources['signal'].append(NeoAnalogSignalSource(neo_sig))
 
