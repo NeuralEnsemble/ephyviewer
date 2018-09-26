@@ -11,7 +11,7 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
-from .datasource import InMemoryEpochSource
+from .datasource import InMemoryEpochSource, NeoEpochSource
 
 
 default_params = [
@@ -79,9 +79,7 @@ class EpochViewer(BaseMultiChannelViewer):
         self.make_params()
         self.set_layout()
         self.make_param_controller()
-        
         self.viewBox.doubleclicked.connect(self.show_params_controller)
-        
         self.initialize_plot()
         
         self._xratio = 0.3
@@ -102,6 +100,12 @@ class EpochViewer(BaseMultiChannelViewer):
         source = InMemoryEpochSource(all_epochs)
         view = cls(source=source, name=name)
         return view
+
+    @classmethod
+    def from_neo_epochs(cls, neo_epochs, name):    
+        source = NeoEpochSource(neo_epochs)
+        view = cls(source=source, name=name)
+        return view        
     
     def closeEvent(self, event):
         event.accept()

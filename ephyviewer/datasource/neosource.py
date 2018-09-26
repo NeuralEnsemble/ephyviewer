@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 """
-
+This module include some facilities to make data source from:
+  * neo.rawio so on disk sources (signals, spikes, epoch...)
+  * neo objects in memory (neo.AnalogSignal, neo.Epoch, neo.SpikeTrain)
 
 """
 
@@ -22,16 +24,93 @@ try:
 except ImportError:
     HAVE_NEO = False
 
-from .signals import BaseAnalogSignalSource
-from .events import BaseEventAndEpoch
-from .spikes import BaseSpikeSource
+from .signals import BaseAnalogSignalSource, InMemoryAnalogSignalSource
+from .spikes import BaseSpikeSource, InMemorySpikeSource
+from .events import BaseEventAndEpoch, InMemoryEventSource
+from .epochs import InMemoryEpochSource
+
 
 
 logger = logging.getLogger()
 
 #~ print('HAVE_NEO', HAVE_NEO)
 
-class NeoAnalogSignalSource(BaseAnalogSignalSource):
+
+
+## neo.core stuff
+
+class NeoAnalogSignalSource(InMemoryAnalogSignalSource):
+    def __init__(self, neo_sig):
+        signals = neo_sig.magnitude
+        sample_rate = float(neo_sig.sampling_rate.rescale('Hz').magnitude)
+        t_start = float(neo_sig.t_start.rescale('s').magnitude)
+        
+        InMemoryAnalogSignalSource.__init__(self, signals, sample_rate, t_start, channel_names=None)
+
+
+class NeoSpikeTrainSource(InMemorySpikeSource):
+    def __init__(self, neo_spiketrains=[]):
+        all_spikes = []
+        for neo_spiketrain in neo_spiketrains:
+            name = neo_spiketrain.name
+            if name is None:
+                name = ''
+            all_spikes.append({'time' : neo_spiketrain.times.rescale('s').magnitude,
+                                        'name' : name})
+        InMemorySpikeSource.__init__(self, all_spikes=all_spikes)
+
+class NeoEventSource(InMemoryEventSource):
+    def __init__(self, neo_events=[]):
+        all_events = []
+        for neo_event in neo_events:
+            all_events.append({
+                'name': neo_event.name,
+                'time': neo_event.times.rescale('s').magnitude,
+                'label': np.array(neo_event.labels),
+            })
+        InMemoryEventSource.__init__(self, all_events = all_events)
+
+class NeoEpochSource(InMemoryEpochSource):
+    def __init__(self, neo_epochs=[]):
+        all_epochs = []
+        for neo_epoch in neo_epochs:
+            all_epochs.append({
+                'name': neo_epoch.name,
+                'time': neo_epoch.times.rescale('s').magnitude,
+                'duration': neo_epoch.durations.rescale('s').magnitude,
+                'label': np.array(neo_epoch.labels),
+            })
+        epoch_source = InMemoryEpochSource.__init__(self, all_epochs = all_epochs)
+
+
+
+
+
+def get_sources_from_neo_segment(neo_seg):
+    assert HAVE_NEO
+    assert isinstance(neo_seg, neo.Segment)
+    
+    sources = {'signal':[], 'epoch':[], 'spike':[],'event':[],}
+    
+    for neo_sig in neo_seg.analogsignals:
+        # normally neo signals are grouped by same sampling rate in one AnalogSignal
+        # with shape (nb_channel, nb_sample)
+        sources['signal'].append(NeoAnalogSignalSource(neo_sig))
+
+    sources['spike'].append(NeoSpikeTrainSource(neo_seg.spiketrains))
+    sources['event'].append(NeoEventSource(neo_seg.events))
+    sources['epoch'].append(NeoEpochSource(neo_seg.epochs))
+    
+    
+    return sources
+    
+
+
+
+
+## neo.rawio stuff
+
+class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
     def __init__(self, neorawio, channel_indexes=None):
         
         BaseAnalogSignalSource.__init__(self)
@@ -81,10 +160,10 @@ class NeoAnalogSignalSource(BaseAnalogSignalSource):
         
         #TODO add an option to pre load evrything in memory for short length
         
-        return sigs
+        return sigs                                        
         
 
-class NeoSpikeSource(BaseSpikeSource):
+class SpikeFromNeoRawIOSource(BaseSpikeSource):
     def __init__(self, neorawio, channel_indexes=None):
         self.neorawio =neorawio
         if channel_indexes is None:
@@ -128,7 +207,7 @@ class NeoSpikeSource(BaseSpikeSource):
     
 
 
-class NeoEpochSource(BaseEventAndEpoch):
+class EpochFromNeoRawIOSource(BaseEventAndEpoch):
     def __init__(self, neorawio, channel_indexes=None):
         self.neorawio =neorawio
         if channel_indexes is None:
@@ -192,7 +271,7 @@ class NeoEpochSource(BaseEventAndEpoch):
     
     
     
-def get_source_from_neo(neorawio):
+def get_sources_from_neo_rawio(neorawio):
     assert HAVE_NEO
     assert isinstance(neorawio, BaseRawIO)
     
@@ -206,17 +285,17 @@ def get_source_from_neo(neorawio):
         #Signals
         for channel_indexes in neorawio.get_group_channel_indexes():
             #one soure by channel group
-            sources['signal'].append(NeoAnalogSignalSource(neorawio, channel_indexes))
+            sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, channel_indexes))
             
         
     
     if neorawio.unit_channels_count()>0:
         #Spikes: TODO
-        sources['spike'].append(NeoSpikeSource(neorawio, None))
+        sources['spike'].append(SpikeFromNeoRawIOSource(neorawio, None))
     
     
     if neorawio.event_channels_count()>0:
-        sources['epoch'].append(NeoEpochSource(neorawio, None))
+        sources['epoch'].append(EpochFromNeoRawIOSource(neorawio, None))
         
     
     

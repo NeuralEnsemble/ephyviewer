@@ -93,7 +93,7 @@ def test_spikesource():
     
     
 
-def test_neosource():
+def test_neo_rawio_sources():
     #TODO make autorun neo tdtrawio test before
     from neo.rawio.tdtrawio import TdtRawIO
     
@@ -102,7 +102,7 @@ def test_neosource():
     neorawio.parse_header()
     print(neorawio)
     
-    sources = ephyviewer.get_source_from_neo(neorawio)
+    sources = ephyviewer.get_sources_from_neo_rawio(neorawio)
     #~ print(sources)
     
     for s in sources['signal']:
@@ -118,7 +118,33 @@ def test_neosource():
         print(s.t_start, s.nb_channel)
         print(s.get_chunk_by_time(chan=0,  t_start=None, t_stop=None))
         #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
-        
+
+def test_neo_object_sources():
+
+    from neo.test.generate_datasets import generate_one_simple_segment
+    import neo
+
+    neo_seg = generate_one_simple_segment(supported_objects=[neo.Segment, neo.AnalogSignal, neo.Event, neo.Epoch, neo.SpikeTrain])
+    
+    sources = ephyviewer.get_sources_from_neo_segment(neo_seg)
+                            
+
+    for s in sources['signal']:
+        print(s.t_start, s.nb_channel, s.sample_rate)
+        print(s.get_chunk(i_start=0, i_stop=1024).shape)
+    
+    for s in sources['epoch']:
+        print(s.t_start, s.nb_channel)
+        print(s.get_chunk_by_time(chan=0,  t_start=0, t_stop=10.))
+
+    for s in sources['event']:
+        print(s.t_start, s.nb_channel)
+        print(s.get_chunk_by_time(chan=0,  t_start=0, t_stop=10.))
+
+    for s in sources['spike']:
+        print(s.t_start, s.nb_channel)
+        print(s.get_chunk_by_time(chan=0,  t_start=0., t_stop=10.))
+        #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
     
     
     
@@ -130,5 +156,6 @@ if __name__=='__main__':
     #~ test_InMemoryEventSource()
     #~ test_InMemoryEpochSource()
     #~ test_spikesource()
-    test_neosource()
+    #~ test_neo_rawio_sources()
+    test_neo_object_sources()
 

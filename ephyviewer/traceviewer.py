@@ -11,7 +11,10 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
-from .datasource import InMemoryAnalogSignalSource, AnalogSignalSourceWithScatter
+from .datasource import InMemoryAnalogSignalSource, AnalogSignalSourceWithScatter, NeoAnalogSignalSource
+
+
+
 
 
 #todo remove this
@@ -107,6 +110,7 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         #~ t0 = time.perf_counter()
         sigs = self.viewer.last_sigs_chunk
         assert sigs is not None, 'Need to debug this'
+        #~ print(sigs)
         #~ print(sigs.shape)
         
         if sigs.shape[0]>1000:
@@ -349,9 +353,12 @@ class TraceViewer(BaseMultiChannelViewer):
                                             scatter_indexes=scatter_indexes, scatter_channels=scatter_channels, scatter_colors=scatter_colors)
         view = cls(source=source, name=name)
         
-        
-        
-        
+        return view
+    
+    @classmethod
+    def from_neo_analogsignal(cls, neo_anasig, name):
+        source = NeoAnalogSignalSource(neo_anasig)
+        view = cls(source=source, name=name)
         return view
 
     def closeEvent(self, event):

@@ -14,7 +14,7 @@ def test_neoviewer():
     neorawio.parse_header()
     print(neorawio)
     
-    sources = ephyviewer.get_source_from_neo(neorawio)
+    sources = ephyviewer.get_sources_from_neo_rawio(neorawio)
     
 
     app = ephyviewer.mkQApp()

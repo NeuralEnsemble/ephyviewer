@@ -8,7 +8,7 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import ViewerBase
-from .datasource import InMemoryEventSource
+from .datasource import InMemoryEventSource, NeoEventSource
 
 
 
@@ -35,6 +35,12 @@ class EventList(ViewerBase):
     @classmethod
     def from_numpy(cls, all_events, name):
         source = InMemoryEventSource(all_events)
+        view = cls(source=source, name=name)
+        return view
+        
+    @classmethod
+    def from_neo_events(cls, neo_events, name):    
+        source = NeoEventSource(neo_events)
         view = cls(source=source, name=name)
         return view
         

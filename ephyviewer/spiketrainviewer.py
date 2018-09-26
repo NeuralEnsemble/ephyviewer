@@ -11,7 +11,7 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
-from .datasource import InMemoryEpochSource
+from .datasource import InMemorySpikeSource, NeoSpikeTrainSource
 
 
 
@@ -95,7 +95,13 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
 
     @classmethod
     def from_numpy(cls, all_epochs, name):
-        source = InMemoryEpochSource(all_epochs)
+        source = InMemorySpikeSource(all_epochs)
+        view = cls(source=source, name=name)
+        return view
+    
+    @classmethod
+    def from_neo_spiketrains(cls, neo_spiketrains, name):    
+        source = NeoSpikeTrainSource(neo_spiketrains)
         view = cls(source=source, name=name)
         return view
     
