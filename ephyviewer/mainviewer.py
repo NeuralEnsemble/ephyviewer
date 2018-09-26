@@ -229,7 +229,12 @@ def compose_mainviewer_from_sources(sources, mainviewer=None):
         view = EpochViewer(source=ep_source, name='epochs')
         mainviewer.add_view(view)
 
-        view = EventList(source=ep_source, name='Event list')
+    if 'event' in sources and len(sources['event']) > 0:
+        ev_source_list = sources['event']
+    else:
+        ev_source_list = sources['epoch']
+    for i, ev_source in enumerate(ev_source_list):
+        view = EventList(source=ev_source, name='Event list')
         mainviewer.add_view(view, location='bottom',  orientation='horizontal')
     
     
