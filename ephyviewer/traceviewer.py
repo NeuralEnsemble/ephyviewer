@@ -27,6 +27,7 @@ default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'ylim_max', 'type': 'float', 'value': 10.},
     {'name': 'ylim_min', 'type': 'float', 'value': -10.},
+    {'name': 'scatter_size', 'type': 'float', 'value': 10.,  'limits': (0,np.inf)},
     {'name': 'scale_mode', 'type': 'list', 'value': 'real_scale', 
         'values':['real_scale', 'same_for_all', 'by_channel'] },
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
@@ -394,7 +395,7 @@ class TraceViewer(BaseMultiChannelViewer):
             self.channel_offsets_line.append(offset_line)
         
         if self.source.with_scatter:
-            self.scatter = pg.ScatterPlotItem(size=10, pxMode = True)
+            self.scatter = pg.ScatterPlotItem(size=self.params['scatter_size'], pxMode = True)
             self.plot.addItem(self.scatter)
                 
         
@@ -412,6 +413,9 @@ class TraceViewer(BaseMultiChannelViewer):
             if param.name()=='antialias':
                 for curve in self.curves:
                     curve.updateData(antialias=self.params['antialias'])
+            if param.name()=='scatter_size':
+                if self.source.with_scatter:
+                    self.scatter.setSize(self.params['scatter_size'])
             
         
         self.refresh()
