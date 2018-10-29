@@ -316,7 +316,7 @@ class TraceViewer(BaseMultiChannelViewer):
     
     request_data = QT.pyqtSignal(float, float, float, object, object, object, object)
     
-    def __init__(self, scatter_size=None, **kargs):
+    def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
 
         self.make_params()
@@ -341,9 +341,6 @@ class TraceViewer(BaseMultiChannelViewer):
         self.request_data.connect(self.datagrabber.on_request_data)
         
         self.params.param('xsize').setLimits((0, np.inf))
-        
-        if scatter_size is not None and scatter_size > 0:
-            self.params['scatter_size'] = scatter_size
         
     
     @classmethod
