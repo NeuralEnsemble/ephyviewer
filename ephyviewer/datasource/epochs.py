@@ -361,4 +361,5 @@ class CsvEpochSource(WritableEpochSource):
         df['time'] = np.round(self.ep_times, 6)         # round to nearest microsecond
         df['duration'] = np.round(self.ep_durations, 6) # round to nearest microsecond
         df['label'] = self.ep_labels
+        df.sort_values(['time', 'duration', 'label'], inplace=True)
         df.to_csv(self.filename, index=False)
