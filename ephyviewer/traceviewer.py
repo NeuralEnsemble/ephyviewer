@@ -246,15 +246,19 @@ class DataGrabber(QT.QObject):
             
             small_arr = np.empty((data_curves.shape[0], small_size), dtype=data_curves.dtype)
             
-            if decimation_method == 'min_max':
+            if decimation_method == 'min_max' and data_curves.size>0:
                 full_arr = data_curves.reshape(data_curves.shape[0], -1, ds_ratio)
                 small_arr[:, ::2] = full_arr.max(axis=2)
                 small_arr[:, 1::2] = full_arr.min(axis=2)
-            elif decimation_method == 'mean':
+            elif decimation_method == 'mean' and data_curves.size>0:
                 full_arr = data_curves.reshape(data_curves.shape[0], -1, ds_ratio)
                 small_arr[:, :] = full_arr.mean(axis=2)
             elif decimation_method == 'pure_decimate':
                 small_arr[:, :] = data_curves[:, ::ds_ratio]
+            elif data_curves.size == 0:
+                pass
+                
+            
             data_curves = small_arr
         
         #~ print(data_curves.shape)
