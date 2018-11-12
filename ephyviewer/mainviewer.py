@@ -106,14 +106,15 @@ class MainViewer(QT.QMainWindow):
         if self.global_xsize_zoom and hasattr(widget, 'params_controller'):
             widget.params_controller.xsize_zoomed.connect(self.on_xsize_changed)
         
-
-        if len(self.viewers) ==1:
-            # first widget
-            t_start, t_stop = widget.source.t_start, widget.source.t_stop
-        else:
-            t_start = min(self.navigation_toolbar.t_start, widget.source.t_start)
-            t_stop = max(self.navigation_toolbar.t_stop, widget.source.t_stop)
-        self.navigation_toolbar.set_start_stop(t_start, t_stop, seek=True)
+        if hasattr(widget.source, 't_start'):
+            # quick fix for DataFrameView should be removed with betetr solution
+            if len(self.viewers) ==1:
+                # first widget
+                t_start, t_stop = widget.source.t_start, widget.source.t_stop
+            else:
+                    t_start = min(self.navigation_toolbar.t_start, widget.source.t_start)
+                    t_stop = max(self.navigation_toolbar.t_stop, widget.source.t_stop)
+            self.navigation_toolbar.set_start_stop(t_start, t_stop, seek=True)
         
         
     
