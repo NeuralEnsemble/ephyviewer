@@ -95,7 +95,7 @@ class NavigationToolBar(QT.QWidget) :
             play_pause_shortcut.setKey(' ')
             play_pause_shortcut.activated.connect(self.on_play_pause_shortcut)
         
-        self.steps = ['60s','10s', '1s', '100ms', '50ms', '5ms' ]
+        self.steps = ['60 s', '10 s', '1 s', '100 ms', '50 ms', '5 ms', '1 ms', '200 us']
         
         if show_step:
             but = QT.QPushButton('<')
@@ -217,6 +217,8 @@ class NavigationToolBar(QT.QWidget) :
 
         if text.endswith('ms'):
             self.step_size = float(text[:-2])*1e-3
+        elif text.endswith('us'):
+            self.step_size = float(text[:-2])*1e-6
         else:
             self.step_size = float(text[:-1])
         #~ print('self.step_size', self.step_size)
