@@ -344,7 +344,10 @@ class CsvEpochSource(WritableEpochSource):
         
         if os.path.exists(self.filename):
             # if file already exists, load previous epoch
-            df = pd.read_csv(self.filename,  index_col=None)
+            df = pd.read_csv(self.filename,  index_col=None, dtype={
+                'time':     'float64',
+                'duration': 'float64',
+                'label':    'U'})
             epoch = {'time':     df['time'].values,
                      'duration': df['duration'].values,
                      'label':    df['label'].values,
