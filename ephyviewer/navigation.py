@@ -129,7 +129,7 @@ class NavigationToolBar(QT.QWidget) :
 
         
         if show_spinbox:
-            self.spinbox_time =pg.SpinBox(decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, suffix='s', int=False)
+            self.spinbox_time =pg.SpinBox(decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, suffix='', int=False)
             h.addWidget(self.spinbox_time)
             #trick for separator
             h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
@@ -147,7 +147,7 @@ class NavigationToolBar(QT.QWidget) :
         
         if show_global_xsize:
             h.addWidget(QT.QLabel('xsize'))
-            self.spinbox_xsize =pg.SpinBox(value=3., decimals = 8, bounds = (0.001, np.inf),step = 0.1, siPrefix=False, suffix='s', int=False)
+            self.spinbox_xsize =pg.SpinBox(value=3., decimals = 8, bounds = (0.001, np.inf),step = 0.1, siPrefix=False, suffix='', int=False)
             h.addWidget(self.spinbox_xsize)
             #~ self.spinbox_xsize.valueChanged.connect(self.on_spinbox_xsize_changed)
             self.spinbox_xsize.valueChanged.connect(self.xsize_changed.emit)
