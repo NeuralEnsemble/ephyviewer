@@ -104,7 +104,7 @@ class MainViewer(QT.QMainWindow):
         
         widget.time_changed.connect(self.on_time_changed)
         if self.global_xsize_zoom and hasattr(widget, 'params_controller'):
-            widget.params_controller.xsize_zoomed.connect(self.on_xsize_changed)
+            widget.params_controller.xsize_zoomed.connect(self.set_xsize)
         
         if hasattr(widget.source, 't_start'):
             # quick fix for DataFrameView should be removed with betetr solution
