@@ -35,6 +35,7 @@ default_params = [
     {'name': 'display_offset', 'type': 'bool', 'value': False},
     {'name': 'antialias', 'type': 'bool', 'value': False},    
     {'name': 'decimation_method', 'type': 'list', 'value': 'min_max', 'values': ['min_max', 'mean', 'pure_decimate',  ]},
+    {'name': 'line_width', 'type': 'float', 'value': 1., 'limits': (0, np.inf)},
     ]
 
 default_by_channel_params = [ 
@@ -466,7 +467,7 @@ class TraceViewer(BaseMultiChannelViewer):
             self.curves[c].setData(times_curves, dict_curves[c])
             
             color = self.by_channel_params['ch{}'.format(c), 'color']
-            self.curves[c].setPen(color)
+            self.curves[c].setPen(color=color, width=self.params['line_width'])
             
             if self.params['display_labels']:
                 self.channel_labels[c].show()
