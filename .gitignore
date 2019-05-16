@@ -3,3 +3,4 @@ dist/*
 ephyviewer.egg-info/*
 ephyviewer/tests/*.avi
 examples/*.avi
+examples/*.csv

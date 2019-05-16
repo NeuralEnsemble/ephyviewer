@@ -14,12 +14,14 @@ import pyqtgraph as pg
 
 from .base import ViewerBase, Base_ParamController, MyViewBox, same_param_tree
 from .epochviewer import RectItem, DataGrabber
+from .datasource import WritableEpochSource
 
 
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
+    {'name': 'exclusive_mode', 'type': 'bool', 'value': True},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
     
     #~ {'name': 'display_labels', 'type': 'bool', 'value': True},
@@ -31,24 +33,22 @@ class EpochEncoder_ParamController(Base_ParamController):
     def __init__(self, parent=None, viewer=None, with_visible=True, with_color=True):
         Base_ParamController.__init__(self, parent=parent, viewer=viewer)
         
-        self.resize(400, 600)
+        self.resize(400, 700)
 
         h = QT.QHBoxLayout()
         self.mainlayout.addLayout(h)
         
         self.v1 = QT.QVBoxLayout()
         h.addLayout(self.v1)
+        self.tree_params = pg.parametertree.ParameterTree()
+        self.tree_params.setParameters(self.viewer.params, showTop=True)
+        self.tree_params.header().hide()
+        self.v1.addWidget(self.tree_params, stretch = 1)
+
         self.tree_label_params = pg.parametertree.ParameterTree()
         self.tree_label_params.setParameters(self.viewer.by_label_params, showTop=True)
         self.tree_label_params.header().hide()
-        self.v1.addWidget(self.tree_label_params)
-
-        #~ self.v1 = QT.QVBoxLayout()
-        #~ h.addLayout(self.v1)
-        #~ self.tree_params = pg.parametertree.ParameterTree()
-        #~ self.tree_params.setParameters(self.viewer.params, showTop=True)
-        #~ self.tree_params.header().hide()
-        #~ self.v1.addWidget(self.tree_params)
+        self.v1.addWidget(self.tree_label_params, stretch = 3)
 
 
 
@@ -59,6 +59,8 @@ class EpochEncoder(ViewerBase):
     
     def __init__(self, **kargs):
         ViewerBase.__init__(self, **kargs)
+        
+        assert isinstance(self.source, WritableEpochSource)
         
         self.make_params()
         self.set_layout()
@@ -93,10 +95,11 @@ class EpochEncoder(ViewerBase):
         self.params.param('xsize').setLimits((0, np.inf))
         
         
-        keys = 'azertyuiop'
+        keys = '1234567890'
         all = []
         self.shortcuts = OrderedDict()
         for i, label in enumerate(self.source.possible_labels):
+            # get string for shortcut key
             key = keys[i] if i<len(keys) else ''
             
             name = 'label{}'.format(i)
@@ -105,11 +108,17 @@ class EpochEncoder(ViewerBase):
                             {'name': 'key', 'type': 'str', 'value': key},
                             ]
             all.append({'name': name, 'type': 'group', 'children': children})
-            shortcut = QT.QShortcut (self)
+            
+            # assign shortcuts without and with modifier key
+            shortcut_without_modifer = QT.QShortcut(self)
+            shortcut_with_modifier   = QT.QShortcut(self)
             if key != '':
-                shortcut.setKey(key)
-            shortcut.activated.connect(self.on_shortcut)
-            self.shortcuts[shortcut] = label
+                shortcut_without_modifer.setKey(key)
+                shortcut_with_modifier  .setKey('Shift+' + key)
+            shortcut_without_modifer.activated.connect(self.on_shortcut)
+            shortcut_with_modifier  .activated.connect(self.on_shortcut)
+            self.shortcuts[shortcut_without_modifer] = (label, False) # boolean indicates modifier use
+            self.shortcuts[shortcut_with_modifier]   = (label, True)  # boolean indicates modifier use
             
         self.by_label_params = pg.parametertree.Parameter.create(name='Labels', type='group', children=all)
         
@@ -144,9 +153,8 @@ class EpochEncoder(ViewerBase):
         g = QT.QGridLayout()
         h.addLayout(g)
 
-        but = QT.PushButton('Colors and keys')
+        but = QT.PushButton('Options')
         g.addWidget(but, 0, 0)
-        
         but.clicked.connect(self.show_params_controller)
         
         but = QT.PushButton('Merge neighbors')
@@ -157,8 +165,28 @@ class EpochEncoder(ViewerBase):
         g.addWidget(but, 2, 0)
         but.clicked.connect(self.on_fill_blank)
 
+        # Epoch insertion mode box
+
+        group_box = QT.QGroupBox('Epoch insertion mode')
+        group_box.setToolTip('Hold Shift when using shortcut keys to temporarily switch modes')
+        group_box_layout = QT.QVBoxLayout()
+        group_box.setLayout(group_box_layout)
+        g.addWidget(group_box, 3, 0, 2, 1)
+
+        # Epoch insertion mode buttons
+
+        self.btn_insertion_mode_exclusive = QT.QRadioButton('Mutually exclusive')
+        self.btn_insertion_mode_overlapping = QT.QRadioButton('Overlapping')
+        group_box_layout.addWidget(self.btn_insertion_mode_exclusive)
+        group_box_layout.addWidget(self.btn_insertion_mode_overlapping)
+        self.btn_insertion_mode_exclusive.toggled.connect(self.params.param('exclusive_mode').setValue)
+        if self.params['exclusive_mode']:
+            self.btn_insertion_mode_exclusive.setChecked(True)
+        else:
+            self.btn_insertion_mode_overlapping.setChecked(True)
+
         but = QT.PushButton('Save')
-        g.addWidget(but, 4, 0)
+        g.addWidget(but, 5, 0)
         but.clicked.connect(self.on_save)
         
         
@@ -201,10 +229,27 @@ class EpochEncoder(ViewerBase):
         self.but_del_region.clicked.connect(self.delete_region)
         
         
-        self.tree_params = pg.parametertree.ParameterTree()
-        self.tree_params.setParameters(self.params, showTop=True)
-        self.tree_params.header().hide()
-        h.addWidget(self.tree_params)
+        # Table operations box
+        
+        group_box = QT.QGroupBox('Table operations')
+        group_box_layout = QT.QVBoxLayout()
+        group_box.setLayout(group_box_layout)
+        g.addWidget(group_box, 0, 2, 3, 1)
+        
+        # Table operations buttons
+        
+        but = QT.PushButton('Delete')
+        group_box_layout.addWidget(but)
+        but.clicked.connect(self.delete_selected_epoch)
+        
+        but = QT.PushButton('Duplicate')
+        group_box_layout.addWidget(but)
+        but.clicked.connect(self.duplicate_selected_epoch)
+        
+        but = QT.PushButton('Split')
+        group_box_layout.addWidget(but)
+        but.clicked.connect(self.split_selected_epoch)
+        
         
         self.table_widget = QT.QTableWidget()
         h.addWidget(self.table_widget)
@@ -221,8 +266,8 @@ class EpochEncoder(ViewerBase):
 
     def closeEvent(self, event):
         
-        text = 'save ?'
-        title = 'quit'
+        text = 'Do you want to save epoch encoder changes before closing?'
+        title = 'Save?'
         mb = QT.QMessageBox.question(self, title,text, 
                 QT.QMessageBox.Ok ,  QT.QMessageBox.Discard)
         if mb==QT.QMessageBox.Ok:
@@ -250,6 +295,7 @@ class EpochEncoder(ViewerBase):
         for i, label in enumerate(self.source.possible_labels):
             color = self.by_label_params['label'+str(i), 'color']
             label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
+            label_item.setZValue(11)
             self.plot.addItem(label_item)
             self.label_items.append(label_item)
 
@@ -260,15 +306,23 @@ class EpochEncoder(ViewerBase):
         self.params_controller.show()
     
     def on_param_change(self):
+        if self.params['exclusive_mode']:
+            self.btn_insertion_mode_exclusive.setChecked(True)
+        else:
+            self.btn_insertion_mode_overlapping.setChecked(True)
         self.refresh()
     
     def on_change_keys(self, refresh=True):
         
         for i, label in enumerate(self.source.possible_labels):
+            # get string for shortcut key
             key = self.by_label_params['label'+str(i), 'key']
-            shortcut = list(self.shortcuts.keys())[i]
-            #~ print(shortcut)
-            shortcut.setKey(key)
+            
+            # assign shortcuts without and with modifier key
+            shortcut_without_modifer = list(self.shortcuts.keys())[2*i]
+            shortcut_with_modifier   = list(self.shortcuts.keys())[2*i+1]
+            shortcut_without_modifer.setKey(key)
+            shortcut_with_modifier  .setKey('Shift+' + key)
         
         self.refresh()
     
@@ -312,7 +366,7 @@ class EpochEncoder(ViewerBase):
         
         self.graphicsview.setBackground(self.params['background_color'])
         
-        times, durations, labels = data[0]
+        times, durations, labels, ids = data[0]
         #~ print(data)
         n = len(self.source.possible_labels)
         
@@ -324,8 +378,9 @@ class EpochEncoder(ViewerBase):
                 ypos = n - ind - 1
             else:
                 ypos = 0
-            item = RectItem([times[i],  ypos,durations[i], .9],  border=color, fill=color)
-            item = RectItem([times[i],  ypos,durations[i], .9],  border='#FFFFFF', fill=color)
+            item = RectItem([times[i],  ypos,durations[i], .9],  border='#FFFFFF', fill=color, id=ids[i])
+            item.clicked.connect(self.on_rect_clicked)
+            item.doubleclicked.connect(self.on_rect_doubleclicked)
             item.setPos(times[i],  ypos)
             self.plot.addItem(item)
             self.rect_items.append(item)
@@ -356,12 +411,17 @@ class EpochEncoder(ViewerBase):
             self.plot.setYRange( 0, 1)
     
     def on_shortcut(self):
-        label = self.shortcuts.get(self.sender(), None)
+        label, modifier_used = self.shortcuts.get(self.sender(), None)
         if label is None: return
         
         #~ duration = self.spin_step.value()
         duration = self.params['new_epoch_step']
         
+        # delete existing epochs in the region where the new epoch will be inserted
+        if (self.params['exclusive_mode'] and not modifier_used) or (not self.params['exclusive_mode'] and modifier_used):
+            self.source.delete_in_between(self.t, self.t + duration)
+        
+        # create the new epoch
         self.source.add_epoch(self.t, duration, label)
         
         self.t += duration
@@ -372,6 +432,7 @@ class EpochEncoder(ViewerBase):
     def on_merge_neighbors(self):
         self.source.merge_neighbors()
         self.refresh()
+        self.refresh_table()
     
     def on_fill_blank(self):
         params = [{'name': 'method', 'type': 'list', 'value':'from_left', 'values' : ['from_left', 'from_right', 'from_nearest']}]
@@ -408,6 +469,12 @@ class EpochEncoder(ViewerBase):
         t = rgn[0]
         duration = rgn[1] - rgn[0]
         label = str(self.combo_labels.currentText())
+        
+        # delete existing epochs in the region where the new epoch will be inserted
+        if self.params['exclusive_mode']:
+            self.source.delete_in_between(rgn[0], rgn[1])
+        
+        # create the new epoch
         self.source.add_epoch(t, duration, label)
         
         self.refresh()
@@ -422,13 +489,12 @@ class EpochEncoder(ViewerBase):
         self.refresh_table()
         
     
-    def on_range_visibility_changed(self, flag, refresh=True):
+    def on_range_visibility_changed(self, flag, refresh=True, shift_region=True):
         enabled = self.but_range.isChecked()
         #~ print(enabled)
         for w in (self.spin_limit1, self.spin_limit2, self.combo_labels, self.but_apply_region, self.but_del_region):
             w.setEnabled(enabled)
-            
-        if enabled:
+        if enabled and shift_region:
             rgn = self.region.getRegion()
             rgn = (self.t, self.t + rgn[1] - rgn[0])
             self.region.setRegion(rgn)
@@ -443,19 +509,53 @@ class EpochEncoder(ViewerBase):
             self.spin_limit2.setValue(self.t)
     
     def refresh_table(self):
+        self.table_widget.blockSignals(True)
         self.table_widget.clear()
+        self.table_widget.blockSignals(False)
         #~ ev = self.source.all_events[ind]
-        times, durations, labels = self.source.get_chunk(chan=0,  i_start=None, i_stop=None)
+        times, durations, labels, ids = self.source.ep_times, self.source.ep_durations, self.source.ep_labels, self.source.ep_ids
         self.table_widget.setColumnCount(4)
         self.table_widget.setRowCount(times.size)
         self.table_widget.setHorizontalHeaderLabels(['start', 'stop', 'duration', 'label'])
         for r in range(times.size):
             
-            values = [times[r], times[r]+durations[r], durations[r], labels[r]]
+            # start, stop, duration
+            values = np.round([times[r], times[r]+durations[r], durations[r]], 6) # round to nearest microsecond
             for c, value in enumerate(values):
                 item = QT.QTableWidgetItem('{}'.format(value))
                 item.setFlags(QT.ItemIsSelectable|QT.ItemIsEnabled)
                 self.table_widget.setItem(r, c, item)
+    
+            # label
+            combo_labels = QT.QComboBox()
+            combo_labels.addItems(self.source.possible_labels)
+            combo_labels.setCurrentText(labels[r])
+            combo_labels.currentIndexChanged.connect(
+                lambda label_index, ep_id=ids[r]: self.on_change_label(ep_id, self.source.possible_labels[label_index])
+            )
+            self.table_widget.setCellWidget(r, 3, combo_labels)
+    
+    def on_rect_clicked(self, id):
+        
+        # get index corresponding to epoch id
+        ind = self.source.id_to_ind[id]
+        
+        # select the epoch in the data table
+        self.table_widget.blockSignals(True)
+        self.table_widget.setCurrentCell(ind, 3) # select the label combo box
+        self.table_widget.blockSignals(False)
+        
+    def on_rect_doubleclicked(self, id):
+        
+        # get index corresponding to epoch id
+        ind = self.source.id_to_ind[id]
+        
+        # set region to epoch start and stop
+        self.region.setRegion((self.source.ep_times[ind], self.source.ep_stops[ind]))
+    
+        # show the region if it isn't already visible
+        self.but_range.setChecked(True)
+        self.on_range_visibility_changed(None, shift_region = False)
     
     def on_seek_table(self):
         if self.table_widget.rowCount()==0:
@@ -463,12 +563,52 @@ class EpochEncoder(ViewerBase):
         selected_ind = self.table_widget.selectedIndexes()
         if len(selected_ind)==0:
             return
-        i = selected_ind[0].row()
-        t, _, _= self.source.get_chunk(chan=0,  i_start=i, i_stop=i+1)
-        self.t = t[0]
+        ind = selected_ind[0].row()
+        self.t = self.source.ep_times[ind]
         self.refresh()
         self.time_changed.emit(self.t)
         
+    def on_change_label(self, id, new_label):
         
-
-
+        # get index corresponding to epoch id
+        ind = self.source.id_to_ind[id]
+        
+        # change epoch label and update plot
+        self.source.ep_labels[ind] = new_label
+        self.refresh()
+        # refresh_table is not called to avoid deselecting table cell
+        
+    def delete_selected_epoch(self):
+        if self.table_widget.rowCount()==0:
+            return
+        selected_ind = self.table_widget.selectedIndexes()
+        if len(selected_ind)==0:
+            return
+        ind = selected_ind[0].row()
+        self.source.delete_epoch(ind)
+        self.refresh()
+        self.refresh_table()
+    
+    def duplicate_selected_epoch(self):
+        if self.table_widget.rowCount()==0:
+            return
+        selected_ind = self.table_widget.selectedIndexes()
+        if len(selected_ind)==0:
+            return
+        ind = selected_ind[0].row()
+        self.source.add_epoch(self.source.ep_times[ind], self.source.ep_durations[ind], self.source.ep_labels[ind])
+        self.refresh()
+        self.refresh_table()
+    
+    def split_selected_epoch(self):
+        if self.table_widget.rowCount()==0:
+            return
+        selected_ind = self.table_widget.selectedIndexes()
+        if len(selected_ind)==0:
+            return
+        ind = selected_ind[0].row()
+        if self.t <= self.source.ep_times[ind] or self.source.ep_stops[ind] <= self.t:
+            return
+        self.source.split_epoch(ind, self.t)
+        self.refresh()
+        self.refresh_table()

@@ -62,6 +62,16 @@ Epoch viewer
 .. literalinclude:: ../examples/event_epoch_viewer.py
 
 
+Epoch encoder
+-------------
+
+.. image:: img/epoch_encoder_example.png
+
+:download:`epoch_encoder.py <../examples/epoch_encoder.py>`
+
+.. literalinclude:: ../examples/epoch_encoder.py
+
+
 mixed viewer
 ------------
 

@@ -52,10 +52,11 @@ class MyViewBox(pg.ViewBox):
         pg.ViewBox.__init__(self, *args, **kwds)
         self.disableAutoRange()
     def mouseClickEvent(self, ev):
-        ev.accept()
-    def mouseDoubleClickEvent(self, ev):
-        self.doubleclicked.emit()
-        ev.accept()
+        if ev.double():
+            ev.accept()
+            self.doubleclicked.emit()
+        else:
+            ev.ignore()
     def wheelEvent(self, ev):
         if ev.modifiers() == QT.Qt.ControlModifier:
             z = 5. if ev.delta()>0 else 1/5.

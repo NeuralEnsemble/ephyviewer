@@ -35,11 +35,16 @@ class EpochViewer_ParamController(Base_MultiChannel_ParamController):
 
 
 class RectItem(pg.GraphicsWidget):
-    def __init__(self, rect, border = 'r', fill = 'g'):
+    
+    clicked = QT.pyqtSignal(int)
+    doubleclicked = QT.pyqtSignal(int)
+    
+    def __init__(self, rect, border = 'r', fill = 'g', id = -1):
         pg.GraphicsWidget.__init__(self)
         self.rect = rect
         self.border= border
         self.fill= fill
+        self.id = id
     
     def boundingRect(self):
         return QT.QRectF(0, 0, self.rect[2], self.rect[3])
@@ -48,6 +53,16 @@ class RectItem(pg.GraphicsWidget):
         p.setPen(pg.mkPen(self.border))
         p.setBrush(pg.mkBrush(self.fill))
         p.drawRect(self.boundingRect())
+
+    def mouseClickEvent(self, event):
+        if event.button()== QT.LeftButton:
+            event.accept()
+            if event.double():
+                self.doubleclicked.emit(self.id)
+            else:
+                self.clicked.emit(self.id)
+        else:
+            event.ignore()
 
 
 class DataGrabber(QT.QObject):
@@ -60,8 +75,7 @@ class DataGrabber(QT.QObject):
     def on_request_data(self, t_start, t_stop, visibles):
         data = {}
         for e, chan in enumerate(visibles):
-            times, durations, labels = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop)
-            data[chan] = (times, durations, labels)
+            data[chan] = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop)
         self.data_ready.emit(t_start, t_stop, visibles, data)
     
 
@@ -127,7 +141,13 @@ class EpochViewer(BaseMultiChannelViewer):
         self.graphicsview.setBackground(self.params['background_color'])
         
         for e, chan in enumerate(visibles):
-            times, durations, labels = data[chan]
+            
+            if len(data[chan])==3:
+                times, durations, labels = data[chan]
+            elif len(data[chan])==4:
+                times, durations, labels, _ = data[chan]
+            else:
+                raise ValueError("data has unexpected dimensions")
             
             color = self.by_channel_params.children()[e].param('color').value()
             color2 = QT.QColor(color)
@@ -153,5 +173,3 @@ class EpochViewer(BaseMultiChannelViewer):
         self.vline.setPos(self.t)
         self.plot.setXRange( t_start, t_stop, padding = 0.0)
         self.plot.setYRange( 0, visibles.size)
-
-
