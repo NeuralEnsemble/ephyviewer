@@ -147,8 +147,19 @@ class EpochEncoder(ViewerBase):
         self.mainlayout.addSpacing(10)
         
         
+        self.but_toggle_controls = QT.ToolButton()
+        self.but_toggle_controls.setStyleSheet('QToolButton { border: none; }');
+        self.but_toggle_controls.setToolButtonStyle(QT.Qt.ToolButtonTextBesideIcon)
+        self.but_toggle_controls.setText('Hide controls')
+        self.but_toggle_controls.setArrowType(QT.Qt.DownArrow)
+        self.mainlayout.addWidget(self.but_toggle_controls)
+        self.but_toggle_controls.clicked.connect(self.on_controls_visibility_changed)
+        
+        self.controls = QT.QWidget()
+        self.mainlayout.addWidget(self.controls)
+        
         h = QT.QHBoxLayout()
-        self.mainlayout.addLayout(h)
+        self.controls.setLayout(h)
         
         g = QT.QGridLayout()
         h.addLayout(g)
@@ -302,6 +313,16 @@ class EpochEncoder(ViewerBase):
         self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
         
 
+    def on_controls_visibility_changed(self):
+        if self.controls.isVisible():
+            self.controls.hide()
+            self.but_toggle_controls.setText('Show controls')
+            self.but_toggle_controls.setArrowType(QT.Qt.RightArrow)
+        else:
+            self.controls.show()
+            self.but_toggle_controls.setText('Hide controls')
+            self.but_toggle_controls.setArrowType(QT.Qt.DownArrow)
+    
     def show_params_controller(self):
         self.params_controller.show()
     
