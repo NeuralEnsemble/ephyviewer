@@ -266,8 +266,8 @@ class EpochEncoder(ViewerBase):
 
     def closeEvent(self, event):
         
-        text = 'save ?'
-        title = 'quit'
+        text = 'Do you want to save epoch encoder changes before closing?'
+        title = 'Save?'
         mb = QT.QMessageBox.question(self, title,text, 
                 QT.QMessageBox.Ok ,  QT.QMessageBox.Discard)
         if mb==QT.QMessageBox.Ok:
