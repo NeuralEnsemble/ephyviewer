@@ -226,7 +226,12 @@ class VideoViewer(BaseMultiChannelViewer):
         #~ print('update_frame', video_index, frame)
         
         #TODO : find better solution!!!! to avoid copy
-        img = frame.to_nd_array(format='rgb24')
+        try:
+            # PyAV >= 0.5.3
+            img = frame.to_ndarray(format='rgb24')
+        except AttributeError:
+            # PyAV < 0.5.3
+            img = frame.to_nd_array(format='rgb24')
         img = img.swapaxes(0,1)[:,::-1,:]
         #~ print(img.shape, img.dtype)
         self.images[video_index].setImage(img)
