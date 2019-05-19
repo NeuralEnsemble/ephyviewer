@@ -46,7 +46,7 @@ class FrameGrabber:
     """
     
     this is taken from pyav example here but without QT stuff.
-    https://github.com/mikeboers/PyAV/blob/master/examples/frame_seek_example.py
+    https://github.com/mikeboers/PyAV/blob/master/scratchpad/frame_seek_example.py
     """
     
     def __init__(self):
