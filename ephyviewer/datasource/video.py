@@ -269,7 +269,7 @@ class FrameGrabber:
 
         index, first_frame = next(self.next_frame())
         
-        self.stream.seek(self.stream.start_time)
+        self.stream.seek(self.stream.start_time or 0)
         
         # find the pts of the first frame
         index, first_frame = next(self.next_frame())
