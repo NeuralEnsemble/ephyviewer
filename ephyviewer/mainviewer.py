@@ -37,7 +37,8 @@ class MainViewer(QT.QMainWindow):
         #http://www.programcreek.com/python/example/86789/PyQt5.QtCore.QSettings
         
         self.debug = debug
-        print('debug', debug)
+        if self.debug:
+            print('debug True')
         self.settings_name = settings_name
         if self.settings_name is not None:
             pyver = '.'.join(str(e) for e in sys.version_info[0:3])
@@ -136,7 +137,8 @@ class MainViewer(QT.QMainWindow):
         
     
     def save_all_settings(self):
-        print('save_all_settings')
+        if self.debug:
+            print('save_all_settings')
         if self.settings_name is not None:
             for name, d in self.viewers.items():
                 value = d['widget'].get_settings()
