@@ -152,7 +152,12 @@ class FrameGrabber:
             if original_target_frame_pts is None:
                 original_target_frame_pts = target_pts
             
-            self.stream.seek(int(target_pts))
+            try:
+                # PyAV >= 6.1.0
+                self.file.seek(int(target_pts), stream=self.stream)
+            except TypeError:
+                # PyAV < 6.1.0
+                self.stream.seek(int(target_pts))
             
             frame_index = None
             
@@ -236,7 +241,12 @@ class FrameGrabber:
             target_sec = seek_frame * 1/ self.rate
             target_pts = int(target_sec / self.time_base) + self.start_time
             
-            self.stream.seek(int(target_pts))
+            try:
+                # PyAV >= 6.1.0
+                self.file.seek(int(target_pts), stream=self.stream)
+            except TypeError:
+                # PyAV < 6.1.0
+                self.stream.seek(int(target_pts))
             
             frame_index = None
             
@@ -269,7 +279,12 @@ class FrameGrabber:
 
         index, first_frame = next(self.next_frame())
         
-        self.stream.seek(self.stream.start_time or 0)
+        try:
+            # PyAV >= 6.1.0
+            self.file.seek(self.stream.start_time or 0, stream=self.stream)
+        except TypeError:
+            # PyAV < 6.1.0
+            self.stream.seek(self.stream.start_time or 0)
         
         # find the pts of the first frame
         index, first_frame = next(self.next_frame())
