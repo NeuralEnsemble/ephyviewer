@@ -99,7 +99,9 @@ class FrameGrabber:
     def get_frame(self, target_frame):
         #~ print('get_frame', target_frame)
         
-        if self.last_frame_index is None or \
+        if target_frame >= self.nb_frames:
+            frame = self.get_frame_absolut_seek(self.nb_frames)
+        elif self.last_frame_index is None or \
                 (target_frame < self.last_frame_index) or \
                 (target_frame > self.last_frame_index + 300):
             frame = self.get_frame_absolut_seek(target_frame)
