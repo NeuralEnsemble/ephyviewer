@@ -97,12 +97,11 @@ class QFrameGrabber(QT.QObject):
                 return
             
         frame = self.fg.get_frame(target_frame)
-        if frame is not None:
-            with self.mutex:
-                self._last_frame = target_frame
-                #~ print('new self._last_frame', self._last_frame)
-            #~ self.fg.active_frame = target_frame
-            self.frame_ready.emit(self.video_index, frame)
+        with self.mutex:
+            self._last_frame = target_frame
+            #~ print('new self._last_frame', self._last_frame)
+        #~ self.fg.active_frame = target_frame
+        self.frame_ready.emit(self.video_index, frame)
             
 
 
@@ -225,16 +224,19 @@ class VideoViewer(BaseMultiChannelViewer):
     def update_frame(self, video_index, frame):
         #~ print('update_frame', video_index, frame)
         
-        #TODO : find better solution!!!! to avoid copy
-        try:
-            # PyAV >= 0.5.3
-            img = frame.to_ndarray(format='rgb24')
-        except AttributeError:
-            # PyAV < 0.5.3
-            img = frame.to_nd_array(format='rgb24')
-        img = img.swapaxes(0,1)[:,::-1,:]
-        #~ print(img.shape, img.dtype)
-        self.images[video_index].setImage(img)
+        if frame is None:
+            self.images[video_index].clear()
+        else:
+            #TODO : find better solution!!!! to avoid copy
+            try:
+                # PyAV >= 0.5.3
+                img = frame.to_ndarray(format='rgb24')
+            except AttributeError:
+                # PyAV < 0.5.3
+                img = frame.to_nd_array(format='rgb24')
+            img = img.swapaxes(0,1)[:,::-1,:]
+            #~ print(img.shape, img.dtype)
+            self.images[video_index].setImage(img)
         
 
         #~ rgba = frame.reformat(frame.width, frame.height, "rgb24", 'itu709')
