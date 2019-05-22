@@ -99,14 +99,16 @@ class FrameGrabber:
     def get_frame(self, target_frame):
         #~ print('get_frame', target_frame)
         
-        if target_frame >= self.nb_frames:
+        if target_frame == self.last_frame_index:
+            frame = self.last_frame
+        elif target_frame < 0:
+            frame = self.get_frame_absolut_seek(0)
+        elif target_frame >= self.nb_frames:
             frame = self.get_frame_absolut_seek(self.nb_frames)
         elif self.last_frame_index is None or \
                 (target_frame < self.last_frame_index) or \
                 (target_frame > self.last_frame_index + 300):
             frame = self.get_frame_absolut_seek(target_frame)
-        elif target_frame == self.last_frame_index:
-            frame = self.last_frame
         else:
             frame = None
             for i, (frame_index, next_frame) in enumerate(self.next_frame()):
