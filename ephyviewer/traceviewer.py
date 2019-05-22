@@ -273,7 +273,7 @@ class DataGrabber(QT.QObject):
         
         #~ print(ds_ratio)
         t_start2 = self.source.index_to_time(i_start)
-        times_curves = np.arange(data_curves.shape[1], dtype='float32')
+        times_curves = np.arange(data_curves.shape[1], dtype='float64') # ensure high temporal precision (see issue #28)
         times_curves /= self.source.sample_rate/ds_ratio
         if ds_ratio>1 and decimation_method == 'min_max':
             times_curves /=2
