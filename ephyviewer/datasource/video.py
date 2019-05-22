@@ -348,10 +348,12 @@ class MultiVideoFileSource( BaseDataSource):
     
     def time_to_frame_index(self, i, t):
         
+        # if t is between frames, both methods return
+        # the index of the frame *preceding* t
         if self.video_times is None:
             frame_index = int((t-self.t_starts[i])*self.rates[i])
         else:
-            frame_index = np.searchsorted(self.video_times[i], t)
+            frame_index = np.searchsorted(self.video_times[i], t, side='right') - 1
         
         return frame_index
 
