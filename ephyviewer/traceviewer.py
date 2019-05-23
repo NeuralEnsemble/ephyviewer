@@ -139,7 +139,7 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         offsets = np.zeros(self.viewer.source.nb_channel)
         nb_visible = np.sum(self.visible_channels)
         #~ self.ygain_factor = 1
-        if self.viewer.last_sigs_chunk is not None:
+        if self.viewer.last_sigs_chunk is not None and self.viewer.last_sigs_chunk is not []:
             self.estimate_median_mad()
 
             if scale_mode=='real_scale':

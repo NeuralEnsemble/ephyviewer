@@ -217,11 +217,11 @@ def compose_mainviewer_from_sources(sources, mainviewer=None):
         view = TraceViewer(source=sig_source, name='signal {}'.format(i))
         view.params['scale_mode'] = 'same_for_all'
         view.params['display_labels'] = True
-        view.auto_scale()
         if i==0:
             mainviewer.add_view(view)
         else:
             mainviewer.add_view(view, tabify_with='signal {}'.format(i-1))
+        view.auto_scale()
         
 
     for i, spike_source in enumerate(sources['spike']):
