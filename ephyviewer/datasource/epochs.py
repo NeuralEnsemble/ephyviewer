@@ -38,9 +38,9 @@ class InMemoryEpochSource(BaseEventAndEpoch):
         ep_durations = self.all[chan]['duration']
         ep_labels = self.all[chan]['label']
         
-        keep1 = (ep_times>=t_start) & (ep_times<t_stop) # epochs that start inside range
-        keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_durations<t_stop) # epochs that end inside range
-        keep3 = (ep_times<=t_start) & (ep_times+ep_durations>t_stop) # epochs that span the range
+        keep1 = (ep_times>=t_start) & (ep_times<=t_stop) # epochs that start inside range
+        keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_durations<=t_stop) # epochs that end inside range
+        keep3 = (ep_times<=t_start) & (ep_times+ep_durations>=t_stop) # epochs that span the range
         keep = keep1 | keep2 | keep3
         
         return ep_times[keep], ep_durations[keep], ep_labels[keep]
@@ -143,9 +143,9 @@ class WritableEpochSource(InMemoryEpochSource):
         ep_labels = self.all[chan]['label']
         ep_ids = self.all[chan]['id']
 
-        keep1 = (ep_times>=t_start) & (ep_times<t_stop) # epochs that start inside range
-        keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_durations<t_stop) # epochs that end inside range
-        keep3 = (ep_times<=t_start) & (ep_times+ep_durations>t_stop) # epochs that span the range
+        keep1 = (ep_times>=t_start) & (ep_times<=t_stop) # epochs that start inside range
+        keep2 = (ep_times+ep_durations>=t_start) & (ep_times+ep_durations<=t_stop) # epochs that end inside range
+        keep3 = (ep_times<=t_start) & (ep_times+ep_durations>=t_stop) # epochs that span the range
         keep = keep1 | keep2 | keep3
 
         return ep_times[keep], ep_durations[keep], ep_labels[keep], ep_ids[keep]
