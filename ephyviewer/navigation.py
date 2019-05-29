@@ -117,22 +117,21 @@ class NavigationToolBar(QT.QWidget) :
             #trick for separator
             h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
 
-            # add arrow key shortcuts for stepping through time
-            prev_step_shortcut = QT.QShortcut(self)
-            next_step_shortcut = QT.QShortcut(self)
-            prev_step_shortcut.setKey(QT.Qt.Key_Left)
-            next_step_shortcut.setKey(QT.Qt.Key_Right)
-            prev_step_shortcut.activated.connect(self.prev_step)
-            next_step_shortcut.activated.connect(self.next_step)
-
-            # add Shift + arrow key shortcuts for changing step size
-            increase_step_shortcut = QT.QShortcut(self)
-            decrease_step_shortcut = QT.QShortcut(self)
-            increase_step_shortcut.setKey('Shift+Right')
-            decrease_step_shortcut.setKey('Shift+Left')
-            increase_step_shortcut.activated.connect(self.increase_step)
-            decrease_step_shortcut.activated.connect(self.decrease_step)
-        
+            # add shortcuts for stepping through time and changing step size
+            shortcuts = [
+                {'key': QT.Qt.Key_Left,  'callback': self.prev_step},
+                {'key': QT.Qt.Key_Right, 'callback': self.next_step},
+                {'key': QT.Qt.Key_Up,    'callback': self.increase_step},
+                {'key': QT.Qt.Key_Down,  'callback': self.decrease_step},
+                {'key': 'a',             'callback': self.prev_step},
+                {'key': 'd',             'callback': self.next_step},
+                {'key': 'w',             'callback': self.increase_step},
+                {'key': 's',             'callback': self.decrease_step},
+            ]
+            for s in shortcuts:
+                shortcut = QT.QShortcut(self)
+                shortcut.setKey(s['key'])
+                shortcut.activated.connect(s['callback'])
 
         
         if show_spinbox:
