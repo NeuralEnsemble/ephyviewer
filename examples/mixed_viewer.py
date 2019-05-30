@@ -34,7 +34,3 @@ win.show()
 win.auto_scale()
 
 app.exec_()
-
-
-    
-    

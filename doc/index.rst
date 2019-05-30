@@ -9,7 +9,7 @@ ephysviwer is both a standalone application or module to script your visualisati
 
 .. toctree::
     :maxdepth: 2
-    
+
     overview
     installation
     examples
@@ -27,4 +27,3 @@ ephysviwer is both a standalone application or module to script your visualisati
     * :ref:`genindex`
     * :ref:`modindex`
     * :ref:`search`
-

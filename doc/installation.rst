@@ -23,10 +23,8 @@ To get the last release::
 
     pip install ephyviewer
 
-    
-    
+
+
 To get the last commit not already released::
 
     pip install https://github.com/NeuralEnsemble/ephyviewer/archive/master.zip
-
-    

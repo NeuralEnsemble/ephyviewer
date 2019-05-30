@@ -35,7 +35,7 @@ win.add_view(view1)
 view2 = SpikeTrainViewer.from_neo_spiketrains(neo_seg.spiketrains[0:3], 'spikes')
 win.add_view(view2)
 
-# from several neo.Epoch 
+# from several neo.Epoch
 view3 = EpochViewer.from_neo_epochs(neo_seg.epochs, 'epochs')
 win.add_view(view3)
 
@@ -56,4 +56,4 @@ win2 = compose_mainviewer_from_sources(sources)
 win2.show()
 
 
-app.exec_()    
+app.exec_()

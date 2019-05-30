@@ -7,9 +7,8 @@ def test_base():
     toolbar = ephyviewer.NavigationToolBar()
     toolbar.show()
     app.exec_()
-    
-    
-    
+
+
+
 if __name__=='__main__':
     test_base()
-

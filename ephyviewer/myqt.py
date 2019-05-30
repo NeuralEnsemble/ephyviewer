@@ -48,6 +48,3 @@ else:
 
 if QT is not None:
     from pyqtgraph import mkQApp
-
-
-

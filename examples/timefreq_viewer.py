@@ -17,7 +17,7 @@ t_start = 0.
 win = MainViewer(debug=True, show_auto_scale=True)
 
 #Create a datasource for the viewer
-# here we use InMemoryAnalogSignalSource but 
+# here we use InMemoryAnalogSignalSource but
 # you can alose use your custum datasource by inheritance
 source = InMemoryAnalogSignalSource(sigs, sample_rate, t_start)
 
