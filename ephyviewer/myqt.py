@@ -48,3 +48,8 @@ else:
 
 if QT is not None:
     from pyqtgraph import mkQApp
+
+    # without this, pyqtgraph's performance is terrible if the user sets
+    # TraceViewer's line_width to any value greater than 1.0
+    import pyqtgraph as pg
+    pg.setConfigOptions(useOpenGL=True)
