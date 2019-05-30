@@ -37,10 +37,10 @@ default_params = [
                     {'name': 'deltafreq', 'type': 'float', 'value': 3., 'step': 1., 'limits': [0.1, 1.e6]},
                     {'name': 'f0', 'type': 'float', 'value': 2.5, 'step': 0.1},
                     {'name': 'normalisation', 'type': 'float', 'value': 0., 'step': 0.1},]}
-    
+
     ]
 
-default_by_channel_params = [ 
+default_by_channel_params = [
     {'name': 'visible', 'type': 'bool', 'value': True},
     {'name': 'clim', 'type': 'float', 'value': .1},
     ]
@@ -49,7 +49,7 @@ default_by_channel_params = [
 def generate_wavelet_fourier(len_wavelet, f_start, f_stop, deltafreq, sample_rate, f0, normalisation):
     """
     Compute the wavelet coefficients at all scales and compute its Fourier transform.
-    
+
     Parameters
     ----------
     len_wavelet : int
@@ -64,17 +64,17 @@ def generate_wavelet_fourier(len_wavelet, f_start, f_stop, deltafreq, sample_rat
         Sample rate in Hz
     f0 : float
     normalisation : float
-    
+
     Returns:
     -------
-    
+
     wf : array
         Fourier transform of the wavelet coefficients (after weighting).
         Axis 0 is time; axis 1 is frequency.
     """
     # compute final map scales
     scales = f0/np.arange(f_start,f_stop,deltafreq)*sample_rate
-    
+
     # compute wavelet coeffs at all scales
     xi=np.arange(-len_wavelet/2.,len_wavelet/2.)
     xsd = xi[:,np.newaxis] / scales
@@ -86,14 +86,14 @@ def generate_wavelet_fourier(len_wavelet, f_start, f_stop, deltafreq, sample_rat
     # Transform the wavelet into the Fourier domain
     wf=scipy.fftpack.fft(wavelet_coefs,axis=0)
     wf=wf.conj()
-    
+
     return wf
 
 
 
 class TimeFreqViewer_ParamController(Base_MultiChannel_ParamController):
     some_clim_changed = QT.pyqtSignal()
-    
+
     def on_channel_visibility_changed(self):
         print('TimeFreqViewer_ParamController.on_channel_visibility_changed')
         self.viewer.create_grid()
@@ -103,17 +103,17 @@ class TimeFreqViewer_ParamController(Base_MultiChannel_ParamController):
     def clim_zoom(self, factor):
         #~ print('clim_zoom factor', factor)
         self.viewer.by_channel_params.blockSignals(True)
-        
+
         for i, p in enumerate(self.viewer.by_channel_params.children()):
             p.param('clim').setValue(p.param('clim').value()*factor)
-        
+
         self.viewer.by_channel_params.blockSignals(False)
         self.some_clim_changed.emit()
-    
+
     def compute_auto_clim(self):
         print('compute_auto_clim')
         print(self.visible_channels)
-        
+
         self.viewer.by_channel_params.blockSignals(True)
         maxs = []
         visibles,  = np.nonzero(self.visible_channels)
@@ -127,7 +127,7 @@ class TimeFreqViewer_ParamController(Base_MultiChannel_ParamController):
         if self.viewer.params['scale_mode'] == 'same_for_all' and len(maxs)>0:
             for chan in visibles:
                 self.viewer.by_channel_params['ch'+str(chan), 'clim'] = max(maxs)
-        
+
         self.viewer.by_channel_params.blockSignals(False)
         self.some_clim_changed.emit()
 
@@ -140,11 +140,11 @@ class TimeFreqWorker(QT.QObject):
         self.source = source
         self.viewer = viewer
         self.chan = chan
-    
+
     def on_request_data(self, chan, t, t_start, t_stop, visible_channels, worker_params):
         if chan != self.chan:
             return
-        
+
         if not visible_channels[chan]:
             return
 
@@ -162,11 +162,11 @@ class TimeFreqWorker(QT.QObject):
         i_start = self.source.time_to_index(t_start)
         #~ print('ds_ratio', ds_ratio)
         #~ print('start', t_start, i_start)
-        
+
         if ds_ratio>1:
             i_start = i_start - (i_start%ds_ratio)
             #~ print('start', t_start, i_start)
-        
+
         #clip it
         i_start = max(0, i_start)
         i_start = min(i_start, self.source.get_length())
@@ -174,20 +174,20 @@ class TimeFreqWorker(QT.QObject):
             #after clip
             i_start = i_start - (i_start%ds_ratio)
         #~ print('start', t_start, i_start)
-        
+
         i_stop = i_start + sig_chunk_size
         i_stop = min(i_stop, self.source.get_length())
-        
-        
+
+
         sigs_chunk = self.source.get_chunk(i_start=i_start, i_stop=i_stop)
         sig = sigs_chunk[:, chan]
-        
+
         if ds_ratio>1:
             small_sig = scipy.signal.sosfiltfilt(filter_sos, sig)
             small_sig =small_sig[::ds_ratio].copy()  # to ensure continuity
         else:
             small_sig = sig.copy()# to ensure continuity
-        
+
         left_pad = 0
         if small_sig.shape[0] != wavelet_fourrier.shape[0]:
             #Pad it
@@ -195,13 +195,13 @@ class TimeFreqWorker(QT.QObject):
             left_pad = wavelet_fourrier.shape[0] - small_sig.shape[0]
             z[:small_sig.shape[0]] = small_sig
             small_sig = z
-            
-            
+
+
         #avoid border effect
         small_sig -= small_sig.mean()
-        
+
         #~ print('sig', sig.shape, 'small_sig', small_sig.shape)
-        
+
         small_sig_f = scipy.fftpack.fft(small_sig)
         if small_sig_f.shape[0] != wavelet_fourrier.shape[0]:
             print('oulala', small_sig_f.shape, wavelet_fourrier.shape)
@@ -215,11 +215,11 @@ class TimeFreqWorker(QT.QObject):
         wt_map = wt[:plot_length]
         #~ wt_map =wt
         #~ print('wt_map', wt_map.shape)
-        
-        
+
+
         #~ print('sleep', chan)
         #~ time.sleep(2.)
-        
+
         #TODO t_start and t_stop wrong
         #~ print('sub_sample_rate', worker_params['sub_sample_rate'])
         #~ print('wanted_size', worker_params['wanted_size'])
@@ -229,41 +229,41 @@ class TimeFreqWorker(QT.QObject):
         t2 = self.source.index_to_time(i_start+wt_map.shape[0]*ds_ratio)
         #~ t2 = self.source.index_to_time(i_stop)
         self.data_ready.emit(chan, t,   t_start, t_stop, t1, t2, wt_map)
-        
+
 
 class TimeFreqViewer(BaseMultiChannelViewer):
 
     _default_params = default_params
     _default_by_channel_params = default_by_channel_params
-    
+
     _ControllerClass = TimeFreqViewer_ParamController
-    
+
     request_data = QT.pyqtSignal(int, float, float, float, object, object)
-    
+
     def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
-        
+
         self.make_params()
-        
+
         # make all not visible
         self.by_channel_params.blockSignals(True)
         for c in range(self.source.nb_channel):
             self.by_channel_params['ch'+str(c), 'visible'] = c==0
         self.by_channel_params.blockSignals(False)
-        
+
         self.make_param_controller()
         self.params_controller.some_clim_changed.connect(self.refresh)
-        
+
         self.set_layout()
-        
+
         self.change_color_scale()
         self.create_grid()
         self.initialize_time_freq()
-        
-        
+
+
         self._xratio = 0.3
         self.last_wt_maps = {}
-        
+
         self.threads = []
         self.timefreq_makers = []
         for c in range(self.source.nb_channel):
@@ -273,19 +273,19 @@ class TimeFreqViewer(BaseMultiChannelViewer):
             self.timefreq_makers.append(worker)
             worker.moveToThread(thread)
             thread.start()
-            
-            
+
+
             worker.data_ready.connect(self.on_data_ready)
             self.request_data.connect(worker.on_request_data)
-        
+
         self.params.param('xsize').setLimits((0, np.inf))
-    
+
     @classmethod
     def from_numpy(cls, sigs, sample_rate, t_start, name, channel_names=None):
         source = InMemoryAnalogSignalSource(sigs, sample_rate, t_start, channel_names=channel_names)
         view = cls(source=source, name=name)
         return view
-        
+
     def closeEvent(self, event):
         for i, thread in enumerate(self.threads):
             thread.quit()
@@ -295,49 +295,49 @@ class TimeFreqViewer(BaseMultiChannelViewer):
     def set_layout(self):
         self.mainlayout = QT.QVBoxLayout()
         self.setLayout(self.mainlayout)
-        
+
         self.graphiclayout = pg.GraphicsLayoutWidget()
         self.mainlayout.addWidget(self.graphiclayout)
-    
+
     def on_param_change(self, params=None, changes=None):
         #~ print('on_param_change')
         #track if new scale mode
         #~ for param, change, data in changes:
             #~ if change != 'value': continue
             #~ if param.name()=='scale_mode':
-                #~ self.params_controller.compute_rescale()        
-        
+                #~ self.params_controller.compute_rescale()
+
         #for simplification everything is recompute
         self.change_color_scale()
         self.create_grid()
         self.initialize_time_freq()
         self.refresh()
-    
+
     def create_grid(self):
         visible_channels = self.params_controller.visible_channels
-        
+
         self.plots = create_plot_grid(self.graphiclayout, self.params['nb_column'], visible_channels,
                          ViewBoxClass=MyViewBox,  vb_params={})
-        
+
         for plot in self.plots:
             if plot is not None:
                 plot.vb.doubleclicked.connect(self.show_params_controller)
                 plot.vb.ygain_zoom.connect(self.params_controller.clim_zoom)
                 # plot.vb.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
-    
+
         self.images = []
         self.vlines = []
         for c in range(self.source.nb_channel):
             if visible_channels[c]:
                 image = pg.ImageItem()
-                self.plots[c].addItem(image)                
+                self.plots[c].addItem(image)
                 self.images.append(image)
-                
+
                 vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
                 vline.setZValue(1) # ensure vline is above plot elements
                 self.plots[c].addItem(vline)
                 self.vlines.append(vline)
-                
+
             else:
                 self.images.append(None)
                 self.vlines.append(None)
@@ -345,13 +345,13 @@ class TimeFreqViewer(BaseMultiChannelViewer):
     def initialize_time_freq(self):
         tfr_params = self.params.param('timefreq')
         sample_rate = self.source.sample_rate
-        
+
         # we take sample_rate = f_stop*4 or (original sample_rate)
         if tfr_params['f_stop']*4 < sample_rate:
             wanted_sub_sample_rate = tfr_params['f_stop']*4
         else:
             wanted_sub_sample_rate = sample_rate
-        
+
         # this try to find the best size to get a timefreq of 2**N by changing
         # the sub_sample_rate and the sig_chunk_size
         d = self.worker_params = {}
@@ -362,22 +362,22 @@ class TimeFreqViewer(BaseMultiChannelViewer):
         d['sig_chunk_size'] = d['downsample_ratio']*l
         d['sub_sample_rate'] = self.source.sample_rate/d['downsample_ratio']
         d['plot_length'] = int(d['wanted_size']*d['sub_sample_rate'])
-        
+
         d['wavelet_fourrier'] = generate_wavelet_fourier(d['len_wavelet'], tfr_params['f_start'], tfr_params['f_stop'],
                             tfr_params['deltafreq'], d['sub_sample_rate'], tfr_params['f0'], tfr_params['normalisation'])
-        
+
         if d['downsample_ratio']>1:
             n = 8
             q = d['downsample_ratio']
             d['filter_sos'] = scipy.signal.cheby1(n, 0.05, 0.8 / q, output='sos')
         else:
             d['filter_sos'] = None
-    
+
     def change_color_scale(self):
         N = 512
         cmap_name = self.params['colormap']
         cmap = matplotlib.cm.get_cmap(cmap_name , N)
-        
+
         lut = []
         for i in range(N):
             r,g,b,_ =  matplotlib.colors.ColorConverter().to_rgba(cmap(i))
@@ -395,35 +395,35 @@ class TimeFreqViewer(BaseMultiChannelViewer):
 
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
-        
+
         for c in range(self.source.nb_channel):
             if visible_channels[c]:
                 self.request_data.emit(c, self.t, t_start, t_stop, visible_channels, self.worker_params)
-        
+
         self.graphiclayout.setBackground(self.params['background_color'])
-    
+
     def on_data_ready(self, chan, t,   t_start, t_stop, t1,t2, wt_map):
         if not self.params_controller.visible_channels[chan]:
             return
-        
+
         if self.images[chan] is None:
             return
-        
+
         self.last_wt_maps[chan] = wt_map
         f_start = self.params['timefreq', 'f_start']
         f_stop = self.params['timefreq', 'f_stop']
-        
+
         image = self.images[chan]
         #~ print(t_start, f_start,self.worker_params['wanted_size'], f_stop-f_start)
-        
+
         #~ image.updateImage(wt_map)
         clim = self.by_channel_params['ch{}'.format(chan), 'clim']
         image.setImage(wt_map, lut=self.lut, levels=[0, clim])
         image.setRect(QT.QRectF(t1, f_start,t2-t1, f_stop-f_start))
-        
+
         #TODO
         # display_labels
-        
+
         self.vlines[chan].setPos(t)
         plot = self.plots[chan]
         plot.setXRange(t_start, t_stop, padding = 0.0)
@@ -434,8 +434,7 @@ class TimeFreqViewer(BaseMultiChannelViewer):
             self.plots[chan].setTitle(ch_name)
         else:
             self.plots[chan].setTitle(None)
-        
-        
+
+
         self.plots[chan].showAxis('left', self.params['show_axis'])
         self.plots[chan].showAxis('bottom', self.params['show_axis'])
-

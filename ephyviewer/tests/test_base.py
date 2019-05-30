@@ -8,9 +8,9 @@ def test_base():
     win = ephyviewer.base.ViewerBase()
     win.show()
     app.exec_()
-    
-    
-    
-    
+
+
+
+
 if __name__=='__main__':
     test_base()

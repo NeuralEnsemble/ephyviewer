@@ -22,7 +22,7 @@ for c in range(3):
     ep_labels = np.array(['Event{} num {}'.format(c, i) for i in range(ep_times.size)], dtype='U')
     all_epochs.append({ 'time':ep_times, 'duration':ep_durations, 'label':ep_labels, 'name':'Event{}'.format(c) })
 source_ep = ephyviewer.InMemoryEpochSource(all_epochs=all_epochs)
-    
+
 
 
 

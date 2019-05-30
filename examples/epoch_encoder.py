@@ -1,6 +1,6 @@
 """
 ephyviewer also propose an epoch encoder.
-which can be used with key short cuts to encode levels or with the mouse 
+which can be used with key short cuts to encode levels or with the mouse
 defining limits.
 
 ephyviewer makes available a CsvEpochSource class, which inherits from

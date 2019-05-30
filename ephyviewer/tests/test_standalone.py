@@ -18,7 +18,7 @@ def test_RawNeoOpenDialog():
     dia = RawNeoOpenDialog()
     dia.show()
     app.exec_()
-    
+
     print(dia.final_params)
 
 

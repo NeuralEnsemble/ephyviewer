@@ -8,7 +8,7 @@ Based on PyQt5 (or PyQt4) and pyqtgraph.
 
 Can be use at two level:
 
-## Standalone application 
+## Standalone application
 
 For file supported by neo.rawio (Axon, Blackrock, BrainVision, Neuralynx,
 NeuroExplorer, Plexon, Spike2, Tdt, ...)
@@ -49,5 +49,3 @@ win.show()
 app.exec_()
 
 ```
-
-

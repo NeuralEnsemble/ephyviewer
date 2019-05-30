@@ -6,7 +6,7 @@
 class BaseDataSource:
     def __init__(self):
         pass
-    
+
     @property
     def nb_channel(self):
         raise(NotImplementedError)
@@ -21,5 +21,3 @@ class BaseDataSource:
     @property
     def t_stop(self):
         raise(NotImplementedError)
-
-

@@ -20,7 +20,7 @@ default_params = [
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
-default_by_channel_params = [ 
+default_by_channel_params = [
     {'name': 'color', 'type': 'color', 'value': "55FF00"},
     {'name': 'visible', 'type': 'bool', 'value': True},
     ]
@@ -35,20 +35,20 @@ class EpochViewer_ParamController(Base_MultiChannel_ParamController):
 
 
 class RectItem(pg.GraphicsWidget):
-    
+
     clicked = QT.pyqtSignal(int)
     doubleclicked = QT.pyqtSignal(int)
-    
+
     def __init__(self, rect, border = 'r', fill = 'g', id = -1):
         pg.GraphicsWidget.__init__(self)
         self.rect = rect
         self.border= border
         self.fill= fill
         self.id = id
-    
+
     def boundingRect(self):
         return QT.QRectF(0, 0, self.rect[2], self.rect[3])
-        
+
     def paint(self, p, *args):
         p.setPen(pg.mkPen(self.border))
         p.setBrush(pg.mkBrush(self.fill))
@@ -67,46 +67,46 @@ class RectItem(pg.GraphicsWidget):
 
 class DataGrabber(QT.QObject):
     data_ready = QT.pyqtSignal(float, float, object, object)
-    
+
     def __init__(self, source, parent=None):
         QT.QObject.__init__(self, parent)
         self.source = source
-        
+
     def on_request_data(self, t_start, t_stop, visibles):
         data = {}
         for e, chan in enumerate(visibles):
             data[chan] = self.source.get_chunk_by_time(chan=chan,  t_start=t_start, t_stop=t_stop)
         self.data_ready.emit(t_start, t_stop, visibles, data)
-    
+
 
 class EpochViewer(BaseMultiChannelViewer):
     _default_params = default_params
     _default_by_channel_params = default_by_channel_params
-    
+
     _ControllerClass = EpochViewer_ParamController
-    
+
     request_data = QT.pyqtSignal(float, float, object)
-    
+
     def __init__(self, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
-        
+
         self.make_params()
         self.set_layout()
         self.make_param_controller()
         self.viewBox.doubleclicked.connect(self.show_params_controller)
         self.initialize_plot()
-        
+
         self._xratio = 0.3
-        
+
         self.thread = QT.QThread(parent=self)
         self.datagrabber = DataGrabber(source=self.source)
         self.datagrabber.moveToThread(self.thread)
         self.thread.start()
-        
-        
+
+
         self.datagrabber.data_ready.connect(self.on_data_ready)
         self.request_data.connect(self.datagrabber.on_request_data)
-        
+
         self.params.param('xsize').setLimits((0, np.inf))
 
     @classmethod
@@ -116,20 +116,20 @@ class EpochViewer(BaseMultiChannelViewer):
         return view
 
     @classmethod
-    def from_neo_epochs(cls, neo_epochs, name):    
+    def from_neo_epochs(cls, neo_epochs, name):
         source = NeoEpochSource(neo_epochs)
         view = cls(source=source, name=name)
-        return view        
-    
+        return view
+
     def closeEvent(self, event):
         event.accept()
         self.thread.quit()
         self.thread.wait()
 
-    
+
     def initialize_plot(self):
         self.viewBox.xsize_zoom.connect(self.params_controller.apply_xsize_zoom)
-    
+
     def refresh(self):
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
@@ -139,22 +139,22 @@ class EpochViewer(BaseMultiChannelViewer):
     def on_data_ready(self, t_start, t_stop, visibles, data):
         self.plot.clear()
         self.graphicsview.setBackground(self.params['background_color'])
-        
+
         for e, chan in enumerate(visibles):
-            
+
             if len(data[chan])==3:
                 times, durations, labels = data[chan]
             elif len(data[chan])==4:
                 times, durations, labels, _ = data[chan]
             else:
                 raise ValueError("data has unexpected dimensions")
-            
+
             color = self.by_channel_params.children()[e].param('color').value()
             color2 = QT.QColor(color)
             color2.setAlpha(130)
-            
+
             ypos = visibles.size-e-1
-            
+
             for i in range(times.size):
                 item = RectItem([times[i],  ypos,durations[i], .9],  border = color, fill = color2)
                 item.setPos(times[i],  visibles.size-e-1)
@@ -165,7 +165,7 @@ class EpochViewer(BaseMultiChannelViewer):
                 label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
                 self.plot.addItem(label)
                 label.setPos(t_start, ypos+0.45)
-        
+
         self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
         self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)

@@ -15,10 +15,10 @@ def dataframe_on_qtable(qtable, df):
         qtable.clear()
         qtable.setColumnCount(len(df.columns))
         qtable.setRowCount(len(df.index))
-        
+
         qtable.setHorizontalHeaderLabels(['{}'.format(c) for c in df.columns])
         qtable.setVerticalHeaderLabels(['{}'.format(c) for c in df.index])
-        
+
         for r, row in enumerate(df.index):
             for c, col in enumerate(df.columns):
                 try:
@@ -32,24 +32,24 @@ def dataframe_on_qtable(qtable, df):
 
 
 class DataFrameView(ViewerBase):
-    
+
     def __init__(self,  **kargs):
         ViewerBase.__init__(self, **kargs)
-        
+
         self.mainlayout = QT.QVBoxLayout()
         self.setLayout(self.mainlayout)
-        
-        
+
+
         self.qtable = QT.QTableWidget(selectionMode=QT.QAbstractItemView.SingleSelection,
                                                                             selectionBehavior=QT.QAbstractItemView.SelectRows)
         self.qtable.itemSelectionChanged.connect(self.on_selection_changed)
         self.mainlayout.addWidget(self.qtable)
-        
+
         dataframe_on_qtable(self.qtable, self.source)
-        
+
     def refresh(self):
         pass
-        
+
     def on_selection_changed(self):
         if 'time' not in self.source.columns:
             return
@@ -60,4 +60,3 @@ class DataFrameView(ViewerBase):
                 t = float(t)
                 if not np.isnan(t):
                     self.time_changed.emit(t)
-            

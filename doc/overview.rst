@@ -15,10 +15,10 @@ Launch it from console with filename (and optional format) (need neo>0.6)::
     ephyviewer File_axon_1.abf -f Axon
 
 
-    
+
 But th real goal is to design cutumized viewer for your needs with
 simple python scripts::
- 
+
     import ephyviewer
     import numpy as np
 
@@ -39,4 +39,3 @@ simple python scripts::
 
 
 Have a look at all examples to create from simple to sophisticated viewers.
-
