@@ -99,14 +99,14 @@ class BaseMultiChannelViewer(ViewerBase):
                                     type='group', children=[self.params, self.by_channel_params])
         self.all_params.sigTreeStateChanged.connect(self.on_param_change)
 
-    def set_layout(self):
+    def set_layout(self, useOpenGL=None):
         # layout
         self.mainlayout = QT.QVBoxLayout()
         self.setLayout(self.mainlayout)
 
         self.viewBox = MyViewBox()
 
-        self.graphicsview  = pg.GraphicsView()#useOpenGL = True)
+        self.graphicsview  = pg.GraphicsView(useOpenGL=useOpenGL)
         self.mainlayout.addWidget(self.graphicsview)
 
         self.plot = pg.PlotItem(viewBox=self.viewBox)
