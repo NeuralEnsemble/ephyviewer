@@ -322,11 +322,16 @@ class TraceViewer(BaseMultiChannelViewer):
 
     request_data = QT.pyqtSignal(float, float, float, object, object, object, object)
 
-    def __init__(self, **kargs):
+    def __init__(self, useOpenGL=None, **kargs):
         BaseMultiChannelViewer.__init__(self, **kargs)
 
         self.make_params()
-        self.set_layout()
+
+        # useOpenGL=True eliminates the extremely poor performance associated
+        # with TraceViewer's line_width > 1.0, but it also degrades overall
+        # performance somewhat and is reportedly unstable
+        self.set_layout(useOpenGL=useOpenGL)
+
         self.make_param_controller()
 
         self.viewBox.doubleclicked.connect(self.show_params_controller)
