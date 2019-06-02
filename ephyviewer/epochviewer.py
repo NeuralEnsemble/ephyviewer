@@ -17,6 +17,7 @@ from .datasource import InMemoryEpochSource, NeoEpochSource
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
+    {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
@@ -166,7 +167,7 @@ class EpochViewer(BaseMultiChannelViewer):
                 self.plot.addItem(label)
                 label.setPos(t_start, ypos+0.45)
 
-        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
+        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = self.params['vline_color'])
         self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
 

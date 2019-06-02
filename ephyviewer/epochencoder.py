@@ -20,6 +20,7 @@ from .datasource import WritableEpochSource
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
+    {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'exclusive_mode', 'type': 'bool', 'value': True},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
@@ -296,7 +297,7 @@ class EpochEncoder(ViewerBase):
         self.plot.addItem(self.region, ignoreBounds=True)
         self.region.sigRegionChanged.connect(self.on_region_changed)
 
-        self.vline = pg.InfiniteLine(angle=90, movable=False, pen='#FFFFFFAA')
+        self.vline = pg.InfiniteLine(angle=90, movable=False, pen=self.params['vline_color'])
         self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
 
@@ -331,6 +332,7 @@ class EpochEncoder(ViewerBase):
             self.btn_insertion_mode_exclusive.setChecked(True)
         else:
             self.btn_insertion_mode_overlapping.setChecked(True)
+        self.vline.setPen(color=self.params['vline_color'])
         self.refresh()
 
     def on_change_keys(self, refresh=True):
