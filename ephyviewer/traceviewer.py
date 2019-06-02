@@ -11,7 +11,7 @@ from .myqt import QT
 import pyqtgraph as pg
 
 from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
-from .datasource import InMemoryAnalogSignalSource, AnalogSignalSourceWithScatter, NeoAnalogSignalSource
+from .datasource import InMemoryAnalogSignalSource, AnalogSignalSourceWithScatter, NeoAnalogSignalSource, AnalogSignalFromNeoRawIOSource
 
 
 
@@ -143,8 +143,11 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
             self.estimate_median_mad()
 
             if scale_mode=='real_scale':
-                self.viewer.params['ylim_min'] = np.nanmin(self.signals_min[self.visible_channels])
-                self.viewer.params['ylim_max'] = np.nanmax(self.signals_max[self.visible_channels])
+                if isinstance(self.viewer.source, AnalogSignalFromNeoRawIOSource):
+                    gains = self.viewer.source.neorawio.header['signal_channels']['gain']
+                    offsets = self.viewer.source.neorawio.header['signal_channels']['offset']
+                self.viewer.params['ylim_min'] = np.nanmin(self.signals_min[self.visible_channels] * gains[self.visible_channels] + offsets[self.visible_channels])
+                self.viewer.params['ylim_max'] = np.nanmax(self.signals_max[self.visible_channels] * gains[self.visible_channels] + offsets[self.visible_channels])
             else:
                 if scale_mode=='same_for_all':
                     gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 9.
