@@ -1,7 +1,7 @@
 import os
 import sys
 
-from tridesclous.gui.myqt import QT_MODE
+from ephyviewer.myqt import QT_MODE
 print('QT_MODE', QT_MODE)
 
 

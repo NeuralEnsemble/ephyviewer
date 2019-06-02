@@ -24,7 +24,7 @@ entry_points={'console_scripts': ['ephyviewer=ephyviewer.scripts:launch_standalo
 setup(
     name = "ephyviewer",
     version=version,
-    packages = ['ephyviewer', 'ephyviewer.datasource', 'ephyviewer.tests'],
+    packages = ['ephyviewer', 'ephyviewer.datasource', 'ephyviewer.tests', 'ephyviewer.icons'],
     install_requires=install_requires,
     author = "S.Garcia",
     author_email = "sam.garcia.die@gmail.com",
