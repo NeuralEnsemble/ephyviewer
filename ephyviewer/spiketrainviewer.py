@@ -28,6 +28,7 @@ Symbols['|'].closeSubpath()
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
+    {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
@@ -112,7 +113,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
 
 
     def initialize_plot(self):
-        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
+        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = self.params['vline_color'])
         self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
 
@@ -171,6 +172,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
             all_brush = np.concatenate(all_brush)
             self.scatter.setData(x=all_x, y=all_y, pen=all_brush)
 
+        self.vline.setPen(color=self.params['vline_color'])
         self.vline.setPos(self.t)
 
         self.plot.setXRange( t_start, t_stop, padding = 0.0)

@@ -31,6 +31,7 @@ default_params = [
     {'name': 'scale_mode', 'type': 'list', 'value': 'real_scale',
         'values':['real_scale', 'same_for_all', 'by_channel'] },
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
+    {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'display_labels', 'type': 'bool', 'value': False},
     {'name': 'display_offset', 'type': 'bool', 'value': False},
     {'name': 'antialias', 'type': 'bool', 'value': False},
@@ -374,7 +375,7 @@ class TraceViewer(BaseMultiChannelViewer):
 
     def initialize_plot(self):
 
-        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
+        self.vline = pg.InfiniteLine(angle = 90, movable = False, pen = self.params['vline_color'])
         self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
 
@@ -421,6 +422,8 @@ class TraceViewer(BaseMultiChannelViewer):
             if param.name()=='scatter_size':
                 if self.source.with_scatter:
                     self.scatter.setSize(self.params['scatter_size'])
+            if param.name()=='vline_color':
+                self.vline.setPen(color=self.params['vline_color'])
 
 
         self.refresh()

@@ -27,6 +27,7 @@ default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'nb_column', 'type': 'int', 'value': 4},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
+    {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'colormap', 'type': 'list', 'value': 'viridis', 'values' : ['viridis', 'jet', 'gray', 'hot', ] },
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     {'name': 'show_axis', 'type': 'bool', 'value': True},
@@ -333,7 +334,7 @@ class TimeFreqViewer(BaseMultiChannelViewer):
                 self.plots[c].addItem(image)
                 self.images.append(image)
 
-                vline = pg.InfiniteLine(angle = 90, movable = False, pen = '#FFFFFFAA')
+                vline = pg.InfiniteLine(angle = 90, movable = False, pen = self.params['vline_color'])
                 vline.setZValue(1) # ensure vline is above plot elements
                 self.plots[c].addItem(vline)
                 self.vlines.append(vline)
@@ -425,6 +426,7 @@ class TimeFreqViewer(BaseMultiChannelViewer):
         # display_labels
 
         self.vlines[chan].setPos(t)
+        self.vlines[chan].setPen(color=self.params['vline_color'])
         plot = self.plots[chan]
         plot.setXRange(t_start, t_stop, padding = 0.0)
         plot.setYRange(f_start, f_stop, padding = 0.0)
