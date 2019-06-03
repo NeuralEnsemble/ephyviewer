@@ -207,7 +207,7 @@ class DataGrabber(QT.QObject):
 
     def get_data(self, t, t_start, t_stop, gains, offsets, visibles, decimation_method):
 
-        i_start, i_stop = self.source.time_to_index(t_start), self.source.time_to_index(t_stop)
+        i_start, i_stop = self.source.time_to_index(t_start), self.source.time_to_index(t_stop) + 2
         #~ print(t_start, t_stop, i_start, i_stop)
 
         ds_ratio = (i_stop - i_start)//self._max_point + 1
