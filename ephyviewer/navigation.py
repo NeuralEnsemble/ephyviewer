@@ -71,11 +71,11 @@ class NavigationToolBar(QT.QWidget) :
         self.mainlayout.addLayout(h)
 
         if show_play:
-            but = QT.QPushButton(icon=QT.QIcon.fromTheme('media-playback-start'))
+            but = QT.QPushButton(icon=QT.QIcon(':/media-playback-start.svg'))
             but.clicked.connect(self.on_play)
             h.addWidget(but)
 
-            but = QT.QPushButton(icon=QT.QIcon.fromTheme('media-playback-stop'))
+            but = QT.QPushButton(icon=QT.QIcon(':/media-playback-stop.svg'))
             #~ but = QT.QPushButton(QT.QIcon(':/media-playback-stop.png'), '')
             but.clicked.connect(self.on_stop_pause)
             h.addWidget(but)

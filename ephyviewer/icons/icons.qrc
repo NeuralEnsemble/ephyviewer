@@ -1,0 +1,6 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource>
+            <file alias="media-playback-stop.svg">img/media-playback-stop.svg</file>
+            <file alias="media-playback-start.svg">img/media-playback-start.svg</file>
+    </qresource>
+</RCC>
