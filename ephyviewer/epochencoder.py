@@ -21,6 +21,7 @@ default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
+    {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'exclusive_mode', 'type': 'bool', 'value': True},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
@@ -306,7 +307,7 @@ class EpochEncoder(ViewerBase):
         self.label_items = []
         for i, label in enumerate(self.source.possible_labels):
             color = self.by_label_params['label'+str(i), 'color']
-            label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
+            label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
             label_item.setZValue(11)
             self.plot.addItem(label_item)
             self.label_items.append(label_item)
@@ -415,6 +416,7 @@ class EpochEncoder(ViewerBase):
                 color = self.by_label_params['label'+str(i), 'color']
                 #~ label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 120)))
                 label_item.setColor(color)
+                label_item.fill = pg.mkBrush(self.params['label_fill_color'])
                 label_item.setPos(t_start, n - i - 0.55)
                 label_item.show()
                 #~ self.plot.addItem(label_item)

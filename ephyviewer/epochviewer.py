@@ -18,6 +18,7 @@ default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
+    {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
@@ -163,7 +164,7 @@ class EpochViewer(BaseMultiChannelViewer):
 
             if self.params['display_labels']:
                 label_name = '{}: {}'.format(chan, self.source.get_channel_name(chan=chan))
-                label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
+                label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
                 self.plot.addItem(label)
                 label.setPos(t_start, ypos+0.45)
 

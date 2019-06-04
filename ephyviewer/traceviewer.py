@@ -32,6 +32,7 @@ default_params = [
         'values':['real_scale', 'same_for_all', 'by_channel'] },
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
+    {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
     {'name': 'display_labels', 'type': 'bool', 'value': False},
     {'name': 'display_offset', 'type': 'bool', 'value': False},
     {'name': 'antialias', 'type': 'bool', 'value': False},
@@ -395,7 +396,7 @@ class TraceViewer(BaseMultiChannelViewer):
             self.curves.append(curve)
 
             ch_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
-            label = pg.TextItem(ch_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
+            label = pg.TextItem(ch_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
             label.setZValue(2) # ensure labels are drawn above scatter
 
             self.plot.addItem(label)
@@ -429,6 +430,9 @@ class TraceViewer(BaseMultiChannelViewer):
                     self.scatter.setSize(self.params['scatter_size'])
             if param.name()=='vline_color':
                 self.vline.setPen(color=self.params['vline_color'])
+            if param.name()=='label_fill_color':
+                for label in self.channel_labels:
+                    label.fill = pg.mkBrush(self.params['label_fill_color'])
 
 
         self.refresh()
