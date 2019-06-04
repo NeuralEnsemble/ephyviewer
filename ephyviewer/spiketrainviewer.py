@@ -29,6 +29,7 @@ default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
+    {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
@@ -125,7 +126,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
         for c in range(self.source.nb_channel):
             label_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
             color = self.by_channel_params.children()[c].param('color').value()
-            label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((34,34,34, 221)))
+            label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
             self.plot.addItem(label)
             self.labels.append(label)
 
@@ -165,6 +166,9 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
         for chan in range(self.source.nb_channel):
             if not self.params['display_labels'] or chan not in visibles:
                 self.labels[chan].hide()
+
+        for label in self.labels:
+            label.fill = pg.mkBrush(self.params['label_fill_color'])
 
         if len(all_x):
             all_x = np.concatenate(all_x)
