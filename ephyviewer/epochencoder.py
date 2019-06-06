@@ -397,12 +397,14 @@ class EpochEncoder(ViewerBase):
         for i, label in enumerate(labels):
             ind = self.source.possible_labels.index(label)
             color = self.by_label_params['label'+str(ind), 'color']
+            color2 = QT.QColor(color)
+            color2.setAlpha(130)
             ypos = n - ind - 1
             if self.params['view_mode']=='stacked':
                 ypos = n - ind - 1
             else:
                 ypos = 0
-            item = RectItem([times[i],  ypos,durations[i], .9],  border='#FFFFFF', fill=color, id=ids[i])
+            item = RectItem([times[i],  ypos,durations[i], .9],  border=color, fill=color2, id=ids[i])
             item.clicked.connect(self.on_rect_clicked)
             item.doubleclicked.connect(self.on_rect_doubleclicked)
             item.setPos(times[i],  ypos)
