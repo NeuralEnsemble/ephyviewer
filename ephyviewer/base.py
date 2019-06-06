@@ -64,7 +64,7 @@ class MyViewBox(pg.ViewBox):
             z = 1.1 if ev.delta()>0 else 1/1.1
         self.ygain_zoom.emit(z)
         ev.accept()
-    def mouseDragEvent(self, ev):
+    def mouseDragEvent(self, ev, axis=None):
         if ev.button()== QT.RightButton:
             self.xsize_zoom.emit((ev.pos()-ev.lastPos()).x())
         else:
