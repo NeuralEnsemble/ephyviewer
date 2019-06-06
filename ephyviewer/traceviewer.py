@@ -184,10 +184,10 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
             #TODO ylims
         else :
             #~ self.ygain_factor *= factor_ratio
-            if not hasattr(self, 'self.signals_med'):
+            if not hasattr(self, 'signals_med'):
                 self.estimate_median_mad()
-            self.gains = self.gains * factor_ratio
             self.offsets = self.offsets + self.signals_med*self.gains * (1-factor_ratio)
+            self.gains = self.gains * factor_ratio
 
         self.viewer.all_params.blockSignals(False)
 
