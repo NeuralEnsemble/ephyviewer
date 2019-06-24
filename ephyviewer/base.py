@@ -57,7 +57,7 @@ class MyViewBox(pg.ViewBox):
             self.doubleclicked.emit()
         else:
             ev.ignore()
-    def wheelEvent(self, ev):
+    def wheelEvent(self, ev, axis=None):
         if ev.modifiers() == QT.Qt.ControlModifier:
             z = 5. if ev.delta()>0 else 1/5.
         else:
