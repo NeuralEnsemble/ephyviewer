@@ -42,7 +42,7 @@ class DataFrameView(ViewerBase):
 
         self.qtable = QT.QTableWidget(selectionMode=QT.QAbstractItemView.SingleSelection,
                                                                             selectionBehavior=QT.QAbstractItemView.SelectRows)
-        self.qtable.itemSelectionChanged.connect(self.on_selection_changed)
+        self.qtable.itemClicked.connect(self.on_selection_changed)
         self.mainlayout.addWidget(self.qtable)
 
         dataframe_on_qtable(self.qtable, self.source)
