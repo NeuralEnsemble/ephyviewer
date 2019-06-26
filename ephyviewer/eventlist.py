@@ -30,7 +30,7 @@ class EventList(ViewerBase):
 
         self.combo.addItems([self.source.get_channel_name(i) for i in range(self.source.nb_channel) ])
 
-        self.list_widget.currentRowChanged.connect(self.select_event)
+        self.list_widget.itemClicked.connect(self.select_event)
 
     @classmethod
     def from_numpy(cls, all_events, name):
@@ -69,7 +69,8 @@ class EventList(ViewerBase):
                 self.list_widget.addItem('{} : {:.3f} {}'.format(i, times[i], labels[i]) )
 
 
-    def select_event(self, i):
+    def select_event(self):
+        i = self.list_widget.currentRow()
 
         #~ ev = self.source.all_events[self.ind]
         #~ t = ev['time'][i]
