@@ -266,7 +266,7 @@ class EpochEncoder(ViewerBase):
 
         self.table_widget = QT.QTableWidget()
         h.addWidget(self.table_widget)
-        self.table_widget.itemSelectionChanged.connect(self.on_seek_table)
+        self.table_widget.itemClicked.connect(self.on_seek_table)
         self.table_widget.setSelectionMode(QT.QAbstractItemView.SingleSelection)
         self.table_widget.setSelectionBehavior(QT.QAbstractItemView.SelectRows)
 
