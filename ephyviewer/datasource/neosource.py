@@ -150,6 +150,12 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
                         channel_indexes=self.channel_indexes)
         return length
 
+    def get_gains(self):
+        return self.neorawio.header['signal_channels']['gain'][self.channel_indexes]
+
+    def get_offsets(self):
+        return self.neorawio.header['signal_channels']['offset'][self.channel_indexes]
+
     def get_shape(self):
         return (self.get_length(), self.nb_channel)
 
