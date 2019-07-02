@@ -156,7 +156,6 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
     def get_chunk(self, i_start=None, i_stop=None):
         sigs = self.neorawio.get_analogsignal_chunk(block_index=self.block_index, seg_index=self.seg_index,
                         i_start=i_start, i_stop=i_stop, channel_indexes=self.channel_indexes)
-        #TODO something for scaling
 
         #TODO add an option to pre load evrything in memory for short length
 
