@@ -146,8 +146,8 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
 
             if scale_mode=='real_scale':
                 if isinstance(self.viewer.source, AnalogSignalFromNeoRawIOSource):
-                    gains = self.viewer.source.neorawio.header['signal_channels']['gain']
-                    offsets = self.viewer.source.neorawio.header['signal_channels']['offset']
+                    gains = self.viewer.source.get_gains()
+                    offsets = self.viewer.source.get_offsets()
                 self.viewer.params['ylim_min'] = np.nanmin(self.signals_min[self.visible_channels] * gains[self.visible_channels] + offsets[self.visible_channels])
                 self.viewer.params['ylim_max'] = np.nanmax(self.signals_max[self.visible_channels] * gains[self.visible_channels] + offsets[self.visible_channels])
             else:
