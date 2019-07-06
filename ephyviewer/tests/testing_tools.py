@@ -90,10 +90,13 @@ def make_video_file(filename, codec='mpeg4', rate=25.): # mpeg4 mjpeg libx264
             output.mux(packet)
 
     while True :
-        packet = stream.encode(None)
-        if packet is None:
+        try:
+            packet = stream.encode(None)
+            if packet is None:
+                break
+            output.mux(packet)
+        except av.AVError:
             break
-        output.mux(packet)
 
     output.close()
 
