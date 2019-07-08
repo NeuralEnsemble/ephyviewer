@@ -441,19 +441,31 @@ class EpochEncoder(ViewerBase):
         label, modifier_used = self.shortcuts.get(self.sender(), None)
         if label is None: return
 
-        #~ duration = self.spin_step.value()
-        duration = self.params['new_epoch_step']
+        range_selection_is_enabled = self.but_range.isChecked()
+
+        if range_selection_is_enabled:
+            # use selection for start and end of new epoch
+            t_start = self.spin_limit1.value()
+            t_stop = self.spin_limit2.value()
+            duration = t_stop - t_start
+        else:
+            # use current time and step size to get end of new epoch
+            duration = self.params['new_epoch_step']
+            t_start = self.t
+            t_stop = self.t + duration
 
         # delete existing epochs in the region where the new epoch will be inserted
         if (self.params['exclusive_mode'] and not modifier_used) or (not self.params['exclusive_mode'] and modifier_used):
-            self.source.delete_in_between(self.t, self.t + duration)
+            self.source.delete_in_between(t_start, t_stop)
 
         # create the new epoch
-        self.source.add_epoch(self.t, duration, label)
+        self.source.add_epoch(t_start, duration, label)
 
-        self.t += duration
+        if not range_selection_is_enabled:
+            # advance time by a step
+            self.t += duration
+            self.time_changed.emit(self.t)
         self.refresh()
-        self.time_changed.emit(self.t)
         self.refresh_table()
 
     def on_merge_neighbors(self):
