@@ -60,6 +60,18 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
     def __init__(self, parent=None, viewer=None):
         Base_MultiChannel_ParamController.__init__(self, parent=parent, viewer=viewer, with_visible=True, with_color=True)
 
+        # raw_gains and raw_offsets are distinguished from adjustable gains and
+        # offsets associated with this viewer because it makes placement of the
+        # baselines and labels very easy for both raw and in-memory sources
+        if isinstance(self.viewer.source, AnalogSignalFromNeoRawIOSource):
+            # use raw_gains and raw_offsets from the raw source
+            self.raw_gains = self.viewer.source.get_gains()
+            self.raw_offsets = self.viewer.source.get_offsets()
+        else:
+            # use 1 and 0 for in-memory sources, which have already been scaled
+            # properly
+            self.raw_gains = np.ones(self.viewer.source.nb_channel)
+            self.raw_offsets = np.zeros(self.viewer.source.nb_channel)
 
         #TODO put this somewhere
 
@@ -107,9 +119,29 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         for c, v in enumerate(val):
             self.viewer.by_channel_params['ch{}'.format(c), 'offset'] = v
 
+    @property
+    def total_gains(self):
+        # compute_rescale sets adjustable gains and offsets such that
+        #     data_curves = (chunk * raw_gains + raw_offsets) * gains + offsets
+        #                 = chunk * (raw_gains * gains) + (raw_offsets * gains + offsets)
+        #                 = chunk * total_gains + total_offsets
+        return self.raw_gains * self.gains
+
+    @property
+    def total_offsets(self):
+        # compute_rescale sets adjustable gains and offsets such that
+        #     data_curves = (chunk * raw_gains + raw_offsets) * gains + offsets
+        #                 = chunk * (raw_gains * gains) + (raw_offsets * gains + offsets)
+        #                 = chunk * total_gains + total_offsets
+        return (self.raw_offsets * self.gains) + self.offsets
+
 
 
     def estimate_median_mad(self):
+        # Estimates are performed on real values for both raw and in-memory
+        # sources, i.e., on sigs = chunk * raw_gains + raw_offsets, where
+        # raw_gains = 1 and raw_offsets = 0 for in-memory sources.
+
         #~ print('estimate_median_mad')
         #~ t0 = time.perf_counter()
         sigs = self.viewer.last_sigs_chunk
@@ -122,6 +154,7 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
             ind = np.random.randint(0, sigs.shape[0], size=1000)
             sigs = sigs[ind, :]
 
+        sigs = sigs * self.raw_gains + self.raw_offsets  # calculate on real values
         self.signals_med = med = np.median(sigs, axis=0)
         self.signals_mad = np.median(np.abs(sigs-med),axis=0)*1.4826
         self.signals_min = np.min(sigs, axis=0)
@@ -132,6 +165,13 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         #~ print('self.signals_med', self.signals_med)
 
     def compute_rescale(self):
+        # estimate_median_mad operates on real values, i.e., on
+        # sigs = chunk * raw_gains + raw_offsets. Consequently, the gains and
+        # offsets computed here will map real values to plot coords:
+        #     data_curves = (chunk * raw_gains + raw_offsets) * gains + offsets
+        #                 = chunk * (raw_gains * gains) + (raw_offsets * gains + offsets)
+        #                 = chunk * total_gains + total_offsets
+
         scale_mode = self.viewer.params['scale_mode']
         #~ print('compute_rescale', scale_mode)
 
@@ -145,11 +185,8 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
             self.estimate_median_mad()
 
             if scale_mode=='real_scale':
-                if isinstance(self.viewer.source, AnalogSignalFromNeoRawIOSource):
-                    gains = self.viewer.source.get_gains()
-                    offsets = self.viewer.source.get_offsets()
-                self.viewer.params['ylim_min'] = np.nanmin(self.signals_min[self.visible_channels] * gains[self.visible_channels] + offsets[self.visible_channels])
-                self.viewer.params['ylim_max'] = np.nanmax(self.signals_max[self.visible_channels] * gains[self.visible_channels] + offsets[self.visible_channels])
+                self.viewer.params['ylim_min'] = np.nanmin(self.signals_min[self.visible_channels])
+                self.viewer.params['ylim_max'] = np.nanmax(self.signals_max[self.visible_channels])
             else:
                 if scale_mode=='same_for_all':
                     gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 9.
@@ -209,7 +246,7 @@ class DataGrabber(QT.QObject):
         self.viewer = viewer
         self._max_point = 3000
 
-    def get_data(self, t, t_start, t_stop, gains, offsets, visibles, decimation_method):
+    def get_data(self, t, t_start, t_stop, total_gains, total_offsets, visibles, decimation_method):
 
         i_start, i_stop = self.source.time_to_index(t_start), self.source.time_to_index(t_stop) + 2
         #~ print(t_start, t_stop, i_start, i_stop)
@@ -270,8 +307,8 @@ class DataGrabber(QT.QObject):
 
         #~ print(data_curves.shape)
 
-        data_curves *= gains[visibles, None]
-        data_curves += offsets[visibles, None]
+        data_curves *= total_gains[visibles, None]
+        data_curves += total_offsets[visibles, None]
         dict_curves ={}
         for i, c in enumerate(visibles):
             dict_curves[c] = data_curves[i, :]
@@ -294,13 +331,13 @@ class DataGrabber(QT.QObject):
                     scatter_inds = self.source.get_scatter(i_start=i_start, i_stop=i_stop, chan=c, label=k)
                     if scatter_inds is None: continue
                     x.append((scatter_inds-i_start)/self.source.sample_rate+t_start2)
-                    y.append(sigs_chunk[scatter_inds-i_start, c]*gains[c]+offsets[c])
+                    y.append(sigs_chunk[scatter_inds-i_start, c]*total_gains[c]+total_offsets[c])
 
                 dict_scatter[k] = (np.concatenate(x), np.concatenate(y))
 
         return t, t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk, dict_scatter
 
-    def on_request_data(self, t, t_start, t_stop, gains, offsets, visibles, decimation_method):
+    def on_request_data(self, t, t_start, t_stop, total_gains, total_offsets, visibles, decimation_method):
         #~ print('on_request_data', t_start, t_stop)
 
         if self.viewer.t != t:
@@ -308,7 +345,7 @@ class DataGrabber(QT.QObject):
             return
 
         t, t_start, t_stop, visibles, dict_curves, times_curves,\
-                    sigs_chunk, dict_scatter = self.get_data(t, t_start, t_stop, gains, offsets, visibles, decimation_method)
+                    sigs_chunk, dict_scatter = self.get_data(t, t_start, t_stop, total_gains, total_offsets, visibles, decimation_method)
 
 
         #~ print('on_request_data', threading.get_ident())
@@ -446,10 +483,10 @@ class TraceViewer(BaseMultiChannelViewer):
             xsize = self.params['xsize']
             t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
             visibles, = np.nonzero(self.params_controller.visible_channels)
-            gains = self.params_controller.gains
-            offsets = self.params_controller.offsets
-            _, _, _, _, _, _,sigs_chunk, _ = self.datagrabber.get_data(self.t, t_start, t_stop, gains,
-                                            offsets, visibles, self.params['decimation_method'])
+            total_gains = self.params_controller.total_gains
+            total_offsets = self.params_controller.total_offsets
+            _, _, _, _, _, _,sigs_chunk, _ = self.datagrabber.get_data(self.t, t_start, t_stop, total_gains,
+                                            total_offsets, visibles, self.params['decimation_method'])
             self.last_sigs_chunk = sigs_chunk
 
         self.params_controller.compute_rescale()
@@ -460,10 +497,10 @@ class TraceViewer(BaseMultiChannelViewer):
         xsize = self.params['xsize']
         t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
         visibles, = np.nonzero(self.params_controller.visible_channels)
-        gains = self.params_controller.gains
-        offsets = self.params_controller.offsets
+        total_gains = self.params_controller.total_gains
+        total_offsets = self.params_controller.total_offsets
 
-        self.request_data.emit(self.t, t_start, t_stop, gains, offsets, visibles, self.params['decimation_method'])
+        self.request_data.emit(self.t, t_start, t_stop, total_gains, total_offsets, visibles, self.params['decimation_method'])
 
 
     def on_data_ready(self, t,   t_start, t_stop, visibles, dict_curves, times_curves, sigs_chunk, dict_scatter):
