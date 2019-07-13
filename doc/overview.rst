@@ -4,8 +4,9 @@ Overview
 ephyviewer is a python module for building custuimized viewer
 for electrophysiological signals and related stuff (video/events/time frequency...)
 
-It can be used as a stabndalone application just by lauching from console, 
+It can be used as a stabndalone application just by lauching from console,
 then use the open menu (need neo>0.6)::
+
     ephyviewer
 
 

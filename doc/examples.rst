@@ -1,5 +1,5 @@
 Examples
-=======
+========
 
 Simple signal viewer
 --------------------
