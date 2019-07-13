@@ -1,5 +1,5 @@
-The WIP doc of ephyviewer
-=========================
+ephyviewer |version|
+====================
 
 Do you have a large neural/electrophysiological dataset? Do you want to closely
 examine the raw signals and other events before performing an in-depth analysis?
