@@ -1,30 +1,23 @@
 Installation
 ============
 
-ephyviewer should work with python 2.7, 3.4, 3.5, 3.6.
-
-ephyviewer should work either with Qt4 or Qt5 so theses depency
-are not mandatory for installation.
-
-Mandatory Dependencies:
+Requirements:
+  * Python ≥ 3.4
   * numpy
   * scipy
-  * matplotlib>=2.0
-  * pyqtgraph>=0.10.0
-  * PyQt4 or PyQt5
+  * matplotlib ≥ 2.0
+  * pyqtgraph ≥ 0.10.0
+  * PyQt4 or PyQt5 (manual installation required)
 
+Optional dependencies:
+  * Neo ≥ 0.6 (standalone app and Neo sources)
+  * PyAV (video viewer)
+  * pandas (dataframes and CSV writable epoch sources)
 
-For video viewer:
-  * pyav
-
-
-
-To get the last release::
+To install the latest release::
 
     pip install ephyviewer
 
-
-
-To get the last commit not already released::
+To install the latest development version::
 
     pip install https://github.com/NeuralEnsemble/ephyviewer/archive/master.zip

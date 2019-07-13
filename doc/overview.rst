@@ -1,42 +1,51 @@
 Overview
 ========
 
-ephyviewer is a python module for building custuimized viewer
-for electrophysiological signals and related stuff (video/events/time frequency...)
+ephyviewer is a Python library for building custom viewers for
+electrophysiological signals, video, events, epochs, spike trains, data tables,
+and time-frequency representations of signals. It also provides an epoch encoder
+for creating annotations.
 
-It can be used as a stabndalone application just by lauching from console,
-then use the open menu (need neo>0.6)::
+ephyviewer can be used as a standalone application (requires Neo_ ≥ 0.6) by
+launching it from the console, then using the menu to open a data file::
 
     ephyviewer
 
+See Neo's rawiolist_ for available formats.
 
-Launch it from console with filename (and optional format) (need neo>0.6)::
+You can skip the file menu by specifying a filename from the console (and
+optionally the format, though this can usually be detected automatically)::
 
     ephyviewer File_axon_1.abf
     ephyviewer File_axon_1.abf -f Axon
 
-
-
-But th real goal is to design cutumized viewer for your needs with
-simple python scripts::
+However, where ephyviewer really shines is as a library for designing custom
+viewers in simple Python scripts that meet your individual needs::
 
     import ephyviewer
     import numpy as np
 
     app = ephyviewer.mkQApp()
 
-    #signals
+    # create example signals
     sigs = np.random.rand(100000,16)
+
+    # create a viewer for the signals
     sample_rate = 1000.
     t_start = 0.
     view1 = ephyviewer.TraceViewer.from_numpy(sigs, sample_rate, t_start, 'Signals')
 
-    win = ephyviewer.MainViewer(debug=True, show_auto_scale=True)
+    # create a window
+    win = ephyviewer.MainViewer()
     win.add_view(view1)
     win.show()
 
+    # launch the app
     app.exec_()
 
+Have a look at the examples to see how to create both simple and sophisticated
+viewers.
 
 
-Have a look at all examples to create from simple to sophisticated viewers.
+.. _Neo:        https://neo.readthedocs.io/en/latest/
+.. _rawiolist:  https://github.com/NeuralEnsemble/python-neo/blob/master/neo/rawio/__init__.py
