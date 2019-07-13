@@ -78,3 +78,13 @@ Mixed viewer
 :download:`mixed_viewer.py <../examples/mixed_viewer.py>`
 
 .. literalinclude:: ../examples/mixed_viewer.py
+
+
+Viewers from Neo objects
+------------------------
+
+.. image:: img/viewers_with_neo_objects_example.png
+
+:download:`viewers_with_neo_objects.py <../examples/viewers_with_neo_objects.py>`
+
+.. literalinclude:: ../examples/viewers_with_neo_objects.py
