@@ -48,8 +48,8 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ephyviewer'
-copyright = '2017, Samuel Garcia'
-author = 'Samuel Garcia'
+copyright = '2019, Samuel Garcia, Jeffrey Gill'
+author = 'Samuel Garcia, Jeffrey Gill'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -154,7 +154,7 @@ latex_elements = {
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
     (master_doc, 'ephyviewer.tex', 'ephyviewer Documentation',
-     'Samuel Garcia', 'manual'),
+     author, 'manual'),
 ]
 
 
