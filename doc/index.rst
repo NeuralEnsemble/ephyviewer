@@ -18,6 +18,7 @@ the neurotic_ app.
     installation
     interface
     examples
+    releasenotes
 
 
 .. _neurotic: https://github.com/jpgill86/neurotic

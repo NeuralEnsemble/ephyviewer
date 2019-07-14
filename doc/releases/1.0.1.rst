@@ -1,0 +1,7 @@
+Version 1.0.1
+-------------
+
+2018-03-26
+
+* Bug fixes
+  (`#5 <https://github.com/NeuralEnsemble/ephyviewer/pull/5>`__)
