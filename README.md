@@ -1,11 +1,13 @@
 # ephyviewer
 
-[![Documentation Status](https://readthedocs.org/projects/ephyviewer/badge/?version=latest)](https://ephyviewer.readthedocs.io/en/latest/?badge=latest)
+[![Documentation Status][docs-badge]](https://ephyviewer.readthedocs.io/en/latest/?badge=latest)
 
 **ephyviewer** is a Python library based on [pyqtgraph] for building custom
 viewers for electrophysiological signals, video, events, epochs, spike trains,
 data tables, and time-frequency representations of signals. It also provides an
 epoch encoder for creating annotations.
+
+![Screenshot][screenshot]
 
 **ephyviewer** can be used at two levels: standalone app and library.
 
@@ -53,6 +55,9 @@ app.exec_()
 
 Check the docs for more [examples].
 
+
+[docs-badge]: https://readthedocs.org/projects/ephyviewer/badge/?version=latest
+[screenshot]: https://raw.githubusercontent.com/NeuralEnsemble/ephyviewer/master/doc/img/mixed_viewer_example.png
 [pyqtgraph]:  http://www.pyqtgraph.org/
 [Neo]:        https://neo.readthedocs.io/en/latest/
 [rawiolist]:  https://github.com/NeuralEnsemble/python-neo/blob/master/neo/rawio/__init__.py
