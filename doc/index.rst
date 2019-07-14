@@ -16,6 +16,7 @@ the neurotic_ app.
 
     overview
     installation
+    interface
     examples
 
 

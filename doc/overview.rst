@@ -1,3 +1,5 @@
+.. _overview:
+
 Overview
 ========
 
@@ -43,8 +45,9 @@ viewers in simple Python scripts that meet your individual needs::
     # launch the app
     app.exec_()
 
-Have a look at the examples to see how to create both simple and sophisticated
-viewers.
+Have a look at the :ref:`examples` to see how to create both simple and
+sophisticated viewers, and at the :ref:`interface` guide for how to use the
+interface.
 
 
 .. _Neo:        https://neo.readthedocs.io/en/latest/
