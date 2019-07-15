@@ -85,6 +85,9 @@ Plot fixes
   (`#58 <https://github.com/NeuralEnsemble/ephyviewer/pull/58>`__,
   `#61 <https://github.com/NeuralEnsemble/ephyviewer/pull/61>`__)
 
+* Fix crash when scatter plot channels are hidden
+  (`#64 <https://github.com/NeuralEnsemble/ephyviewer/pull/64>`__)
+
 Video fixes
 ...........
 
