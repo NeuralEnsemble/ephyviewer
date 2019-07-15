@@ -1,12 +1,11 @@
 """
-ephyviewer also propose an epoch encoder.
-which can be used with key short cuts to encode levels or with the mouse
-defining limits.
+ephyviewer also provides an epoch encoder which can be used with shortcut keys
+and/or the mouse to encode labels.
 
 ephyviewer makes available a CsvEpochSource class, which inherits from
 WritableEpochSource. If you would like to customize reading and writing epochs
-to files, you can write your own subclass of WritableEpochSource that
-implements the load() and save() methods.
+to files, you can write your own subclass of WritableEpochSource that implements
+the load() and save() methods.
 
 Here is an example of an epoch encoder that uses CsvEpochSource.
 

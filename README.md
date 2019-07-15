@@ -1,36 +1,39 @@
 # ephyviewer
 
-Doc : http://ephyviewer.readthedocs.io
+[![Documentation Status][docs-badge]](https://ephyviewer.readthedocs.io/en/latest/?badge=latest)
 
-Simple viewers for ephys signals and related stuff (signal, spikes, events, triggers, video, ...)
-Based on PyQt5 (or PyQt4) and pyqtgraph.
+**ephyviewer** is a Python library based on [pyqtgraph] for building custom
+viewers for electrophysiological signals, video, events, epochs, spike trains,
+data tables, and time-frequency representations of signals. It also provides an
+epoch encoder for creating annotations.
 
+![Screenshot][screenshot]
 
-Can be use at two level:
+**ephyviewer** can be used at two levels: standalone app and library.
 
 ## Standalone application
 
-For file supported by neo.rawio (Axon, Blackrock, BrainVision, Neuralynx,
-NeuroExplorer, Plexon, Spike2, Tdt, ...)
+The standalone app works with file types supported by [Neo]'s RawIO interface
+(Axograph, Axon, Blackrock, BrainVision, Neuralynx, NeuroExplorer, Plexon,
+Spike2, Tdt, etc.; see [rawiolist] for the full list).
 
-Launch it from console and use open menu:
+Launch it from the console and use the menu to select a data file:
 ```
 ephyviewer
 ```
 
-Launch it from console with filename (and optional format):
+Alternatively, launch it from the console with a filename (and optionally the
+format):
 ```
 ephyviewer File_axon_1.abf
 ephyviewer File_axon_1.abf -f Axon
 ```
 
+## Library for designing custom viewers for ephys datasets
 
-## To design some customs viewers for ephy dataset :
-
-With theses kind of codes:
+Build viewers using code like this:
 
 ```python
-
 import ephyviewer
 import numpy as np
 
@@ -49,3 +52,13 @@ win.show()
 app.exec_()
 
 ```
+
+Check the docs for more [examples].
+
+
+[docs-badge]: https://readthedocs.org/projects/ephyviewer/badge/?version=latest
+[screenshot]: https://raw.githubusercontent.com/NeuralEnsemble/ephyviewer/master/doc/img/mixed_viewer_example.png
+[pyqtgraph]:  http://www.pyqtgraph.org/
+[Neo]:        https://neo.readthedocs.io/en/latest/
+[rawiolist]:  https://github.com/NeuralEnsemble/python-neo/blob/master/neo/rawio/__init__.py
+[examples]:   https://ephyviewer.readthedocs.io/en/latest/examples.html

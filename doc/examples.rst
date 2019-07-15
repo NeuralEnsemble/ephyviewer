@@ -1,5 +1,8 @@
+.. _examples:
+
 Examples
-=======
+========
+
 
 Simple signal viewer
 --------------------
@@ -11,7 +14,6 @@ Simple signal viewer
 .. literalinclude:: ../examples/trace_viewer.py
 
 
-
 Signal viewer with data source
 ------------------------------
 
@@ -20,18 +22,17 @@ Signal viewer with data source
 .. literalinclude:: ../examples/trace_viewer_datasource.py
 
 
-Signal viewer with marker on signal
------------------------------------
+Signal viewer with markers
+--------------------------
 
 .. image:: img/trace_viewer_with_marker_example.png
-
 
 :download:`trace_viewer_with_marker.py <../examples/trace_viewer_with_marker.py>`
 
 .. literalinclude:: ../examples/trace_viewer_with_marker.py
 
 
-timefreqquency viewer
+Time-frequency viewer
 ---------------------
 
 .. image:: img/timefreq_viewer_example.png
@@ -41,9 +42,8 @@ timefreqquency viewer
 .. literalinclude:: ../examples/timefreq_viewer.py
 
 
-
-Spikes viewer
--------------
+Spike train viewer
+------------------
 
 .. image:: img/spikes_viewer_example.png
 
@@ -72,7 +72,7 @@ Epoch encoder
 .. literalinclude:: ../examples/epoch_encoder.py
 
 
-mixed viewer
+Mixed viewer
 ------------
 
 .. image:: img/mixed_viewer_example.png
@@ -80,3 +80,13 @@ mixed viewer
 :download:`mixed_viewer.py <../examples/mixed_viewer.py>`
 
 .. literalinclude:: ../examples/mixed_viewer.py
+
+
+Viewers from Neo objects
+------------------------
+
+.. image:: img/viewers_with_neo_objects_example.png
+
+:download:`viewers_with_neo_objects.py <../examples/viewers_with_neo_objects.py>`
+
+.. literalinclude:: ../examples/viewers_with_neo_objects.py
