@@ -10,12 +10,15 @@ install_requires = [
                     'scipy',
                     ]
 
-long_description = ""
+# Read in the README to serve as the long_description, which will be presented
+# on pypi.org as the project description.
+with open('README.md', 'r') as f:
+    long_description = f.read()
 
-#~ import ephyviewer
-#~ version = ephyviewer.__version__,
 with open('ephyviewer/version.py') as f:
-    version = f.readline()[:-1].split('=')[1].replace(' ', '').replace("'", "")
+    d = {}
+    exec(f.read(), None, d)
+    version = d['version']
 
 
 entry_points={'console_scripts': ['ephyviewer=ephyviewer.scripts:launch_standalone_ephyviewer']}
@@ -28,11 +31,17 @@ setup(
     install_requires=install_requires,
     author = "S.Garcia",
     author_email = "sam.garcia.die@gmail.com",
-    description = "Simple viewers for ephy stuff",
+    description = "Simple viewers for ephys signals, events, video and more",
     entry_points = entry_points,
     long_description = long_description,
+    long_description_content_type = 'text/markdown',
     license = "MIT",
     url='https://github.com/NeuralEnsemble/ephyviewer',
+    project_urls={
+        'Documentation': 'https://ephyviewer.readthedocs.io/en/latest/',
+        'Source code': 'https://github.com/NeuralEnsemble/ephyviewer/',
+        'Bug tracker': 'https://github.com/NeuralEnsemble/ephyviewer/issues',
+    },
     classifiers = [
         'Intended Audience :: Science/Research',
         'License :: OSI Approved :: MIT License',
