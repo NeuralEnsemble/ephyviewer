@@ -55,9 +55,10 @@ author = 'Samuel Garcia, Jeffrey Gill'
 # |version| and |release|, also used in various other places throughout the
 # built documents.
 #
-exec(open('../ephyviewer/version.py').read())
+d = {}
+exec(open('../ephyviewer/version.py').read(), None, d)
 # The short X.Y version.
-version = version
+version = d['version']
 # The full version, including alpha/beta/rc tags.
 release = version
 
