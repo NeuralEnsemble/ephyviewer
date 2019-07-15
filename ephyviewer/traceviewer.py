@@ -326,7 +326,7 @@ class DataGrabber(QT.QObject):
             pass
             dict_scatter = {}
             for k in self.source.get_scatter_babels():
-                x, y = [], []
+                x, y = [[]], [[]]
                 for i, c in enumerate(visibles):
                     scatter_inds = self.source.get_scatter(i_start=i_start, i_stop=i_stop, chan=c, label=k)
                     if scatter_inds is None: continue
