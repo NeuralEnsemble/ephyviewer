@@ -1,0 +1,10 @@
+Version 1.1.1
+-------------
+
+2019-07-15
+
+Documentation
+.............
+
+* Add long description and project URLs to PyPI metadata
+  (`#65 <https://github.com/NeuralEnsemble/ephyviewer/pull/65>`__)
