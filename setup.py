@@ -25,17 +25,17 @@ entry_points={'console_scripts': ['ephyviewer=ephyviewer.scripts:launch_standalo
 
 
 setup(
-    name = "ephyviewer",
+    name = 'ephyviewer',
     version=version,
     packages = ['ephyviewer', 'ephyviewer.datasource', 'ephyviewer.tests', 'ephyviewer.icons'],
     install_requires=install_requires,
-    author = "S.Garcia",
-    author_email = "sam.garcia.die@gmail.com",
-    description = "Simple viewers for ephys signals, events, video and more",
+    author = 'S.Garcia, Jeffrey Gill',
+    author_email = '',  # left blank because multiple emails cannot be provided
+    description = 'Simple viewers for ephys signals, events, video and more',
     entry_points = entry_points,
     long_description = long_description,
     long_description_content_type = 'text/markdown',
-    license = "MIT",
+    license = 'MIT',
     url='https://github.com/NeuralEnsemble/ephyviewer',
     project_urls={
         'Documentation': 'https://ephyviewer.readthedocs.io/en/latest/',
