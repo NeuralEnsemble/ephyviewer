@@ -13,7 +13,7 @@ launching it from the console, then using the menu to open a data file::
 
     ephyviewer
 
-See Neo's rawiolist_ for available formats.
+See the documentation for :mod:`neo.rawio` for available formats.
 
 You can skip the file menu by specifying a filename from the console (and
 optionally the format, though this can usually be detected automatically)::
@@ -51,4 +51,3 @@ interface.
 
 
 .. _Neo:        https://neo.readthedocs.io/en/latest/
-.. _rawiolist:  https://github.com/NeuralEnsemble/python-neo/blob/master/neo/rawio/__init__.py
