@@ -31,8 +31,11 @@
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.viewcode']
+extensions = [
+    'sphinx.ext.autodoc',
+    'sphinx.ext.intersphinx',
+    'sphinx.ext.viewcode',
+]
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -79,6 +82,19 @@ pygments_style = 'sphinx'
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = False
+
+
+# -- Extension configuration -------------------------------------------------
+
+# -- Options for intersphinx extension ---------------------------------------
+
+intersphinx_mapping = {
+    'python':       ('https://docs.python.org/3', None),
+    'neo':          ('https://neo.readthedocs.io/en/latest', None),
+    'neurotic':     ('https://neurotic.readthedocs.io/en/latest', None),
+    'elephant':     ('https://elephant.readthedocs.io/en/latest', None),
+    'tridesclous':  ('https://tridesclous.readthedocs.io/en/latest', None),
+}
 
 
 # -- Options for HTML output ----------------------------------------------

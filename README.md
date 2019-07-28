@@ -15,7 +15,7 @@ epoch encoder for creating annotations.
 
 The standalone app works with file types supported by [Neo]'s RawIO interface
 (Axograph, Axon, Blackrock, BrainVision, Neuralynx, NeuroExplorer, Plexon,
-Spike2, Tdt, etc.; see [rawiolist] for the full list).
+Spike2, Tdt, etc.; see the documentation for [neo.rawio] for the full list).
 
 Launch it from the console and use the menu to select a data file:
 ```
@@ -60,5 +60,5 @@ Check the docs for more [examples].
 [screenshot]: https://raw.githubusercontent.com/NeuralEnsemble/ephyviewer/master/doc/img/mixed_viewer_example.png
 [pyqtgraph]:  http://www.pyqtgraph.org/
 [Neo]:        https://neo.readthedocs.io/en/latest/
-[rawiolist]:  https://github.com/NeuralEnsemble/python-neo/blob/master/neo/rawio/__init__.py
+[neo.rawio]:  https://neo.readthedocs.io/en/latest/rawio.html#module-neo.rawio
 [examples]:   https://ephyviewer.readthedocs.io/en/latest/examples.html
