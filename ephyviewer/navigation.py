@@ -25,6 +25,7 @@ class NavigationToolBar(QT.QWidget) :
     def __init__(self, parent=None, show_play=True, show_step=True,
                                     show_scroll_time=True, show_spinbox=True,
                                     show_label_datetime=False, datetime0=None,
+                                    datetime_format='%Y-%m-%d %H:%M:%S',
                                     show_global_xsize=True, show_auto_scale=True,
                                     play_interval = 0.1) :
 
@@ -50,6 +51,7 @@ class NavigationToolBar(QT.QWidget) :
         self.play_interval = play_interval
 
         self.datetime0 = datetime0
+        self.datetime_format = datetime_format
 
 
         if show_scroll_time:
@@ -272,7 +274,7 @@ class NavigationToolBar(QT.QWidget) :
 
         if self.show_label_datetime:
             dt = self.datetime0 + datetime.timedelta(seconds=self.t)
-            self.label_datetime.setText('{}'.format(dt))
+            self.label_datetime.setText(dt.strftime(self.datetime_format))
 
 
         if emit:
