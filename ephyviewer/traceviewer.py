@@ -42,7 +42,7 @@ default_params = [
 
 default_by_channel_params = [
     {'name': 'color', 'type': 'color', 'value': "55FF00"},
-    {'name': 'gain', 'type': 'float', 'value': 1, 'step': 0.1},
+    {'name': 'gain', 'type': 'float', 'value': 1, 'step': 0.1, 'decimals': 8},
     {'name': 'offset', 'type': 'float', 'value': 0., 'step': 0.1},
     {'name': 'visible', 'type': 'bool', 'value': True},
     ]
