@@ -19,13 +19,17 @@ Time is easy and intuitive to navigate:
 * Jump to a time by clicking on an event in the event list or a table entry in
   the epoch encoder.
 
-It is also easy to quickly adjust scale:
+It is also easy to quickly adjust scale and placement:
 
 * To show more or less time at once, right-click and drag right or left to
   contract or expand time.
+* Press the auto scale button to automatically scale signals and color maps.
 * Scroll the mouse wheel to zoom in a trace viewer or a video viewer, or to
   rescale the color map in a time-frequency viewer.
-* Press the auto scale button to automatically scale signals and color maps.
+* Scroll the mouse wheel on a trace label to adjust the scale of an individual
+  trace (``by_channel`` scale mode only).
+* Left-click and drag on a trace label to adjust its vertical offset, or in a
+  video viewer to reposition the video frame.
 * Adjust scale mode (real vs arbitrary units) and individual signal gains and
   offsets in the detailed options window of the trace viewer (double click to
   open).
