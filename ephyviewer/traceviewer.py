@@ -234,6 +234,9 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         self.viewer.refresh()
         #~ print('apply_ygain_zoom', factor_ratio)#, 'self.ygain_factor', self.ygain_factor)
 
+    def apply_chan_offset(self, offset, chan_index):
+        self.viewer.by_channel_params['ch{}'.format(chan_index), 'offset'] = offset
+
 
 
 
@@ -356,8 +359,33 @@ class DataGrabber(QT.QObject):
 
 class TraceLabelItem(pg.TextItem):
 
+    label_dragged = QT.pyqtSignal(float)
+
     def __init__(self, **kwargs):
         pg.TextItem.__init__(self, **kwargs)
+
+        self.dragOffset = None
+
+    def mouseDragEvent(self, ev):
+        '''Emit the new y-coord of the label as it is dragged'''
+
+        if ev.button() != QT.LeftButton:
+            ev.ignore()
+            return
+        else:
+            ev.accept()
+
+        if ev.isStart():
+            # To avoid snapping the label to the mouse cursor when the drag
+            # starts, we determine the offset of the position where the button
+            # was first pressed down relative to the label's origin/anchor, in
+            # plot coordinates
+            self.dragOffset = self.mapToParent(ev.buttonDownPos()) - self.pos()
+
+        # The new y-coord for the label is the mouse's current position during
+        # the drag with the initial offset removed
+        new_y = (self.mapToParent(ev.pos()) - self.dragOffset).y()
+        self.label_dragged.emit(new_y)
 
 
 class TraceViewer(BaseMultiChannelViewer):
@@ -443,6 +471,7 @@ class TraceViewer(BaseMultiChannelViewer):
             ch_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
             label = TraceLabelItem(text=ch_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
             label.setZValue(2) # ensure labels are drawn above scatter
+            label.label_dragged.connect(lambda offset, chan_index=c: self.params_controller.apply_chan_offset(offset, chan_index))
 
             self.plot.addItem(label)
             self.channel_labels.append(label)
