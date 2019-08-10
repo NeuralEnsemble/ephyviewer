@@ -209,7 +209,7 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         factor = self.sender().factor
         self.apply_ygain_zoom(factor)
 
-    def apply_ygain_zoom(self, factor_ratio):
+    def apply_ygain_zoom(self, factor_ratio, chan_index=None):
 
         scale_mode = self.viewer.params['scale_mode']
 
@@ -226,6 +226,13 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
             #~ self.ygain_factor *= factor_ratio
             if not hasattr(self, 'signals_med'):
                 self.estimate_median_mad()
+            if scale_mode=='by_channel' and chan_index is not None:
+                # factor_ratio should be applied to only the desired channel,
+                # so turn the scalar factor into a vector of ones everywhere
+                # except at chan_index
+                factor_ratio_vector = np.ones(self.source.nb_channel)
+                factor_ratio_vector[chan_index] = factor_ratio
+                factor_ratio = factor_ratio_vector
             self.offsets = self.offsets + self.signals_med*self.gains * (1-factor_ratio)
             self.gains = self.gains * factor_ratio
 
@@ -360,6 +367,7 @@ class DataGrabber(QT.QObject):
 class TraceLabelItem(pg.TextItem):
 
     label_dragged = QT.pyqtSignal(float)
+    label_ygain_zoom = QT.pyqtSignal(float)
 
     def __init__(self, **kwargs):
         pg.TextItem.__init__(self, **kwargs)
@@ -386,6 +394,15 @@ class TraceLabelItem(pg.TextItem):
         # the drag with the initial offset removed
         new_y = (self.mapToParent(ev.pos()) - self.dragOffset).y()
         self.label_dragged.emit(new_y)
+
+    def wheelEvent(self, ev):
+        '''Emit a yzoom factor for the associated trace'''
+        if ev.modifiers() == QT.Qt.ControlModifier:
+            z = 5. if ev.delta()>0 else 1/5.
+        else:
+            z = 1.1 if ev.delta()>0 else 1/1.1
+        self.label_ygain_zoom.emit(z)
+        ev.accept()
 
 
 class TraceViewer(BaseMultiChannelViewer):
@@ -472,6 +489,7 @@ class TraceViewer(BaseMultiChannelViewer):
             label = TraceLabelItem(text=ch_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
             label.setZValue(2) # ensure labels are drawn above scatter
             label.label_dragged.connect(lambda offset, chan_index=c: self.params_controller.apply_chan_offset(offset, chan_index))
+            label.label_ygain_zoom.connect(lambda factor_ratio, chan_index=c: self.params_controller.apply_ygain_zoom(factor_ratio, chan_index))
 
             self.plot.addItem(label)
             self.channel_labels.append(label)
