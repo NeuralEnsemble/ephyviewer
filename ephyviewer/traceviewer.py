@@ -354,6 +354,11 @@ class DataGrabber(QT.QObject):
 
 
 
+class TraceLabelItem(pg.TextItem):
+
+    def __init__(self, **kwargs):
+        pg.TextItem.__init__(self, **kwargs)
+
 
 class TraceViewer(BaseMultiChannelViewer):
     _default_params = default_params
@@ -436,7 +441,7 @@ class TraceViewer(BaseMultiChannelViewer):
             self.curves.append(curve)
 
             ch_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
-            label = pg.TextItem(ch_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
+            label = TraceLabelItem(text=ch_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
             label.setZValue(2) # ensure labels are drawn above scatter
 
             self.plot.addItem(label)
