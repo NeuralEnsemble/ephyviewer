@@ -99,7 +99,7 @@ class EpochEncoder(ViewerBase):
 
         keys = '1234567890'
         all = []
-        self.shortcuts = OrderedDict()
+        self.label_shortcuts = OrderedDict()
         for i, label in enumerate(self.source.possible_labels):
             # get string for shortcut key
             key = keys[i] if i<len(keys) else ''
@@ -117,10 +117,10 @@ class EpochEncoder(ViewerBase):
             if key != '':
                 shortcut_without_modifer.setKey(key)
                 shortcut_with_modifier  .setKey('Shift+' + key)
-            shortcut_without_modifer.activated.connect(self.on_shortcut)
-            shortcut_with_modifier  .activated.connect(self.on_shortcut)
-            self.shortcuts[shortcut_without_modifer] = (label, False) # boolean indicates modifier use
-            self.shortcuts[shortcut_with_modifier]   = (label, True)  # boolean indicates modifier use
+            shortcut_without_modifer.activated.connect(self.on_label_shortcut)
+            shortcut_with_modifier  .activated.connect(self.on_label_shortcut)
+            self.label_shortcuts[shortcut_without_modifer] = (label, False) # boolean indicates modifier use
+            self.label_shortcuts[shortcut_with_modifier]   = (label, True)  # boolean indicates modifier use
 
         self.by_label_params = pg.parametertree.Parameter.create(name='Labels', type='group', children=all)
 
@@ -210,6 +210,11 @@ class EpochEncoder(ViewerBase):
         g.addWidget(self.but_range, 0, 1)
         self.but_range.clicked.connect(self.on_range_visibility_changed)
 
+        range_shortcut = QT.QShortcut(self)
+        range_shortcut.setKey('r')
+        range_shortcut.activated.connect(self.but_range.click)
+        self.but_range.setToolTip('Shortcut: r')
+
         spinboxs = []
         buts = []
         for i in range(2):
@@ -228,6 +233,15 @@ class EpochEncoder(ViewerBase):
         buts[0].clicked.connect(self.set_limit1)
         buts[1].clicked.connect(self.set_limit2)
 
+        limit1_shortcut = QT.QShortcut(self)
+        limit1_shortcut.setKey('[')
+        limit1_shortcut.activated.connect(buts[0].click)
+        buts[0].setToolTip('Shortcut: [')
+
+        limit2_shortcut = QT.QShortcut(self)
+        limit2_shortcut.setKey(']')
+        limit2_shortcut.activated.connect(buts[1].click)
+        buts[1].setToolTip('Shortcut: ]')
 
         self.combo_labels = QT.QComboBox()
         self.combo_labels.addItems(self.source.possible_labels)
@@ -343,8 +357,8 @@ class EpochEncoder(ViewerBase):
             key = self.by_label_params['label'+str(i), 'key']
 
             # assign shortcuts without and with modifier key
-            shortcut_without_modifer = list(self.shortcuts.keys())[2*i]
-            shortcut_with_modifier   = list(self.shortcuts.keys())[2*i+1]
+            shortcut_without_modifer = list(self.label_shortcuts.keys())[2*i]
+            shortcut_with_modifier   = list(self.label_shortcuts.keys())[2*i+1]
             shortcut_without_modifer.setKey(key)
             shortcut_with_modifier  .setKey('Shift+' + key)
 
@@ -437,8 +451,8 @@ class EpochEncoder(ViewerBase):
         else:
             self.plot.setYRange( 0, 1)
 
-    def on_shortcut(self):
-        label, modifier_used = self.shortcuts.get(self.sender(), None)
+    def on_label_shortcut(self):
+        label, modifier_used = self.label_shortcuts.get(self.sender(), None)
         if label is None: return
 
         range_selection_is_enabled = self.but_range.isChecked()
