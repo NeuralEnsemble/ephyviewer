@@ -58,3 +58,5 @@ The epoch encoder has many modes of interaction as well:
 * Merge overlapping and adjacent epochs of the same type with the "Merge
   neighbors" button.
 * Fill gaps between epochs using the "Fill blank" button.
+* Click "Save" (shortcut: ``Ctrl+s``, or ``Cmd+s`` on Mac) to write the epochs
+  to a file.
