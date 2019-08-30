@@ -210,6 +210,11 @@ class EpochEncoder(ViewerBase):
         g.addWidget(self.but_range, 0, 1)
         self.but_range.clicked.connect(self.on_range_visibility_changed)
 
+        range_shortcut = QT.QShortcut(self)
+        range_shortcut.setKey('r')
+        range_shortcut.activated.connect(self.but_range.click)
+        self.but_range.setToolTip('Shortcut: r')
+
         spinboxs = []
         buts = []
         for i in range(2):
@@ -228,6 +233,15 @@ class EpochEncoder(ViewerBase):
         buts[0].clicked.connect(self.set_limit1)
         buts[1].clicked.connect(self.set_limit2)
 
+        limit1_shortcut = QT.QShortcut(self)
+        limit1_shortcut.setKey('[')
+        limit1_shortcut.activated.connect(buts[0].click)
+        buts[0].setToolTip('Shortcut: [')
+
+        limit2_shortcut = QT.QShortcut(self)
+        limit2_shortcut.setKey(']')
+        limit2_shortcut.activated.connect(buts[1].click)
+        buts[1].setToolTip('Shortcut: ]')
 
         self.combo_labels = QT.QComboBox()
         self.combo_labels.addItems(self.source.possible_labels)
