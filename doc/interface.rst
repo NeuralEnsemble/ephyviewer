@@ -36,8 +36,9 @@ It is also easy to quickly adjust scale and placement:
 
 The epoch encoder has many modes of interaction as well:
 
-* Click "Show/hide range" to toggle the display of a time range selector, which
-  can be positioned with the mouse or by using dedicated buttons (">").
+* Click "Show/hide range" (shortcut: ``r``) to toggle the display of a time
+  range selector, which can be positioned with the mouse or by using dedicated
+  buttons (labeled ">"; shortcuts: ``[`` and ``]``).
 * Customizable key bindings (default: number keys) allow you to fill the
   selected time range with an epoch if the selector is enabled, or to place new
   epochs of a fixed (and adjustable) duration at the current time if it is
