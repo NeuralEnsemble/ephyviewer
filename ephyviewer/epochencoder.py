@@ -202,6 +202,11 @@ class EpochEncoder(ViewerBase):
         g.addWidget(but, 5, 0)
         but.clicked.connect(self.on_save)
 
+        save_shortcut = QT.QShortcut(self)
+        save_shortcut.setKey('Ctrl+s')  # automatically converted to Cmd+s on Mac
+        save_shortcut.activated.connect(but.click)
+        but.setToolTip('Shortcut: Ctrl/Cmd+s')
+
 
         #~ v.addStretch()
         #~ v.addWidget(QT.QFrame(frameShape=QT.QFrame.HLine, frameShadow=QT.QFrame.Sunken))
