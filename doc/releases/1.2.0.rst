@@ -1,0 +1,32 @@
+Version 1.2.0
+-------------
+
+2019-10-09
+
+Mouse and keyboard enhancements
+...............................
+
+* Adjust offsets and gains of individual traces in TraceViewer using the mouse
+  (`#75 <https://github.com/NeuralEnsemble/ephyviewer/pull/75>`__)
+
+* Add EpochEncoder shortcuts for toggling range, setting left/right limits
+  (`#76 <https://github.com/NeuralEnsemble/ephyviewer/pull/76>`__)
+
+* Add EpochEncoder shortcut for saving and smarter prompt to save at exit
+  (`#77 <https://github.com/NeuralEnsemble/ephyviewer/pull/77>`__,
+  `#78 <https://github.com/NeuralEnsemble/ephyviewer/pull/78>`__)
+
+Other enhancements
+..................
+
+* Add a parameter to NavigationToolBar for setting datetime string format
+  (`#70 <https://github.com/NeuralEnsemble/ephyviewer/pull/70>`__)
+
+* Use scientific notation in TraceViewer gain spin boxes less often
+  (`#71 <https://github.com/NeuralEnsemble/ephyviewer/pull/71>`__)
+
+Documentation
+.............
+
+* Add links to RawIO list in Neo's docs
+  (`#69 <https://github.com/NeuralEnsemble/ephyviewer/pull/69>`__)
