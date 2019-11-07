@@ -21,9 +21,9 @@ def make_ressoureces_icons():
     
     if QT_MODE=='PyQt4':
         if sys.version_info > (3,):
-            os.popen('pyrcc4 -py3 icons.qrc -o icons_py3.py')
+            os.popen('pyrcc4 -py3 icons.qrc -o icons_py3_Qt4.py')
         else:
-            os.popen('pyrcc4 icons.qrc -o icons.py')
+            os.popen('pyrcc4 icons.qrc -o icons_py2_Qt4.py')
         
     elif QT_MODE=='PyQt5':
         if sys.version_info > (3,):
