@@ -1,6 +1,12 @@
 # ephyviewer
 
-[![Documentation Status][docs-badge]](https://ephyviewer.readthedocs.io/en/latest/?badge=latest)
+[![PyPI][pypi-badge]][pypi]
+[![Anaconda Cloud][anaconda-cloud-badge]][anaconda-cloud]
+[![GitHub][github-badge]][github]
+[![conda-forge Feedstock][conda-forge-feedstock-badge]][conda-forge-feedstock]
+[![Documentation Status][rtd-status-badge]][rtd-status]
+
+[Documentation] | [Release Notes] | [Issue Tracker]
 
 **ephyviewer** is a Python library based on [pyqtgraph] for building custom
 viewers for electrophysiological signals, video, events, epochs, spike trains,
@@ -56,9 +62,23 @@ app.exec_()
 Check the docs for more [examples].
 
 
-[docs-badge]: https://readthedocs.org/projects/ephyviewer/badge/?version=latest
-[screenshot]: https://raw.githubusercontent.com/NeuralEnsemble/ephyviewer/master/doc/img/mixed_viewer_example.png
-[pyqtgraph]:  http://www.pyqtgraph.org/
-[Neo]:        https://neo.readthedocs.io/en/latest/
-[neo.rawio]:  https://neo.readthedocs.io/en/latest/rawio.html#module-neo.rawio
-[examples]:   https://ephyviewer.readthedocs.io/en/latest/examples.html
+[anaconda-cloud]:              https://anaconda.org/conda-forge/ephyviewer
+[anaconda-cloud-badge]:        https://img.shields.io/conda/vn/conda-forge/ephyviewer.svg?label=anaconda&logo=anaconda&logoColor=white
+[conda-forge-feedstock]:       https://github.com/conda-forge/ephyviewer-feedstock
+[conda-forge-feedstock-badge]: https://img.shields.io/badge/conda--forge-feedstock-blue.svg?logo=conda-forge&logoColor=white
+[github]:                      https://github.com/NeuralEnsemble/ephyviewer
+[github-badge]:                https://img.shields.io/badge/github-source_code-blue.svg?logo=github&logoColor=white
+[pypi]:                        https://pypi.org/project/ephyviewer
+[pypi-badge]:                  https://img.shields.io/pypi/v/ephyviewer.svg?logo=python&logoColor=white
+[rtd-status]:                  https://readthedocs.org/projects/ephyviewer
+[rtd-status-badge]:            https://readthedocs.org/projects/ephyviewer/badge/?version=latest
+
+[Documentation]: https://ephyviewer.readthedocs.io/en/latest/
+[Release Notes]: https://ephyviewer.readthedocs.io/en/latest/releasenotes.html
+[Issue Tracker]: https://github.com/NeuralEnsemble/ephyviewer/issues
+
+[screenshot]:    https://raw.githubusercontent.com/NeuralEnsemble/ephyviewer/master/doc/img/mixed_viewer_example.png
+[pyqtgraph]:     http://www.pyqtgraph.org/
+[Neo]:           https://neo.readthedocs.io/en/latest/
+[neo.rawio]:     https://neo.readthedocs.io/en/latest/rawio.html#module-neo.rawio
+[examples]:      https://ephyviewer.readthedocs.io/en/latest/examples.html

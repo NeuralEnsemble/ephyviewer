@@ -23,3 +23,8 @@ To install the latest release::
 To install the latest development version::
 
     pip install https://github.com/NeuralEnsemble/ephyviewer/archive/master.zip
+
+To install with conda (``python-neo`` and ``av`` are not strictly required but
+are recommended)::
+
+    conda install -c conda-forge ephyviewer python-neo av
