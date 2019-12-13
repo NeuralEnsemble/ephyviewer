@@ -1,5 +1,7 @@
 # ephyviewer
 
+*Simple viewers for ephys signals, events, video and more*
+
 [![PyPI][pypi-badge]][pypi]
 [![Anaconda Cloud][anaconda-cloud-badge]][anaconda-cloud]
 [![GitHub][github-badge]][github]
