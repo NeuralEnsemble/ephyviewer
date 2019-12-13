@@ -30,6 +30,7 @@ default_params = [
     {'name': 'scatter_size', 'type': 'float', 'value': 10.,  'limits': (0,np.inf)},
     {'name': 'scale_mode', 'type': 'list', 'value': 'real_scale',
         'values':['real_scale', 'same_for_all', 'by_channel'] },
+    {'name': 'auto_scale_factor', 'type': 'float', 'value': 0.1, 'step': 0.01, 'limits': (0,np.inf)},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
@@ -189,9 +190,9 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
                 self.viewer.params['ylim_max'] = np.nanmax(self.signals_max[self.visible_channels])
             else:
                 if scale_mode=='same_for_all':
-                    gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) / 9.
+                    gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / max(self.signals_mad[self.visible_channels]) * self.viewer.params['auto_scale_factor']
                 elif scale_mode=='by_channel':
-                    gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / self.signals_mad[self.visible_channels] / 9.
+                    gains[self.visible_channels] = np.ones(nb_visible, dtype=float) / self.signals_mad[self.visible_channels] * self.viewer.params['auto_scale_factor']
                 offsets[self.visible_channels] = np.arange(nb_visible)[::-1] - self.signals_med[self.visible_channels]*gains[self.visible_channels]
                 self.viewer.params['ylim_min'] = -0.5
                 self.viewer.params['ylim_max'] = nb_visible-0.5
