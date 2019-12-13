@@ -1,0 +1,28 @@
+Version 1.2.1
+-------------
+
+2019-12-12
+
+Bug fixes
+.........
+
+* Prevent trace labels from moving when zooming
+  (:pr:`85`)
+
+* Fix plot range (max y) for SpikeTrainViewer
+  (:pr:`87`)
+
+Enhancements
+............
+
+* Add ``auto_scale_factor`` param to TraceViewer
+  (:pr:`84`)
+
+* Add ``scatter_size`` param to SpikeTrainViewer
+  (:pr:`88`)
+
+Documentation
+.............
+
+* Add conda-forge install instructions to docs
+  (:pr:`86`)
