@@ -27,6 +27,7 @@ Symbols['|'].closeSubpath()
 
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
+    {'name': 'scatter_size', 'type': 'float', 'value': 10.,  'limits': (0,np.inf)},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
@@ -118,7 +119,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
         self.vline.setZValue(1) # ensure vline is above plot elements
         self.plot.addItem(self.vline)
 
-        self.scatter = pg.ScatterPlotItem(size=10, pxMode = True, symbol='|')
+        self.scatter = pg.ScatterPlotItem(size=self.params['scatter_size'], pxMode = True, symbol='|')
         self.plot.addItem(self.scatter)
 
 
@@ -181,3 +182,11 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
 
         self.plot.setXRange( t_start, t_stop, padding = 0.0)
         self.plot.setYRange( 0, visibles.size-1)
+
+    def on_param_change(self, params=None, changes=None):
+        for param, change, data in changes:
+            if change != 'value': continue
+            if param.name()=='scatter_size':
+                self.scatter.setSize(self.params['scatter_size'])
+
+        self.refresh()
