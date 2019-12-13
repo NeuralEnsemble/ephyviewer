@@ -242,8 +242,8 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
         self.viewer.refresh()
         #~ print('apply_ygain_zoom', factor_ratio)#, 'self.ygain_factor', self.ygain_factor)
 
-    def apply_chan_offset(self, offset, chan_index):
-        self.viewer.by_channel_params['ch{}'.format(chan_index), 'offset'] = offset
+    def apply_label_drag(self, label_y, chan_index):
+        self.viewer.by_channel_params['ch{}'.format(chan_index), 'offset'] = label_y - self.signals_med[chan_index]*self.gains[chan_index]
 
 
 
@@ -489,7 +489,7 @@ class TraceViewer(BaseMultiChannelViewer):
             ch_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
             label = TraceLabelItem(text=ch_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
             label.setZValue(2) # ensure labels are drawn above scatter
-            label.label_dragged.connect(lambda offset, chan_index=c: self.params_controller.apply_chan_offset(offset, chan_index))
+            label.label_dragged.connect(lambda label_y, chan_index=c: self.params_controller.apply_label_drag(label_y, chan_index))
             label.label_ygain_zoom.connect(lambda factor_ratio, chan_index=c: self.params_controller.apply_ygain_zoom(factor_ratio, chan_index))
 
             self.plot.addItem(label)
@@ -565,6 +565,10 @@ class TraceViewer(BaseMultiChannelViewer):
 
         self.last_sigs_chunk = sigs_chunk
         offsets = self.params_controller.offsets
+        gains = self.params_controller.gains
+        if not hasattr(self.params_controller, 'signals_med'):
+            self.params_controller.estimate_median_mad()
+        signals_med = self.params_controller.signals_med
         self.graphicsview.setBackground(self.params['background_color'])
 
         for i, c in enumerate(visibles):
@@ -576,7 +580,7 @@ class TraceViewer(BaseMultiChannelViewer):
 
             if self.params['display_labels']:
                 self.channel_labels[c].show()
-                self.channel_labels[c].setPos(t_start, offsets[c])
+                self.channel_labels[c].setPos(t_start, offsets[c] + signals_med[c]*gains[c])
                 self.channel_labels[c].setColor(color)
             else:
                 self.channel_labels[c].hide()
