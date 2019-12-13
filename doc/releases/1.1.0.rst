@@ -7,145 +7,130 @@ New major features
 ..................
 
 * Add functions to make viewers directly from Neo objects
-  (`#8 <https://github.com/NeuralEnsemble/ephyviewer/pull/8>`__,
-  `#20 <https://github.com/NeuralEnsemble/ephyviewer/pull/20>`__)
+  (:pr:`8`, :pr:`20`)
 
 * Add CsvEpochSource and many EpochEncoder enhancements
-  (`#13 <https://github.com/NeuralEnsemble/ephyviewer/pull/13>`__,
-  `#27 <https://github.com/NeuralEnsemble/ephyviewer/pull/27>`__,
-  `#60 <https://github.com/NeuralEnsemble/ephyviewer/pull/60>`__)
+  (:pr:`13`, :pr:`27`, :pr:`60`)
 
 * Add keyboard shortcuts for navigation
-  (`#18 <https://github.com/NeuralEnsemble/ephyviewer/pull/18>`__,
-  `#25 <https://github.com/NeuralEnsemble/ephyviewer/pull/25>`__,
-  `#41 <https://github.com/NeuralEnsemble/ephyviewer/pull/41>`__)
+  (:pr:`18`, :pr:`25`, :pr:`41`)
 
 * Add time zoom to most viewers, add global time zoom option
-  (`#17 <https://github.com/NeuralEnsemble/ephyviewer/pull/17>`__)
+  (:pr:`17`)
 
 Aesthetics
 ..........
 
 * Standardize opacity, color, and z-order for vline marking current time for all viewers
-  (`#14 <https://github.com/NeuralEnsemble/ephyviewer/pull/14>`__)
+  (:pr:`14`)
 
 * Improve label legibility
-  (`#19 <https://github.com/NeuralEnsemble/ephyviewer/pull/19>`__)
+  (:pr:`19`)
 
 * Add ``scatter_size`` as an adjustable parameter to TraceViewer
-  (`#21 <https://github.com/NeuralEnsemble/ephyviewer/pull/21>`__)
+  (:pr:`21`)
 
 * Remove "s" suffixes from navigation spinboxes for time and xsize
-  (`#24 <https://github.com/NeuralEnsemble/ephyviewer/pull/24>`__)
+  (:pr:`24`)
 
 * Add line-width option to TraceViewer
-  (`#26 <https://github.com/NeuralEnsemble/ephyviewer/pull/26>`__,
-  `#43 <https://github.com/NeuralEnsemble/ephyviewer/pull/43>`__)
+  (:pr:`26`, :pr:`43`)
 
 * Allow user to change vline color
-  (`#45 <https://github.com/NeuralEnsemble/ephyviewer/pull/45>`__)
+  (:pr:`45`)
 
 * Add param for setting background fill color of channel labels
-  (`#49 <https://github.com/NeuralEnsemble/ephyviewer/pull/49>`__)
+  (:pr:`49`)
 
 * Use same color determination for EpochEncoder rectangles as EpochViewer
-  (`#50 <https://github.com/NeuralEnsemble/ephyviewer/pull/50>`__)
+  (:pr:`50`)
 
 Zoom fixes
 ..........
 
 * Fix time zoom rate
-  (`#23 <https://github.com/NeuralEnsemble/ephyviewer/pull/23>`__)
+  (:pr:`23`)
 
 * Fix signal offsets when zooming in TraceViewer
-  (`#48 <https://github.com/NeuralEnsemble/ephyviewer/pull/48>`__)
+  (:pr:`48`)
 
 Plot fixes
 ..........
 
 * Fix time alignment across viewers by removing x-padding
-  (`#7 <https://github.com/NeuralEnsemble/ephyviewer/pull/7>`__)
+  (:pr:`7`)
 
 * Fix poor plotting precision at long times
-  (`#28 <https://github.com/NeuralEnsemble/ephyviewer/pull/28>`__,
-  `#29 <https://github.com/NeuralEnsemble/ephyviewer/pull/29>`__)
+  (:pr:`28`, :pr:`29`)
 
 * Fix for drawing epochs that end exactly at ``t_stop``
-  (`#39 <https://github.com/NeuralEnsemble/ephyviewer/pull/39>`__)
+  (:pr:`39`)
 
 * Fix TraceViewer drawing incomplete curves when zoomed in
-  (`#47 <https://github.com/NeuralEnsemble/ephyviewer/pull/47>`__)
+  (:pr:`47`)
 
 * Appropriately rescale raw signals in AnalogSignalFromNeoRawIOSource
-  (`#44 <https://github.com/NeuralEnsemble/ephyviewer/pull/44>`__,
-  `#56 <https://github.com/NeuralEnsemble/ephyviewer/pull/56>`__,
-  `#57 <https://github.com/NeuralEnsemble/ephyviewer/pull/57>`__)
+  (:pr:`44`, :pr:`56`, :pr:`57`)
 
 * Fix trace label and baseline placement for RawIOs with non-zero offset
-  (`#58 <https://github.com/NeuralEnsemble/ephyviewer/pull/58>`__,
-  `#61 <https://github.com/NeuralEnsemble/ephyviewer/pull/61>`__)
+  (:pr:`58`, :pr:`61`)
 
 * Fix crash when scatter plot channels are hidden
-  (`#64 <https://github.com/NeuralEnsemble/ephyviewer/pull/64>`__)
+  (:pr:`64`)
 
 Video fixes
 ...........
 
 * VideoViewer performance fixes
-  (`#10 <https://github.com/NeuralEnsemble/ephyviewer/pull/10>`__,
-  `#11 <https://github.com/NeuralEnsemble/ephyviewer/pull/11>`__)
+  (:pr:`10`, :pr:`11`)
 
 * Fix for video streams lacking ``start_time``
-  (`#30 <https://github.com/NeuralEnsemble/ephyviewer/pull/30>`__)
+  (:pr:`30`)
 
 * Address PyAV deprecation warnings
-  (`#31 <https://github.com/NeuralEnsemble/ephyviewer/pull/31>`__)
+  (:pr:`31`)
 
 * Fix for seeking non-existent video frames before start and beyond end of video
-  (`#33 <https://github.com/NeuralEnsemble/ephyviewer/pull/33>`__,
-  `#36 <https://github.com/NeuralEnsemble/ephyviewer/pull/36>`__)
+  (:pr:`33`, :pr:`36`)
 
 * Ensure ``time_to_frame_index`` always returns the frame preceding t
-  (`#35 <https://github.com/NeuralEnsemble/ephyviewer/pull/35>`__)
+  (:pr:`35`)
 
 * Clear video image when t is before the start or after the end of video
-  (`#37 <https://github.com/NeuralEnsemble/ephyviewer/pull/37>`__)
+  (:pr:`37`)
 
 Other bug fixes
 ...............
 
 * Fix missing icons for play and stop buttons
-  (`#15 <https://github.com/NeuralEnsemble/ephyviewer/pull/15>`__,
-  `#46 <https://github.com/NeuralEnsemble/ephyviewer/pull/46>`__)
+  (:pr:`15`, :pr:`46`)
 
 * Fix errors when dragging or scrolling mouse on viewer axes
-  (`#51 <https://github.com/NeuralEnsemble/ephyviewer/pull/51>`__,
-  `#52 <https://github.com/NeuralEnsemble/ephyviewer/pull/52>`__)
+  (:pr:`51`, :pr:`52`)
 
 * Fix clicking on current selection in EventList, EpochEncoder table, and DataFrameView
-  (`#54 <https://github.com/NeuralEnsemble/ephyviewer/pull/54>`__,
-  `#55 <https://github.com/NeuralEnsemble/ephyviewer/pull/55>`__)
+  (:pr:`54`, :pr:`55`)
 
 * Fix for standalone app crash when signals start after t=2.1
-  (`#38 <https://github.com/NeuralEnsemble/ephyviewer/pull/38>`__)
+  (:pr:`38`)
 
 * Catch ``make_video_file`` crash
-  (`#59 <https://github.com/NeuralEnsemble/ephyviewer/pull/59>`__)
+  (:pr:`59`)
 
 * 2 bug fixes
-  (`#22 <https://github.com/NeuralEnsemble/ephyviewer/pull/22>`__)
+  (:pr:`22`)
 
 * Some bug fixes
-  (`#9 <https://github.com/NeuralEnsemble/ephyviewer/pull/9>`__)
+  (:pr:`9`)
 
 * Hide debug statements
-  (`#32 <https://github.com/NeuralEnsemble/ephyviewer/pull/32>`__)
+  (:pr:`32`)
 
 Documentation
 .............
 
 * Add epoch encoder example
-  (`#12 <https://github.com/NeuralEnsemble/ephyviewer/pull/12>`__)
+  (:pr:`12`)
 
 * Update docs and README
-  (`#62 <https://github.com/NeuralEnsemble/ephyviewer/pull/62>`__)
+  (:pr:`62`)

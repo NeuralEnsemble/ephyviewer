@@ -33,6 +33,7 @@
 # ones.
 extensions = [
     'sphinx.ext.autodoc',
+    'sphinx.ext.extlinks',
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
 ]
@@ -85,6 +86,13 @@ todo_include_todos = False
 
 
 # -- Extension configuration -------------------------------------------------
+
+# -- Options for external links extension ------------------------------------
+
+extlinks = {
+    'issue': ('https://github.com/NeuralEnsemble/ephyviewer/issues/%s', '#'),
+    'pr':    ('https://github.com/NeuralEnsemble/ephyviewer/pull/%s', '#'),
+}
 
 # -- Options for intersphinx extension ---------------------------------------
 

@@ -7,4 +7,4 @@ Documentation
 .............
 
 * Add long description and project URLs to PyPI metadata
-  (`#65 <https://github.com/NeuralEnsemble/ephyviewer/pull/65>`__)
+  (:pr:`65`)
