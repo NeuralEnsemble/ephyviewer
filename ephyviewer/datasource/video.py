@@ -111,7 +111,7 @@ class FrameGrabber:
             frame = None
             for i, (frame_index, next_frame) in enumerate(self.next_frame()):
                 #~ print("   ", i, "NEXT at frame", next_frame, "at ts:", next_frame.pts,next_frame.dts)
-                if frame_index >= target_frame:
+                if frame_index is None or frame_index >= target_frame:
                     frame = next_frame
                     break
 
