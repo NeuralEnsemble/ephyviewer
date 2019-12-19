@@ -1,0 +1,11 @@
+Version 1.2.2
+-------------
+
+2019-12-18
+
+Bug fixes
+.........
+
+* Fix error encountered with some videos: ``TypeError: '>=' not supported
+  between instances of 'NoneType' and 'int'``
+  (:pr:`91`)
