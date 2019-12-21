@@ -151,7 +151,7 @@ class EpochViewer(BaseMultiChannelViewer):
             else:
                 raise ValueError("data has unexpected dimensions")
 
-            color = self.by_channel_params.children()[e].param('color').value()
+            color = self.by_channel_params.children()[chan].param('color').value()
             color2 = QT.QColor(color)
             color2.setAlpha(130)
 
