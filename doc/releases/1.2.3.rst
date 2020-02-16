@@ -1,0 +1,13 @@
+Version 1.2.3
+-------------
+
+2020-02-16
+
+Bug fixes
+.........
+
+* Fix plot range for SpikeTrainViewer when only one channel is visible
+  (:pr:`95`)
+
+* Fix EpochViewer colors when some channels are not visible
+  (:pr:`93`)
