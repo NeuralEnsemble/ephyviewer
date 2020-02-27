@@ -19,6 +19,7 @@ from .datasource import WritableEpochSource
 
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
+    {'name': 'xratio', 'type': 'float', 'value': 0.3, 'step': 0.1, 'limits': (0,1)},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
@@ -69,8 +70,6 @@ class EpochEncoder(ViewerBase):
         self.make_param_controller()
 
         self.viewBox.doubleclicked.connect(self.show_params_controller)
-
-        self._xratio = 0.3
 
         self.initialize_plot()
 
@@ -401,7 +400,8 @@ class EpochEncoder(ViewerBase):
 
     def refresh(self):
         xsize = self.params['xsize']
-        t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
+        xratio = self.params['xratio']
+        t_start, t_stop = self.t-xsize*xratio , self.t+xsize*(1-xratio)
         self.request_data.emit(t_start, t_stop, [0])
 
     def on_data_ready(self, t_start, t_stop, visibles, data):
