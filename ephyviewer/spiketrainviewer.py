@@ -32,6 +32,7 @@ default_params = [
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
+    {'name': 'label_size', 'type': 'int', 'value': 8, 'limits': (1,np.inf)},
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
@@ -127,6 +128,9 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
             label_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
             color = self.by_channel_params.children()[c].param('color').value()
             label = pg.TextItem(label_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
+            font = label.textItem.font()
+            font.setPointSize(self.params['label_size'])
+            label.setFont(font)
             self.plot.addItem(label)
             self.labels.append(label)
 
@@ -188,5 +192,10 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
             if change != 'value': continue
             if param.name()=='scatter_size':
                 self.scatter.setSize(self.params['scatter_size'])
+            if param.name()=='label_size':
+                for label in self.labels:
+                    font = label.textItem.font()
+                    font.setPointSize(self.params['label_size'])
+                    label.setFont(font)
 
         self.refresh()

@@ -23,6 +23,7 @@ default_params = [
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
+    {'name': 'label_size', 'type': 'int', 'value': 8, 'limits': (1,np.inf)},
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'exclusive_mode', 'type': 'bool', 'value': True},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
@@ -332,6 +333,9 @@ class EpochEncoder(ViewerBase):
             color = self.by_label_params['label'+str(i), 'color']
             label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
             label_item.setZValue(11)
+            font = label_item.textItem.font()
+            font.setPointSize(self.params['label_size'])
+            label_item.setFont(font)
             self.plot.addItem(label_item)
             self.label_items.append(label_item)
 
@@ -357,6 +361,10 @@ class EpochEncoder(ViewerBase):
         else:
             self.btn_insertion_mode_overlapping.setChecked(True)
         self.vline.setPen(color=self.params['vline_color'])
+        for label_item in self.label_items:
+            font = label_item.textItem.font()
+            font.setPointSize(self.params['label_size'])
+            label_item.setFont(font)
         self.refresh()
 
     def on_change_keys(self, refresh=True):

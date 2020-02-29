@@ -35,6 +35,7 @@ default_params = [
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
+    {'name': 'label_size', 'type': 'int', 'value': 8, 'limits': (1,np.inf)},
     {'name': 'display_labels', 'type': 'bool', 'value': False},
     {'name': 'display_offset', 'type': 'bool', 'value': False},
     {'name': 'antialias', 'type': 'bool', 'value': False},
@@ -488,6 +489,9 @@ class TraceViewer(BaseMultiChannelViewer):
             ch_name = '{}: {}'.format(c, self.source.get_channel_name(chan=c))
             label = TraceLabelItem(text=ch_name, color=color, anchor=(0, 0.5), border=None, fill=self.params['label_fill_color'])
             label.setZValue(2) # ensure labels are drawn above scatter
+            font = label.textItem.font()
+            font.setPointSize(self.params['label_size'])
+            label.setFont(font)
             label.label_dragged.connect(lambda label_y, chan_index=c: self.params_controller.apply_label_drag(label_y, chan_index))
             label.label_ygain_zoom.connect(lambda factor_ratio, chan_index=c: self.params_controller.apply_ygain_zoom(factor_ratio, chan_index))
 
@@ -525,6 +529,11 @@ class TraceViewer(BaseMultiChannelViewer):
             if param.name()=='label_fill_color':
                 for label in self.channel_labels:
                     label.fill = pg.mkBrush(self.params['label_fill_color'])
+            if param.name()=='label_size':
+                for label in self.channel_labels:
+                    font = label.textItem.font()
+                    font.setPointSize(self.params['label_size'])
+                    label.setFont(font)
 
 
         self.refresh()
