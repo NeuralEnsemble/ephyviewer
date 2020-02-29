@@ -25,6 +25,7 @@ import threading
 
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
+    {'name': 'xratio', 'type': 'float', 'value': 0.3, 'step': 0.1, 'limits': (0,1)},
     {'name': 'nb_column', 'type': 'int', 'value': 4},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
@@ -262,7 +263,6 @@ class TimeFreqViewer(BaseMultiChannelViewer):
         self.initialize_time_freq()
 
 
-        self._xratio = 0.3
         self.last_wt_maps = {}
 
         self.threads = []
@@ -395,7 +395,8 @@ class TimeFreqViewer(BaseMultiChannelViewer):
         visible_channels = self.params_controller.visible_channels
 
         xsize = self.params['xsize']
-        t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
+        xratio = self.params['xratio']
+        t_start, t_stop = self.t-xsize*xratio , self.t+xsize*(1-xratio)
 
         for c in range(self.source.nb_channel):
             if visible_channels[c]:

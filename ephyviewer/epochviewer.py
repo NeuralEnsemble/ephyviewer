@@ -16,6 +16,7 @@ from .datasource import InMemoryEpochSource, NeoEpochSource
 
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
+    {'name': 'xratio', 'type': 'float', 'value': 0.3, 'step': 0.1, 'limits': (0,1)},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
     {'name': 'label_fill_color', 'type': 'color', 'value': '#222222DD'},
@@ -98,8 +99,6 @@ class EpochViewer(BaseMultiChannelViewer):
         self.viewBox.doubleclicked.connect(self.show_params_controller)
         self.initialize_plot()
 
-        self._xratio = 0.3
-
         self.thread = QT.QThread(parent=self)
         self.datagrabber = DataGrabber(source=self.source)
         self.datagrabber.moveToThread(self.thread)
@@ -134,7 +133,8 @@ class EpochViewer(BaseMultiChannelViewer):
 
     def refresh(self):
         xsize = self.params['xsize']
-        t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
+        xratio = self.params['xratio']
+        t_start, t_stop = self.t-xsize*xratio , self.t+xsize*(1-xratio)
         visibles, = np.nonzero(self.params_controller.visible_channels)
         self.request_data.emit(t_start, t_stop, visibles)
 

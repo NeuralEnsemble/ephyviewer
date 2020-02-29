@@ -25,6 +25,7 @@ import threading
 
 default_params = [
     {'name': 'xsize', 'type': 'float', 'value': 3., 'step': 0.1},
+    {'name': 'xratio', 'type': 'float', 'value': 0.3, 'step': 0.1, 'limits': (0,1)},
     {'name': 'ylim_max', 'type': 'float', 'value': 10.},
     {'name': 'ylim_min', 'type': 'float', 'value': -10.},
     {'name': 'scatter_size', 'type': 'float', 'value': 10.,  'limits': (0,np.inf)},
@@ -430,8 +431,6 @@ class TraceViewer(BaseMultiChannelViewer):
 
         self.initialize_plot()
 
-        self._xratio = 0.3
-
         self.last_sigs_chunk = None
 
         self.thread = QT.QThread(parent=self)
@@ -534,7 +533,8 @@ class TraceViewer(BaseMultiChannelViewer):
         #~ print('auto_scale', self.last_sigs_chunk)
         if self.last_sigs_chunk is None:
             xsize = self.params['xsize']
-            t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
+            xratio = self.params['xratio']
+            t_start, t_stop = self.t-xsize*xratio , self.t+xsize*(1-xratio)
             visibles, = np.nonzero(self.params_controller.visible_channels)
             total_gains = self.params_controller.total_gains
             total_offsets = self.params_controller.total_offsets
@@ -548,7 +548,8 @@ class TraceViewer(BaseMultiChannelViewer):
     def refresh(self):
         #~ print('TraceViewer.refresh', 't', self.t)
         xsize = self.params['xsize']
-        t_start, t_stop = self.t-xsize*self._xratio , self.t+xsize*(1-self._xratio)
+        xratio = self.params['xratio']
+        t_start, t_stop = self.t-xsize*xratio , self.t+xsize*(1-xratio)
         visibles, = np.nonzero(self.params_controller.visible_channels)
         total_gains = self.params_controller.total_gains
         total_offsets = self.params_controller.total_offsets
