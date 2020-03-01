@@ -1,0 +1,13 @@
+Version 1.3.0
+-------------
+
+2020-03-01
+
+Enhancements
+............
+
+* Add ``xratio`` parameter to viewers for controlling vline position
+  (:pr:`97`)
+
+* Add ``label_size`` parameter to viewers for resizing channel labels
+  (:pr:`98`)
