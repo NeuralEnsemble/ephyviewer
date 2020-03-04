@@ -6,7 +6,8 @@ User Interface
 The viewers are highly customizable:
 
 * All panels can be hidden, undocked, stacked, or repositioned on the fly.
-* Right-click on the title bar of a visible panel to restore hidden panels.
+* Right-click (Control-click on Mac) on the title bar of a visible panel to
+  restore hidden panels.
 * Double-click in the plotting region of many viewers to open an options window
   with additional customization controls.
 
@@ -21,8 +22,8 @@ Time is easy and intuitive to navigate:
 
 It is also easy to quickly adjust scale and placement:
 
-* To show more or less time at once, right-click and drag right or left to
-  contract or expand time.
+* To show more or less time at once, right-click (Control-click on Mac) and
+  drag right or left to contract or expand time.
 * Press the auto scale button to automatically scale signals and color maps.
 * Scroll the mouse wheel to zoom in a trace viewer or a video viewer, or to
   rescale the color map in a time-frequency viewer.
