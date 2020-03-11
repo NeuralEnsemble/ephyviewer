@@ -156,12 +156,13 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
             # to fast auto scale on long signal
             ind = np.random.randint(0, sigs.shape[0], size=1000)
             sigs = sigs[ind, :]
-
-        sigs = sigs * self.raw_gains + self.raw_offsets  # calculate on real values
-        self.signals_med = med = np.median(sigs, axis=0)
-        self.signals_mad = np.median(np.abs(sigs-med),axis=0)*1.4826
-        self.signals_min = np.min(sigs, axis=0)
-        self.signals_max = np.max(sigs, axis=0)
+        
+        if sigs.shape[0] > 0:
+            sigs = sigs * self.raw_gains + self.raw_offsets  # calculate on real values
+            self.signals_med = med = np.median(sigs, axis=0)
+            self.signals_mad = np.median(np.abs(sigs-med),axis=0)*1.4826
+            self.signals_min = np.min(sigs, axis=0)
+            self.signals_max = np.max(sigs, axis=0)
 
         #~ t1 = time.perf_counter()
         #~ print('estimate_median_mad DONE', t1-t0)
@@ -574,6 +575,9 @@ class TraceViewer(BaseMultiChannelViewer):
             return
 
         self.last_sigs_chunk = sigs_chunk
+        if sigs_chunk.shape[0] == 0:
+            return
+        
         offsets = self.params_controller.offsets
         gains = self.params_controller.gains
         if not hasattr(self.params_controller, 'signals_med'):
