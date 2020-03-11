@@ -576,6 +576,8 @@ class TraceViewer(BaseMultiChannelViewer):
 
         self.last_sigs_chunk = sigs_chunk
         if sigs_chunk.shape[0] == 0:
+            for c in range(self.source.nb_channel):
+                self.curves[c].hide()
             return
         
         offsets = self.params_controller.offsets
