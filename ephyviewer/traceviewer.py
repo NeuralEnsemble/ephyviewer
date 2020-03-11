@@ -156,12 +156,20 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
             # to fast auto scale on long signal
             ind = np.random.randint(0, sigs.shape[0], size=1000)
             sigs = sigs[ind, :]
-
-        sigs = sigs * self.raw_gains + self.raw_offsets  # calculate on real values
-        self.signals_med = med = np.median(sigs, axis=0)
-        self.signals_mad = np.median(np.abs(sigs-med),axis=0)*1.4826
-        self.signals_min = np.min(sigs, axis=0)
-        self.signals_max = np.max(sigs, axis=0)
+        
+        if sigs.shape[0] > 0:
+            sigs = sigs * self.raw_gains + self.raw_offsets  # calculate on real values
+            self.signals_med = med = np.median(sigs, axis=0)
+            self.signals_mad = np.median(np.abs(sigs-med),axis=0)*1.4826
+            self.signals_min = np.min(sigs, axis=0)
+            self.signals_max = np.max(sigs, axis=0)
+        else:
+            # dummy median/mad/...
+            n = self.viewer.source.nb_channel
+            self.signals_med = np.zeros(n)
+            self.signals_mad = np.ones(n)
+            self.signals_min = -np.ones(n)
+            self.signals_max = np.ones(n)
 
         #~ t1 = time.perf_counter()
         #~ print('estimate_median_mad DONE', t1-t0)
@@ -572,14 +580,17 @@ class TraceViewer(BaseMultiChannelViewer):
         if self.t != t:
             #~ print('on_data_ready not same t')
             return
-
+        
+        self.graphicsview.setBackground(self.params['background_color'])
+        
         self.last_sigs_chunk = sigs_chunk
+
         offsets = self.params_controller.offsets
         gains = self.params_controller.gains
         if not hasattr(self.params_controller, 'signals_med'):
             self.params_controller.estimate_median_mad()
         signals_med = self.params_controller.signals_med
-        self.graphicsview.setBackground(self.params['background_color'])
+        
 
         for i, c in enumerate(visibles):
             self.curves[c].show()
