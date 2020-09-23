@@ -26,6 +26,7 @@ default_params = [
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'exclusive_mode', 'type': 'bool', 'value': True},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
+    {'name': 'keys_as_ticks', 'type': 'bool', 'value': True},
 
     #~ {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
@@ -437,12 +438,11 @@ class EpochEncoder(ViewerBase):
             color = self.by_label_params['label'+str(ind), 'color']
             color2 = QT.QColor(color)
             color2.setAlpha(130)
-            ypos = n - ind - 1
             if self.params['view_mode']=='stacked':
-                ypos = n - ind - 1
+                ypos = n-ind-1
             else:
                 ypos = 0
-            item = RectItem([times[i],  ypos,durations[i], .9],  border=color, fill=color2, id=ids[i])
+            item = RectItem([times[i], ypos, durations[i], .9], border=color, fill=color2, id=ids[i])
             item.clicked.connect(self.on_rect_clicked)
             item.doubleclicked.connect(self.on_rect_doubleclicked)
             item.setPos(times[i],  ypos)
@@ -450,18 +450,25 @@ class EpochEncoder(ViewerBase):
             self.rect_items.append(item)
 
 
-        #~ for i, label in enumerate(self.source.possible_labels):
+        ticks = []
         for i, label_item in enumerate(self.label_items):
             if self.params['view_mode']=='stacked':
                 color = self.by_label_params['label'+str(i), 'color']
                 #~ label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 120)))
                 label_item.setColor(color)
                 label_item.fill = pg.mkBrush(self.params['label_fill_color'])
-                label_item.setPos(t_start, n - i - 0.55)
+                ypos = n-i-0.55
+                label_item.setPos(t_start, ypos)
+                ticks.append((ypos, self.by_label_params['label'+str(i), 'key']))
                 label_item.show()
                 #~ self.plot.addItem(label_item)
             else:
                 label_item.hide()
+
+        if self.params['keys_as_ticks'] and self.params['view_mode']=='stacked':
+            self.plot.getAxis('left').setTicks([ticks, []])
+        else:
+            self.plot.getAxis('left').setTicks([])
 
         if self.but_range.isChecked():
             self.region.show()
