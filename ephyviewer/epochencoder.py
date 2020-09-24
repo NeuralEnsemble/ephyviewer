@@ -54,6 +54,54 @@ class EpochEncoder_ParamController(Base_ParamController):
         self.tree_label_params.header().hide()
         self.v1.addWidget(self.tree_label_params, stretch = 3)
 
+        self.btn_new_label = QT.PushButton('New label')
+        self.btn_new_label.clicked.connect(self.create_new_label)
+        self.v1.addWidget(self.btn_new_label)
+
+    def create_new_label(self):
+        label, ok = QT.QInputDialog.getText(self, 'New label', 'Enter a new label:')
+
+        # abort if user cancelled or typed nothing
+        if not ok or not label: return
+
+        # abort if label already exists
+        if label in self.viewer.source.possible_labels: return
+
+        # TODO: determine color from a color map?
+        color = (120, 120, 120) # gray
+
+        # add new label to WritableEpochSource
+        self.viewer.source.possible_labels.append(label)
+        self.viewer.source.color_labels.append(color)
+
+        # get next unused shortcut key
+        used_keys = [p['key'] for p in self.viewer.by_label_params]
+        unused_keys = [k for k in '1234567890' if k not in used_keys]
+        key = unused_keys[0] if len(unused_keys)>0 else ''
+
+        # assign shortcuts without and with modifier key
+        self.viewer.assign_label_shortcuts(label, key)
+
+        # add new label to params
+        name = 'label{}'.format(len(self.viewer.source.possible_labels)-1)
+        children = [
+            {'name': 'name', 'type': 'str', 'value': label, 'readonly':True},
+            {'name': 'color', 'type': 'color', 'value': self.source.color_by_label(label)},
+            {'name': 'key', 'type': 'str', 'value': key},
+        ]
+        self.viewer.by_label_params.addChild({'name': name, 'type': 'group', 'children': children})
+
+        # clear and redraw plot to update labels and plot range
+        self.viewer.plot.clear()
+        self.viewer.initialize_plot()
+        self.viewer.refresh()
+
+        # add new label to range selector dropdown menu
+        self.viewer.combo_labels.addItems([label])
+
+        # refresh table to add new label to all label dropdown menus
+        self.viewer.refresh_table()
+
 
 
 class EpochEncoder(ViewerBase):
@@ -110,10 +158,11 @@ class EpochEncoder(ViewerBase):
             key = keys[i] if i<len(keys) else ''
 
             name = 'label{}'.format(i)
-            children =[{'name': 'name', 'type': 'str', 'value': label, 'readonly':True},
-                            {'name': 'color', 'type': 'color', 'value': self.source.color_by_label(label)},
-                            {'name': 'key', 'type': 'str', 'value': key},
-                            ]
+            children = [
+                {'name': 'name', 'type': 'str', 'value': label, 'readonly':True},
+                {'name': 'color', 'type': 'color', 'value': self.source.color_by_label(label)},
+                {'name': 'key', 'type': 'str', 'value': key},
+            ]
             all.append({'name': name, 'type': 'group', 'children': children})
 
             # assign shortcuts without and with modifier key
@@ -311,7 +360,7 @@ class EpochEncoder(ViewerBase):
     def initialize_plot(self):
         self.region = pg.LinearRegionItem(brush='#FF00FF20')
         self.region.setZValue(10)
-        self.region.setRegion((0, 1.))
+        self.region.setRegion((self.spin_limit1.value(), self.spin_limit2.value()))
         self.plot.addItem(self.region, ignoreBounds=True)
         self.region.sigRegionChanged.connect(self.on_region_changed)
 
