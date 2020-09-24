@@ -55,7 +55,7 @@ class WritableEpochSource(InMemoryEpochSource):
     epoch is dict
     { 'time':np.array, 'duration':np.array, 'label':np.array, 'name':' ''}
     """
-    def __init__(self, epoch=None, possible_labels=[], color_labels=None, channel_name=''):
+    def __init__(self, epoch=None, possible_labels=[], color_labels=None, channel_name='', restrict_to_possible_labels=False):
 
         self.possible_labels = possible_labels
         self.channel_name = channel_name
@@ -73,7 +73,12 @@ class WritableEpochSource(InMemoryEpochSource):
 
         assert self.all[0]['time'].dtype.kind=='f'
         assert self.all[0]['duration'].dtype.kind=='f'
-        assert np.all(np.in1d(epoch['label'], self.possible_labels))
+
+        # add labels missing from possible_labels but found in epoch data
+        new_labels_from_data = list(set(epoch['label'])-set(self.possible_labels))
+        if restrict_to_possible_labels:
+            assert len(new_labels_from_data)==0, f'epoch data contains labels not found in possible_labels: {new_labels_from_data}'
+        self.possible_labels += new_labels_from_data
 
         # put the epochs into a canonical order after loading
         self._clean_and_set(self.all[0]['time'], self.all[0]['duration'], self.all[0]['label'], self.all[0]['id'])
@@ -322,12 +327,12 @@ class WritableEpochSource(InMemoryEpochSource):
 
 
 class CsvEpochSource(WritableEpochSource):
-    def __init__(self, filename, possible_labels, color_labels=None, channel_name=''):
+    def __init__(self, filename, possible_labels, color_labels=None, channel_name='', restrict_to_possible_labels=False):
         assert HAVE_PANDAS, 'Pandas is not installed'
 
         self.filename = filename
 
-        WritableEpochSource.__init__(self, epoch=None, possible_labels=possible_labels, color_labels=color_labels, channel_name=channel_name)
+        WritableEpochSource.__init__(self, epoch=None, possible_labels=possible_labels, color_labels=color_labels, channel_name=channel_name, restrict_to_possible_labels=restrict_to_possible_labels)
 
     def load(self):
         """
