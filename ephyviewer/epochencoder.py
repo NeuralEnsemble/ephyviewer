@@ -657,11 +657,9 @@ class EpochEncoder(ViewerBase):
         self.table_widget.setRowCount(times.size)
         self.table_widget.setHorizontalHeaderLabels(['', 'start', 'stop', 'duration', 'label', '', '', ''])
 
-        # set column widths for buttons to be as narrow as possible
-        self.table_widget.horizontalHeader().resizeSection(SEEK_COL, 1)
-        self.table_widget.horizontalHeader().resizeSection(SPLIT_COL, 1)
-        self.table_widget.horizontalHeader().resizeSection(DUPLICATE_COL, 1)
-        self.table_widget.horizontalHeader().resizeSection(DELETE_COL, 1)
+        # lock column widths for button and label columns to fit contents
+        for col in [SEEK_COL, LABEL_COL, SPLIT_COL, DUPLICATE_COL, DELETE_COL]:
+            self.table_widget.horizontalHeader().setSectionResizeMode(col, QT.QHeaderView.ResizeToContents)
 
         for r in range(times.size):
 
