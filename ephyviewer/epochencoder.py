@@ -31,6 +31,15 @@ default_params = [
     #~ {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
 
+SEEK_COL = 0
+START_COL = 1
+STOP_COL = 2
+DURATION_COL = 3
+LABEL_COL = 4
+SPLIT_COL = 5
+DUPLICATE_COL = 6
+DELETE_COL = 7
+
 
 
 class EpochEncoder_ParamController(Base_ParamController):
@@ -307,34 +316,11 @@ class EpochEncoder(ViewerBase):
         range_group_box_layout.addWidget(self.but_del_region)
         self.but_del_region.clicked.connect(self.delete_region)
 
-
-        # Table operations box
-
-        group_box = QT.QGroupBox('Table operations')
-        group_box_layout = QT.QVBoxLayout()
-        group_box.setLayout(group_box_layout)
-        h.addWidget(group_box)
-
-        # Table operations buttons
-
-        but = QT.PushButton('Delete')
-        group_box_layout.addWidget(but)
-        but.clicked.connect(self.delete_selected_epoch)
-
-        but = QT.PushButton('Duplicate')
-        group_box_layout.addWidget(but)
-        but.clicked.connect(self.duplicate_selected_epoch)
-
-        but = QT.PushButton('Split')
-        group_box_layout.addWidget(but)
-        but.clicked.connect(self.split_selected_epoch)
-
-
         self.table_widget = QT.QTableWidget()
-        h.addWidget(self.table_widget)
-        self.table_widget.itemClicked.connect(self.on_seek_table)
+        h.addWidget(self.table_widget, stretch=1)
         self.table_widget.setSelectionMode(QT.QAbstractItemView.SingleSelection)
         self.table_widget.setSelectionBehavior(QT.QAbstractItemView.SelectRows)
+        self.table_widget.cellChanged.connect(self.on_table_cell_change)
 
 
 
@@ -664,21 +650,42 @@ class EpochEncoder(ViewerBase):
 
     def refresh_table(self):
         self.table_widget.blockSignals(True)
+
         self.table_widget.clear()
-        self.table_widget.blockSignals(False)
-        #~ ev = self.source.all_events[ind]
         times, durations, labels, ids = self.source.ep_times, self.source.ep_durations, self.source.ep_labels, self.source.ep_ids
-        self.table_widget.setColumnCount(4)
+        self.table_widget.setColumnCount(8)
         self.table_widget.setRowCount(times.size)
-        self.table_widget.setHorizontalHeaderLabels(['start', 'stop', 'duration', 'label'])
+        self.table_widget.setHorizontalHeaderLabels(['', 'start', 'stop', 'duration', 'label', '', '', ''])
+
+        # set column widths for buttons to be as narrow as possible
+        self.table_widget.horizontalHeader().resizeSection(SEEK_COL, 1)
+        self.table_widget.horizontalHeader().resizeSection(SPLIT_COL, 1)
+        self.table_widget.horizontalHeader().resizeSection(DUPLICATE_COL, 1)
+        self.table_widget.horizontalHeader().resizeSection(DELETE_COL, 1)
+
         for r in range(times.size):
 
-            # start, stop, duration
-            values = np.round([times[r], times[r]+durations[r], durations[r]], 6) # round to nearest microsecond
-            for c, value in enumerate(values):
-                item = QT.QTableWidgetItem('{}'.format(value))
-                item.setFlags(QT.ItemIsSelectable|QT.ItemIsEnabled)
-                self.table_widget.setItem(r, c, item)
+            # seek button
+            but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-seek.svg'))
+            but.setToolTip('Jump to epoch')
+            but.setFlat(True)
+            but.clicked.connect(lambda checked, r=r: self.on_seek_table(r))
+            self.table_widget.setCellWidget(r, SEEK_COL, but)
+
+            # start
+            value = np.round(times[r], 6) # round to nearest microsecond
+            item = QT.QTableWidgetItem('{}'.format(value))
+            self.table_widget.setItem(r, START_COL, item)
+
+            # stop
+            value = np.round(times[r]+durations[r], 6) # round to nearest microsecond
+            item = QT.QTableWidgetItem('{}'.format(value))
+            self.table_widget.setItem(r, STOP_COL, item)
+
+            # duration
+            value = np.round(durations[r], 6) # round to nearest microsecond
+            item = QT.QTableWidgetItem('{}'.format(value))
+            self.table_widget.setItem(r, DURATION_COL, item)
 
             # label
             combo_labels = QT.QComboBox()
@@ -687,7 +694,30 @@ class EpochEncoder(ViewerBase):
             combo_labels.currentIndexChanged.connect(
                 lambda label_index, ep_id=ids[r]: self.on_change_label(ep_id, self.source.possible_labels[label_index])
             )
-            self.table_widget.setCellWidget(r, 3, combo_labels)
+            self.table_widget.setCellWidget(r, LABEL_COL, combo_labels)
+
+            # split button
+            but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-split.svg'))
+            but.setToolTip('Split epoch at current time')
+            but.setFlat(True)
+            but.clicked.connect(lambda checked, r=r: self.split_selected_epoch(r))
+            self.table_widget.setCellWidget(r, SPLIT_COL, but)
+
+            # duplicate button
+            but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-duplicate.svg'))
+            but.setToolTip('Duplicate epoch')
+            but.setFlat(True)
+            but.clicked.connect(lambda checked, r=r: self.duplicate_selected_epoch(r))
+            self.table_widget.setCellWidget(r, DUPLICATE_COL, but)
+
+            # delete button
+            but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-delete.svg'))
+            but.setToolTip('Delete epoch')
+            but.setFlat(True)
+            but.clicked.connect(lambda checked, r=r: self.delete_selected_epoch(r))
+            self.table_widget.setCellWidget(r, DELETE_COL, but)
+
+        self.table_widget.blockSignals(False)
 
     def on_rect_clicked(self, id):
 
@@ -696,7 +726,7 @@ class EpochEncoder(ViewerBase):
 
         # select the epoch in the data table
         self.table_widget.blockSignals(True)
-        self.table_widget.setCurrentCell(ind, 3) # select the label combo box
+        self.table_widget.setCurrentCell(ind, LABEL_COL) # select the label combo box
         self.table_widget.blockSignals(False)
 
     def on_rect_doubleclicked(self, id):
@@ -711,16 +741,92 @@ class EpochEncoder(ViewerBase):
         self.range_group_box.setChecked(True)
         self.on_range_visibility_changed(shift_region=False)
 
-    def on_seek_table(self):
+    def on_seek_table(self, ind=None):
         if self.table_widget.rowCount()==0:
             return
-        selected_ind = self.table_widget.selectedIndexes()
-        if len(selected_ind)==0:
-            return
-        ind = selected_ind[0].row()
+        if ind is None:
+            selected_ind = self.table_widget.selectedIndexes()
+            if len(selected_ind)==0:
+                return
+            ind = selected_ind[0].row()
         self.t = self.source.ep_times[ind]
         self.refresh()
         self.time_changed.emit(self.t)
+
+    def on_table_cell_change(self, row, col):
+        line_edit = self.table_widget.cellWidget(row, col)
+        if not isinstance(line_edit, QT.QLineEdit): return
+        new_text = line_edit.text()
+
+        try:
+            # convert string to number
+            new_number = float(new_text)
+
+        except ValueError:
+            # an invalid number may have been entered, so restore the old value
+            if col == START_COL:
+                old_number = self.source.ep_times[row]
+            elif col == STOP_COL:
+                old_number = self.source.ep_times[row] + self.source.ep_durations[row]
+            elif col == DURATION_COL:
+                old_number = self.source.ep_durations[row]
+            else:
+                print('unexpected column changed')
+                return
+            old_number = np.round(old_number, 6) # round to nearest microsecond
+            self.table_widget.blockSignals(True)
+            self.table_widget.item(row, col).setText(str(old_number))
+            self.table_widget.blockSignals(False)
+
+        else:
+            self.has_unsaved_changes = True
+
+            self.table_widget.blockSignals(True)
+
+            # round and copy rounded number to table
+            new_number = np.round(new_number, 6) # round to nearest microsecond
+            self.table_widget.item(row, col).setText(str(new_number))
+
+            if col == START_COL:
+
+                # change epoch start time
+                self.source.ep_times[row] = new_number
+
+                # update epoch stop time in table
+                stop_line_edit = self.table_widget.item(row, STOP_COL)
+                new_stop_time = self.source.ep_times[row] + self.source.ep_durations[row]
+                new_stop_time = np.round(new_stop_time, 6) # round to nearest microsecond
+                stop_line_edit.setText(str(new_stop_time))
+
+            elif col == STOP_COL:
+
+                # change epoch duration for corresponding stop time
+                self.source.ep_durations[row] = new_number-self.source.ep_times[row]
+
+                # update epoch duration in table
+                duration_line_edit = self.table_widget.item(row, DURATION_COL)
+                new_duration = np.round(self.source.ep_durations[row], 6) # round to nearest microsecond
+                duration_line_edit.setText(str(new_duration))
+
+            elif col == DURATION_COL:
+
+                # change epoch duration
+                self.source.ep_durations[row] = new_number
+
+                # update epoch stop time in table
+                stop_line_edit = self.table_widget.item(row, STOP_COL)
+                new_stop_time = self.source.ep_times[row] + self.source.ep_durations[row]
+                new_stop_time = np.round(new_stop_time, 6) # round to nearest microsecond
+                stop_line_edit.setText(str(new_stop_time))
+
+            else:
+                print('unexpected column changed')
+
+            self.table_widget.blockSignals(False)
+
+            # update plot
+        self.refresh()
+        # refresh_table is not called to avoid deselecting table cell
 
     def on_change_label(self, id, new_label):
 
@@ -729,42 +835,47 @@ class EpochEncoder(ViewerBase):
         # get index corresponding to epoch id
         ind = self.source.id_to_ind[id]
 
-        # change epoch label and update plot
+        # change epoch label
         self.source.ep_labels[ind] = new_label
+
+        # update plot
         self.refresh()
         # refresh_table is not called to avoid deselecting table cell
 
-    def delete_selected_epoch(self):
+    def delete_selected_epoch(self, ind=None):
         if self.table_widget.rowCount()==0:
             return
-        selected_ind = self.table_widget.selectedIndexes()
-        if len(selected_ind)==0:
-            return
+        if ind is None:
+            selected_ind = self.table_widget.selectedIndexes()
+            if len(selected_ind)==0:
+                return
+            ind = selected_ind[0].row()
         self.has_unsaved_changes = True
-        ind = selected_ind[0].row()
         self.source.delete_epoch(ind)
         self.refresh()
         self.refresh_table()
 
-    def duplicate_selected_epoch(self):
+    def duplicate_selected_epoch(self, ind=None):
         if self.table_widget.rowCount()==0:
             return
-        selected_ind = self.table_widget.selectedIndexes()
-        if len(selected_ind)==0:
-            return
+        if ind is None:
+            selected_ind = self.table_widget.selectedIndexes()
+            if len(selected_ind)==0:
+                return
+            ind = selected_ind[0].row()
         self.has_unsaved_changes = True
-        ind = selected_ind[0].row()
         self.source.add_epoch(self.source.ep_times[ind], self.source.ep_durations[ind], self.source.ep_labels[ind])
         self.refresh()
         self.refresh_table()
 
-    def split_selected_epoch(self):
+    def split_selected_epoch(self, ind=None):
         if self.table_widget.rowCount()==0:
             return
-        selected_ind = self.table_widget.selectedIndexes()
-        if len(selected_ind)==0:
-            return
-        ind = selected_ind[0].row()
+        if ind is None:
+            selected_ind = self.table_widget.selectedIndexes()
+            if len(selected_ind)==0:
+                return
+            ind = selected_ind[0].row()
         if self.t <= self.source.ep_times[ind] or self.source.ep_stops[ind] <= self.t:
             return
         self.has_unsaved_changes = True
