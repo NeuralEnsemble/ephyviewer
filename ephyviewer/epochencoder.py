@@ -586,17 +586,18 @@ class EpochEncoder(ViewerBase):
         self.has_unsaved_changes = False
 
     def on_spin_limit_changed(self, v):
-        # ensure lower bound <= upper bound
-        self.spin_limit1.setMaximum(self.spin_limit2.value())
-        self.spin_limit2.setMinimum(self.spin_limit1.value())
-
         # update region
         self.region.blockSignals(True)
         rgn = (self.spin_limit1.value(), self.spin_limit2.value())
         rgn = self.region.setRegion(rgn)
         self.region.blockSignals(False)
 
+        # adjust spin box limits
+        self.spin_limit1.setMaximum(self.spin_limit2.value())
+        self.spin_limit2.setMinimum(self.spin_limit1.value())
+
     def on_region_changed(self):
+        # update spin boxes
         self.spin_limit1.blockSignals(True)
         self.spin_limit2.blockSignals(True)
         rgn = self.region.getRegion()
@@ -604,6 +605,10 @@ class EpochEncoder(ViewerBase):
         self.spin_limit2.setValue(rgn[1])
         self.spin_limit1.blockSignals(False)
         self.spin_limit2.blockSignals(False)
+
+        # adjust spin box limits
+        self.spin_limit1.setMaximum(self.spin_limit2.value())
+        self.spin_limit2.setMinimum(self.spin_limit1.value())
 
     def apply_region(self):
         self.has_unsaved_changes = True
