@@ -83,6 +83,7 @@ class WritableEpochSource(InMemoryEpochSource):
         # put the epochs into a canonical order after loading
         self._clean_and_set(self.all[0]['time'], self.all[0]['duration'], self.all[0]['label'], self.all[0]['id'])
 
+        # TODO: colors should be managed directly by EpochEncoder
         if color_labels is None:
             n = len(self.possible_labels)
             cmap = matplotlib.cm.get_cmap('Dark2' , n)
@@ -90,7 +91,6 @@ class WritableEpochSource(InMemoryEpochSource):
             color_labels = (np.array(color_labels)*255).astype(int)
             color_labels = color_labels.tolist()
         self.color_labels = color_labels
-        self.label_to_color = dict(zip(self.possible_labels, self.color_labels))
 
     @property
     def ep_times(self):
@@ -154,6 +154,10 @@ class WritableEpochSource(InMemoryEpochSource):
         keep = keep1 | keep2 | keep3
 
         return ep_times[keep], ep_durations[keep], ep_labels[keep], ep_ids[keep]
+
+    @property
+    def label_to_color(self):
+        return dict(zip(self.possible_labels, self.color_labels))
 
     def color_by_label(self, label):
         return self.label_to_color[label]
