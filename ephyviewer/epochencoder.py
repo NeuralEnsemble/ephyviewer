@@ -124,7 +124,7 @@ class EpochEncoder(ViewerBase):
 
         self.initialize_plot()
 
-        self.on_range_visibility_changed(None, refresh=False)
+        self.on_range_visibility_changed(refresh=False)
 
 
 
@@ -209,19 +209,19 @@ class EpochEncoder(ViewerBase):
         h = QT.QHBoxLayout()
         self.controls.setLayout(h)
 
-        g = QT.QGridLayout()
-        h.addLayout(g)
+        v = QT.QVBoxLayout()
+        h.addLayout(v)
 
         but = QT.PushButton('Options')
-        g.addWidget(but, 0, 0)
+        v.addWidget(but)
         but.clicked.connect(self.show_params_controller)
 
         but = QT.PushButton('Merge neighbors')
-        g.addWidget(but, 1, 0)
+        v.addWidget(but)
         but.clicked.connect(self.on_merge_neighbors)
 
         but = QT.PushButton('Fill blank')
-        g.addWidget(but, 2, 0)
+        v.addWidget(but)
         but.clicked.connect(self.on_fill_blank)
 
         # Epoch insertion mode box
@@ -230,7 +230,7 @@ class EpochEncoder(ViewerBase):
         group_box.setToolTip('Hold Shift when using shortcut keys to temporarily switch modes')
         group_box_layout = QT.QVBoxLayout()
         group_box.setLayout(group_box_layout)
-        g.addWidget(group_box, 3, 0, 2, 1)
+        v.addWidget(group_box)
 
         # Epoch insertion mode buttons
 
@@ -245,38 +245,38 @@ class EpochEncoder(ViewerBase):
             self.btn_insertion_mode_overlapping.setChecked(True)
 
         but = QT.PushButton('Save')
-        g.addWidget(but, 5, 0)
+        v.addWidget(but)
         but.clicked.connect(self.on_save)
 
         save_shortcut = QT.QShortcut(self)
         save_shortcut.setKey('Ctrl+s')  # automatically converted to Cmd+s on Mac
         save_shortcut.activated.connect(but.click)
-        but.setToolTip('Shortcut: Ctrl/Cmd+s')
+        but.setToolTip('Save with shortcut: Ctrl/Cmd+s')
 
+        # Range box
 
-        #~ v.addStretch()
-        #~ v.addWidget(QT.QFrame(frameShape=QT.QFrame.HLine, frameShadow=QT.QFrame.Sunken))
+        self.range_group_box = QT.QGroupBox('Time &range selector', checkable=True, checked=False)
+        self.range_group_box.clicked.connect(self.on_range_visibility_changed)
+        h.addWidget(self.range_group_box)
 
-        self.but_range = QT.PushButton('Show/hide range', checkable=True)
-        g.addWidget(self.but_range, 0, 1)
-        self.but_range.clicked.connect(self.on_range_visibility_changed)
+        range_group_box_layout = QT.QVBoxLayout()
+        self.range_group_box.setLayout(range_group_box_layout)
 
         range_shortcut = QT.QShortcut(self)
         range_shortcut.setKey('r')
-        range_shortcut.activated.connect(self.but_range.click)
-        self.but_range.setToolTip('Shortcut: r')
+        range_shortcut.activated.connect(self.range_group_toggle)
+        self.range_group_box.setToolTip('Toggle with shortcut: r')
 
         spinboxs = []
         buts = []
-        for i in range(2):
+        for i, but_text in enumerate(['Set start >', 'Set stop >']):
             hh = QT.QHBoxLayout()
-            g.addLayout(hh, 1+i, 1)
-            but = QT.QPushButton('>')
+            range_group_box_layout.addLayout(hh)
+            but = QT.QPushButton(but_text)
             buts.append(but)
             hh.addWidget(but)
             spinbox = pg.SpinBox(value=float(i), decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, int=False)
             hh.addWidget(spinbox, 10)
-            #~ g.addWidget(spinbox, 1+i, 1)
             spinbox.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Preferred, )
             spinbox.valueChanged.connect(self.on_spin_limit_changed)
             spinboxs.append(spinbox)
@@ -287,23 +287,24 @@ class EpochEncoder(ViewerBase):
         limit1_shortcut = QT.QShortcut(self)
         limit1_shortcut.setKey('[')
         limit1_shortcut.activated.connect(buts[0].click)
-        buts[0].setToolTip('Shortcut: [')
+        buts[0].setToolTip('Set start with shortcut: [')
 
         limit2_shortcut = QT.QShortcut(self)
         limit2_shortcut.setKey(']')
         limit2_shortcut.activated.connect(buts[1].click)
-        buts[1].setToolTip('Shortcut: ]')
+        buts[1].setToolTip('Set stop with shortcut: ]')
 
         self.combo_labels = QT.QComboBox()
         self.combo_labels.addItems(self.source.possible_labels)
-        g.addWidget(self.combo_labels, 3, 1)
+        range_group_box_layout.addWidget(self.combo_labels)
 
-        self.but_apply_region = QT.PushButton('Apply')
-        g.addWidget(self.but_apply_region, 4, 1)
+        self.but_apply_region = QT.PushButton('Insert within range')
+        range_group_box_layout.addWidget(self.but_apply_region)
         self.but_apply_region.clicked.connect(self.apply_region)
+        self.but_apply_region.setToolTip('Insert with customizable shortcuts (see options)')
 
-        self.but_del_region = QT.PushButton('Delete')
-        g.addWidget(self.but_del_region, 5, 1)
+        self.but_del_region = QT.PushButton('Clear within range')
+        range_group_box_layout.addWidget(self.but_del_region)
         self.but_del_region.clicked.connect(self.delete_region)
 
 
@@ -312,7 +313,7 @@ class EpochEncoder(ViewerBase):
         group_box = QT.QGroupBox('Table operations')
         group_box_layout = QT.QVBoxLayout()
         group_box.setLayout(group_box_layout)
-        g.addWidget(group_box, 0, 2, 3, 1)
+        h.addWidget(group_box)
 
         # Table operations buttons
 
@@ -519,7 +520,7 @@ class EpochEncoder(ViewerBase):
         else:
             self.plot.getAxis('left').setTicks([])
 
-        if self.but_range.isChecked():
+        if self.range_group_box.isChecked():
             self.region.show()
         else:
             self.region.hide()
@@ -535,7 +536,7 @@ class EpochEncoder(ViewerBase):
 
         self.has_unsaved_changes = True
 
-        range_selection_is_enabled = self.but_range.isChecked()
+        range_selection_is_enabled = self.range_group_box.isChecked()
 
         if range_selection_is_enabled:
             # use selection for start and end of new epoch
@@ -638,10 +639,13 @@ class EpochEncoder(ViewerBase):
         self.refresh()
         self.refresh_table()
 
+    def range_group_toggle(self):
+        self.range_group_box.setChecked(not self.range_group_box.isChecked())
+        self.on_range_visibility_changed()
 
-    def on_range_visibility_changed(self, flag, refresh=True, shift_region=True):
-        enabled = self.but_range.isChecked()
-        #~ print(enabled)
+    def on_range_visibility_changed(self, flag=None, refresh=True, shift_region=True):
+        enabled = self.range_group_box.isChecked()
+
         for w in (self.spin_limit1, self.spin_limit2, self.combo_labels, self.but_apply_region, self.but_del_region):
             w.setEnabled(enabled)
         if enabled and shift_region:
@@ -704,8 +708,8 @@ class EpochEncoder(ViewerBase):
         self.region.setRegion((self.source.ep_times[ind], self.source.ep_stops[ind]))
 
         # show the region if it isn't already visible
-        self.but_range.setChecked(True)
-        self.on_range_visibility_changed(None, shift_region = False)
+        self.range_group_box.setChecked(True)
+        self.on_range_visibility_changed(shift_region=False)
 
     def on_seek_table(self):
         if self.table_widget.rowCount()==0:
