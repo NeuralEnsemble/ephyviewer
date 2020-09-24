@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 #~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
-from collections import OrderedDict
 import numpy as np
 
 import matplotlib.cm
@@ -27,6 +26,7 @@ default_params = [
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'exclusive_mode', 'type': 'bool', 'value': True},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
+    {'name': 'keys_as_ticks', 'type': 'bool', 'value': True},
 
     #~ {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
@@ -66,6 +66,8 @@ class EpochEncoder(ViewerBase):
 
         assert isinstance(self.source, WritableEpochSource)
 
+        self.label_shortcuts = {}
+
         self.make_params()
         self.set_layout()
         self.make_param_controller()
@@ -103,28 +105,19 @@ class EpochEncoder(ViewerBase):
 
         keys = '1234567890'
         all = []
-        self.label_shortcuts = OrderedDict()
         for i, label in enumerate(self.source.possible_labels):
             # get string for shortcut key
             key = keys[i] if i<len(keys) else ''
 
             name = 'label{}'.format(i)
-            children =[{'name': 'name', 'type': 'str', 'value': self.source.possible_labels[i], 'readonly':True},
+            children =[{'name': 'name', 'type': 'str', 'value': label, 'readonly':True},
                             {'name': 'color', 'type': 'color', 'value': self.source.color_by_label(label)},
                             {'name': 'key', 'type': 'str', 'value': key},
                             ]
             all.append({'name': name, 'type': 'group', 'children': children})
 
             # assign shortcuts without and with modifier key
-            shortcut_without_modifer = QT.QShortcut(self)
-            shortcut_with_modifier   = QT.QShortcut(self)
-            if key != '':
-                shortcut_without_modifer.setKey(key)
-                shortcut_with_modifier  .setKey('Shift+' + key)
-            shortcut_without_modifer.activated.connect(self.on_label_shortcut)
-            shortcut_with_modifier  .activated.connect(self.on_label_shortcut)
-            self.label_shortcuts[shortcut_without_modifer] = (label, False) # boolean indicates modifier use
-            self.label_shortcuts[shortcut_with_modifier]   = (label, True)  # boolean indicates modifier use
+            self.assign_label_shortcuts(label, key)
 
         self.by_label_params = pg.parametertree.Parameter.create(name='Labels', type='group', children=all)
 
@@ -367,6 +360,23 @@ class EpochEncoder(ViewerBase):
             label_item.setFont(font)
         self.refresh()
 
+    def assign_label_shortcuts(self, label, key):
+
+        if label not in self.label_shortcuts:
+            # create new shortcuts
+            shortcut_without_modifier = QT.QShortcut(self)
+            shortcut_with_modifier    = QT.QShortcut(self)
+            shortcut_without_modifier.activated.connect(lambda: self.on_label_shortcut(label, False))
+            shortcut_with_modifier   .activated.connect(lambda: self.on_label_shortcut(label, True))
+            self.label_shortcuts[label] = (shortcut_without_modifier, shortcut_with_modifier)
+        else:
+            # get existing shortcuts
+            shortcut_without_modifier, shortcut_with_modifier = self.label_shortcuts[label]
+
+        # set/change the shortcut keys
+        shortcut_without_modifier.setKey(key)
+        shortcut_with_modifier   .setKey('Shift+' + key)
+
     def on_change_keys(self, refresh=True):
 
         for i, label in enumerate(self.source.possible_labels):
@@ -374,10 +384,7 @@ class EpochEncoder(ViewerBase):
             key = self.by_label_params['label'+str(i), 'key']
 
             # assign shortcuts without and with modifier key
-            shortcut_without_modifer = list(self.label_shortcuts.keys())[2*i]
-            shortcut_with_modifier   = list(self.label_shortcuts.keys())[2*i+1]
-            shortcut_without_modifer.setKey(key)
-            shortcut_with_modifier  .setKey('Shift+' + key)
+            self.assign_label_shortcuts(label, key)
 
         self.refresh()
 
@@ -431,12 +438,11 @@ class EpochEncoder(ViewerBase):
             color = self.by_label_params['label'+str(ind), 'color']
             color2 = QT.QColor(color)
             color2.setAlpha(130)
-            ypos = n - ind - 1
             if self.params['view_mode']=='stacked':
-                ypos = n - ind - 1
+                ypos = n-ind-1
             else:
                 ypos = 0
-            item = RectItem([times[i],  ypos,durations[i], .9],  border=color, fill=color2, id=ids[i])
+            item = RectItem([times[i], ypos, durations[i], .9], border=color, fill=color2, id=ids[i])
             item.clicked.connect(self.on_rect_clicked)
             item.doubleclicked.connect(self.on_rect_doubleclicked)
             item.setPos(times[i],  ypos)
@@ -444,18 +450,25 @@ class EpochEncoder(ViewerBase):
             self.rect_items.append(item)
 
 
-        #~ for i, label in enumerate(self.source.possible_labels):
+        ticks = []
         for i, label_item in enumerate(self.label_items):
             if self.params['view_mode']=='stacked':
                 color = self.by_label_params['label'+str(i), 'color']
                 #~ label_item = pg.TextItem(label, color=color, anchor=(0, 0.5), border=None, fill=pg.mkColor((128,128,128, 120)))
                 label_item.setColor(color)
                 label_item.fill = pg.mkBrush(self.params['label_fill_color'])
-                label_item.setPos(t_start, n - i - 0.55)
+                ypos = n-i-0.55
+                label_item.setPos(t_start, ypos)
+                ticks.append((ypos, self.by_label_params['label'+str(i), 'key']))
                 label_item.show()
                 #~ self.plot.addItem(label_item)
             else:
                 label_item.hide()
+
+        if self.params['keys_as_ticks'] and self.params['view_mode']=='stacked':
+            self.plot.getAxis('left').setTicks([ticks, []])
+        else:
+            self.plot.getAxis('left').setTicks([])
 
         if self.but_range.isChecked():
             self.region.show()
@@ -469,9 +482,7 @@ class EpochEncoder(ViewerBase):
         else:
             self.plot.setYRange( 0, 1)
 
-    def on_label_shortcut(self):
-        label, modifier_used = self.label_shortcuts.get(self.sender(), None)
-        if label is None: return
+    def on_label_shortcut(self, label, modifier_used):
 
         self.has_unsaved_changes = True
 
