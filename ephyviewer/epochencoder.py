@@ -146,6 +146,8 @@ class EpochEncoder(ViewerBase):
         self.datagrabber.data_ready.connect(self.on_data_ready)
         self.request_data.connect(self.datagrabber.on_request_data)
 
+        self.table_button_fixed_width = 32
+        self.table_button_icon_size = 16
         self.refresh_table()
 
         # IMPORTANT: Any time the contents of self.source are changed (e.g., by
@@ -657,16 +659,25 @@ class EpochEncoder(ViewerBase):
         self.table_widget.setRowCount(times.size)
         self.table_widget.setHorizontalHeaderLabels(['', 'start', 'stop', 'duration', 'label', '', '', ''])
 
-        # lock column widths for button and label columns to fit contents
-        for col in [SEEK_COL, LABEL_COL, SPLIT_COL, DUPLICATE_COL, DELETE_COL]:
-            self.table_widget.horizontalHeader().setSectionResizeMode(col, QT.QHeaderView.ResizeToContents)
+        # lock column widths for buttons to fixed button width
+        self.table_widget.horizontalHeader().setMinimumSectionSize(self.table_button_fixed_width)
+        for col in [SEEK_COL, SPLIT_COL, DUPLICATE_COL, DELETE_COL]:
+            self.table_widget.horizontalHeader().setSectionResizeMode(col, QT.QHeaderView.Fixed)
+            self.table_widget.setColumnWidth(col, self.table_button_fixed_width)
+
+        # lock column width for labels to fit contents
+        self.table_widget.horizontalHeader().setSectionResizeMode(LABEL_COL, QT.QHeaderView.ResizeToContents)
+
+        buttonFlat = True
 
         for r in range(times.size):
 
             # seek button
             but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-seek.svg'))
             but.setToolTip('Jump to epoch')
-            but.setFlat(True)
+            but.setFlat(buttonFlat)
+            but.setFixedWidth(self.table_button_fixed_width)
+            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
             but.clicked.connect(lambda checked, r=r: self.on_seek_table(r))
             self.table_widget.setCellWidget(r, SEEK_COL, but)
 
@@ -697,21 +708,27 @@ class EpochEncoder(ViewerBase):
             # split button
             but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-split.svg'))
             but.setToolTip('Split epoch at current time')
-            but.setFlat(True)
+            but.setFlat(buttonFlat)
+            but.setFixedWidth(self.table_button_fixed_width)
+            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
             but.clicked.connect(lambda checked, r=r: self.split_selected_epoch(r))
             self.table_widget.setCellWidget(r, SPLIT_COL, but)
 
             # duplicate button
             but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-duplicate.svg'))
             but.setToolTip('Duplicate epoch')
-            but.setFlat(True)
+            but.setFlat(buttonFlat)
+            but.setFixedWidth(self.table_button_fixed_width)
+            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
             but.clicked.connect(lambda checked, r=r: self.duplicate_selected_epoch(r))
             self.table_widget.setCellWidget(r, DUPLICATE_COL, but)
 
             # delete button
             but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-delete.svg'))
             but.setToolTip('Delete epoch')
-            but.setFlat(True)
+            but.setFlat(buttonFlat)
+            but.setFixedWidth(self.table_button_fixed_width)
+            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
             but.clicked.connect(lambda checked, r=r: self.delete_selected_epoch(r))
             self.table_widget.setCellWidget(r, DELETE_COL, but)
 
