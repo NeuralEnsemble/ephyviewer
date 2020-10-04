@@ -270,7 +270,7 @@ class EpochEncoder(ViewerBase):
         self.range_group_box.clicked.connect(self.on_range_visibility_changed)
         h.addWidget(self.range_group_box)
 
-        range_group_box_layout = QT.QVBoxLayout()
+        range_group_box_layout = QT.QGridLayout()
         self.range_group_box.setLayout(range_group_box_layout)
 
         range_shortcut = QT.QShortcut(self)
@@ -281,13 +281,11 @@ class EpochEncoder(ViewerBase):
         spinboxs = []
         buts = []
         for i, but_text in enumerate(['Set start >', 'Set stop >']):
-            hh = QT.QHBoxLayout()
-            range_group_box_layout.addLayout(hh)
             but = QT.QPushButton(but_text)
             buts.append(but)
-            hh.addWidget(but)
+            range_group_box_layout.addWidget(but, i, 0)
             spinbox = pg.SpinBox(value=float(i), decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, int=False)
-            hh.addWidget(spinbox, 10)
+            range_group_box_layout.addWidget(spinbox, i, 1)
             spinbox.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Preferred, )
             spinbox.valueChanged.connect(self.on_spin_limit_changed)
             spinboxs.append(spinbox)
@@ -307,15 +305,15 @@ class EpochEncoder(ViewerBase):
 
         self.combo_labels = QT.QComboBox()
         self.combo_labels.addItems(self.source.possible_labels)
-        range_group_box_layout.addWidget(self.combo_labels)
+        range_group_box_layout.addWidget(self.combo_labels, 2, 0, 1, 2)
 
         self.but_apply_region = QT.PushButton('Insert within range')
-        range_group_box_layout.addWidget(self.but_apply_region)
+        range_group_box_layout.addWidget(self.but_apply_region, 3, 0, 1, 2)
         self.but_apply_region.clicked.connect(self.apply_region)
         self.but_apply_region.setToolTip('Insert with customizable shortcuts (see options)')
 
         self.but_del_region = QT.PushButton('Clear within range')
-        range_group_box_layout.addWidget(self.but_del_region)
+        range_group_box_layout.addWidget(self.but_del_region, 4, 0, 1, 2)
         self.but_del_region.clicked.connect(self.delete_region)
 
         self.table_widget = QT.QTableWidget()
