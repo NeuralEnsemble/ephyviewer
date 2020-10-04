@@ -205,7 +205,6 @@ class EpochEncoder(ViewerBase):
 
         self.mainlayout.addSpacing(10)
 
-
         self.but_toggle_controls = QT.ToolButton()
         self.but_toggle_controls.setStyleSheet('QToolButton { border: none; }');
         self.but_toggle_controls.setToolButtonStyle(QT.Qt.ToolButtonTextBesideIcon)
@@ -215,12 +214,17 @@ class EpochEncoder(ViewerBase):
         self.but_toggle_controls.clicked.connect(self.on_controls_visibility_changed)
 
         self.controls = QT.QWidget()
+        self.controls.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Fixed)
         self.mainlayout.addWidget(self.controls)
 
         h = QT.QHBoxLayout()
+        h.setContentsMargins(0, 0, 0, 0)
+        h.setSpacing(5)
         self.controls.setLayout(h)
 
         v = QT.QVBoxLayout()
+        v.setContentsMargins(0, 0, 0, 0)
+        v.setSpacing(0)
         h.addLayout(v)
 
         but = QT.PushButton('Options')
@@ -240,6 +244,8 @@ class EpochEncoder(ViewerBase):
         group_box = QT.QGroupBox('Epoch insertion mode')
         group_box.setToolTip('Hold Shift when using shortcut keys to temporarily switch modes')
         group_box_layout = QT.QVBoxLayout()
+        group_box_layout.setContentsMargins(0, 0, 0, 0)
+        group_box_layout.setSpacing(0)
         group_box.setLayout(group_box_layout)
         v.addWidget(group_box)
 
@@ -271,6 +277,8 @@ class EpochEncoder(ViewerBase):
         h.addWidget(self.range_group_box)
 
         range_group_box_layout = QT.QGridLayout()
+        range_group_box_layout.setContentsMargins(0, 0, 0, 0)
+        range_group_box_layout.setSpacing(0)
         self.range_group_box.setLayout(range_group_box_layout)
 
         range_shortcut = QT.QShortcut(self)
