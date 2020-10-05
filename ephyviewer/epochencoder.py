@@ -203,14 +203,12 @@ class EpochEncoder(ViewerBase):
         self.plot.hideButtons()
         self.graphicsview.setCentralItem(self.plot)
 
-        self.mainlayout.addSpacing(10)
-
         self.controls = QT.QWidget()
         self.controls.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Fixed)
         self.mainlayout.addWidget(self.controls)
 
         h = QT.QHBoxLayout()
-        h.setContentsMargins(0, 0, 0, 0)
+        h.setContentsMargins(5, 5, 0, 0)
         h.setSpacing(5)
         self.controls.setLayout(h)
 
@@ -221,7 +219,6 @@ class EpochEncoder(ViewerBase):
         h.addWidget(self.range_group_box)
 
         range_group_box_layout = QT.QGridLayout()
-        range_group_box_layout.setContentsMargins(0, 0, 0, 0)
         range_group_box_layout.setSpacing(0)
         self.range_group_box.setLayout(range_group_box_layout)
 
