@@ -146,6 +146,8 @@ class EpochEncoder(ViewerBase):
         self.datagrabber.data_ready.connect(self.on_data_ready)
         self.request_data.connect(self.datagrabber.on_request_data)
 
+        self.table_button_fixed_width = 32
+        self.table_button_icon_size = 16
         self.refresh_table()
 
         # IMPORTANT: Any time the contents of self.source are changed (e.g., by
@@ -201,66 +203,14 @@ class EpochEncoder(ViewerBase):
         self.plot.hideButtons()
         self.graphicsview.setCentralItem(self.plot)
 
-        self.mainlayout.addSpacing(10)
-
-
-        self.but_toggle_controls = QT.ToolButton()
-        self.but_toggle_controls.setStyleSheet('QToolButton { border: none; }');
-        self.but_toggle_controls.setToolButtonStyle(QT.Qt.ToolButtonTextBesideIcon)
-        self.but_toggle_controls.setText('Hide controls')
-        self.but_toggle_controls.setArrowType(QT.Qt.DownArrow)
-        self.mainlayout.addWidget(self.but_toggle_controls)
-        self.but_toggle_controls.clicked.connect(self.on_controls_visibility_changed)
-
         self.controls = QT.QWidget()
+        self.controls.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Fixed)
         self.mainlayout.addWidget(self.controls)
 
         h = QT.QHBoxLayout()
+        h.setContentsMargins(5, 5, 0, 0)
+        h.setSpacing(5)
         self.controls.setLayout(h)
-
-        v = QT.QVBoxLayout()
-        h.addLayout(v)
-
-        but = QT.PushButton('Options')
-        v.addWidget(but)
-        but.clicked.connect(self.show_params_controller)
-
-        but = QT.PushButton('Merge neighbors')
-        v.addWidget(but)
-        but.clicked.connect(self.on_merge_neighbors)
-
-        but = QT.PushButton('Fill blank')
-        v.addWidget(but)
-        but.clicked.connect(self.on_fill_blank)
-
-        # Epoch insertion mode box
-
-        group_box = QT.QGroupBox('Epoch insertion mode')
-        group_box.setToolTip('Hold Shift when using shortcut keys to temporarily switch modes')
-        group_box_layout = QT.QVBoxLayout()
-        group_box.setLayout(group_box_layout)
-        v.addWidget(group_box)
-
-        # Epoch insertion mode buttons
-
-        self.btn_insertion_mode_exclusive = QT.QRadioButton('Mutually exclusive')
-        self.btn_insertion_mode_overlapping = QT.QRadioButton('Overlapping')
-        group_box_layout.addWidget(self.btn_insertion_mode_exclusive)
-        group_box_layout.addWidget(self.btn_insertion_mode_overlapping)
-        self.btn_insertion_mode_exclusive.toggled.connect(self.params.param('exclusive_mode').setValue)
-        if self.params['exclusive_mode']:
-            self.btn_insertion_mode_exclusive.setChecked(True)
-        else:
-            self.btn_insertion_mode_overlapping.setChecked(True)
-
-        but = QT.PushButton('Save')
-        v.addWidget(but)
-        but.clicked.connect(self.on_save)
-
-        save_shortcut = QT.QShortcut(self)
-        save_shortcut.setKey('Ctrl+s')  # automatically converted to Cmd+s on Mac
-        save_shortcut.activated.connect(but.click)
-        but.setToolTip('Save with shortcut: Ctrl/Cmd+s')
 
         # Range box
 
@@ -268,7 +218,8 @@ class EpochEncoder(ViewerBase):
         self.range_group_box.clicked.connect(self.on_range_visibility_changed)
         h.addWidget(self.range_group_box)
 
-        range_group_box_layout = QT.QVBoxLayout()
+        range_group_box_layout = QT.QGridLayout()
+        range_group_box_layout.setSpacing(0)
         self.range_group_box.setLayout(range_group_box_layout)
 
         range_shortcut = QT.QShortcut(self)
@@ -279,13 +230,11 @@ class EpochEncoder(ViewerBase):
         spinboxs = []
         buts = []
         for i, but_text in enumerate(['Set start >', 'Set stop >']):
-            hh = QT.QHBoxLayout()
-            range_group_box_layout.addLayout(hh)
             but = QT.QPushButton(but_text)
             buts.append(but)
-            hh.addWidget(but)
+            range_group_box_layout.addWidget(but, i, 0)
             spinbox = pg.SpinBox(value=float(i), decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, int=False)
-            hh.addWidget(spinbox, 10)
+            range_group_box_layout.addWidget(spinbox, i, 1)
             spinbox.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Preferred, )
             spinbox.valueChanged.connect(self.on_spin_limit_changed)
             spinboxs.append(spinbox)
@@ -305,16 +254,18 @@ class EpochEncoder(ViewerBase):
 
         self.combo_labels = QT.QComboBox()
         self.combo_labels.addItems(self.source.possible_labels)
-        range_group_box_layout.addWidget(self.combo_labels)
+        range_group_box_layout.addWidget(self.combo_labels, 2, 0, 1, 2)
 
         self.but_apply_region = QT.PushButton('Insert within range')
-        range_group_box_layout.addWidget(self.but_apply_region)
+        range_group_box_layout.addWidget(self.but_apply_region, 3, 0, 1, 2)
         self.but_apply_region.clicked.connect(self.apply_region)
         self.but_apply_region.setToolTip('Insert with customizable shortcuts (see options)')
 
         self.but_del_region = QT.PushButton('Clear within range')
-        range_group_box_layout.addWidget(self.but_del_region)
+        range_group_box_layout.addWidget(self.but_del_region, 4, 0, 1, 2)
         self.but_del_region.clicked.connect(self.delete_region)
+
+        # Table
 
         self.table_widget = QT.QTableWidget()
         h.addWidget(self.table_widget, stretch=1)
@@ -322,6 +273,34 @@ class EpochEncoder(ViewerBase):
         self.table_widget.setSelectionBehavior(QT.QAbstractItemView.SelectRows)
         self.table_widget.cellChanged.connect(self.on_table_cell_change)
 
+        # Toolbar
+
+        self.toolbar = QT.QToolBar()
+        self.toolbar.setToolButtonStyle(QT.Qt.ToolButtonTextBesideIcon)
+        self.toolbar.setIconSize(QT.QSize(16, 16))
+        self.mainlayout.addWidget(self.toolbar)
+
+        self.toggle_controls_visibility_action = self.toolbar.addAction('Hide controls', self.on_controls_visibility_changed)
+        self.toggle_controls_visibility_button = self.toolbar.widgetForAction(self.toggle_controls_visibility_action)
+        self.toggle_controls_visibility_button.setArrowType(QT.UpArrow)
+
+        self.toolbar.addSeparator()
+
+        save_action = self.toolbar.addAction('Save', self.on_save)
+        save_action.setShortcut('Ctrl+s')  # automatically converted to Cmd+s on Mac
+        save_action.setToolTip('Save with shortcut: Ctrl/Cmd+s')
+
+        self.toolbar.addAction('Options', self.show_params_controller)
+
+        self.toolbar.addAction('Merge neighbors', self.on_merge_neighbors)
+
+        self.toolbar.addAction('Fill blank', self.on_fill_blank)
+
+        self.allow_overlap_action = self.toolbar.addAction('Allow overlap')
+        self.allow_overlap_action.setToolTip('Hold Shift when using shortcut keys to temporarily switch modes')
+        self.allow_overlap_action.setCheckable(True)
+        self.allow_overlap_action.setChecked(not self.params['exclusive_mode'])
+        self.allow_overlap_action.toggled.connect(lambda checked: self.params.param('exclusive_mode').setValue(not checked))
 
 
     def make_param_controller(self):
@@ -374,21 +353,18 @@ class EpochEncoder(ViewerBase):
     def on_controls_visibility_changed(self):
         if self.controls.isVisible():
             self.controls.hide()
-            self.but_toggle_controls.setText('Show controls')
-            self.but_toggle_controls.setArrowType(QT.Qt.RightArrow)
+            self.toggle_controls_visibility_action.setText('Show controls')
+            self.toggle_controls_visibility_button.setArrowType(QT.RightArrow)
         else:
             self.controls.show()
-            self.but_toggle_controls.setText('Hide controls')
-            self.but_toggle_controls.setArrowType(QT.Qt.DownArrow)
+            self.toggle_controls_visibility_action.setText('Hide controls')
+            self.toggle_controls_visibility_button.setArrowType(QT.UpArrow)
 
     def show_params_controller(self):
         self.params_controller.show()
 
     def on_param_change(self):
-        if self.params['exclusive_mode']:
-            self.btn_insertion_mode_exclusive.setChecked(True)
-        else:
-            self.btn_insertion_mode_overlapping.setChecked(True)
+        self.allow_overlap_action.setChecked(not self.params['exclusive_mode'])
         self.vline.setPen(color=self.params['vline_color'])
         for label_item in self.label_items:
             font = label_item.textItem.font()
@@ -657,16 +633,25 @@ class EpochEncoder(ViewerBase):
         self.table_widget.setRowCount(times.size)
         self.table_widget.setHorizontalHeaderLabels(['', 'start', 'stop', 'duration', 'label', '', '', ''])
 
-        # lock column widths for button and label columns to fit contents
-        for col in [SEEK_COL, LABEL_COL, SPLIT_COL, DUPLICATE_COL, DELETE_COL]:
-            self.table_widget.horizontalHeader().setSectionResizeMode(col, QT.QHeaderView.ResizeToContents)
+        # lock column widths for buttons to fixed button width
+        self.table_widget.horizontalHeader().setMinimumSectionSize(self.table_button_fixed_width)
+        for col in [SEEK_COL, SPLIT_COL, DUPLICATE_COL, DELETE_COL]:
+            self.table_widget.horizontalHeader().setSectionResizeMode(col, QT.QHeaderView.Fixed)
+            self.table_widget.setColumnWidth(col, self.table_button_fixed_width)
+
+        # lock column width for labels to fit contents
+        self.table_widget.horizontalHeader().setSectionResizeMode(LABEL_COL, QT.QHeaderView.ResizeToContents)
+
+        buttonFlat = True
 
         for r in range(times.size):
 
             # seek button
             but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-seek.svg'))
             but.setToolTip('Jump to epoch')
-            but.setFlat(True)
+            but.setFlat(buttonFlat)
+            but.setFixedWidth(self.table_button_fixed_width)
+            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
             but.clicked.connect(lambda checked, r=r: self.on_seek_table(r))
             self.table_widget.setCellWidget(r, SEEK_COL, but)
 
@@ -697,21 +682,27 @@ class EpochEncoder(ViewerBase):
             # split button
             but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-split.svg'))
             but.setToolTip('Split epoch at current time')
-            but.setFlat(True)
+            but.setFlat(buttonFlat)
+            but.setFixedWidth(self.table_button_fixed_width)
+            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
             but.clicked.connect(lambda checked, r=r: self.split_selected_epoch(r))
             self.table_widget.setCellWidget(r, SPLIT_COL, but)
 
             # duplicate button
             but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-duplicate.svg'))
             but.setToolTip('Duplicate epoch')
-            but.setFlat(True)
+            but.setFlat(buttonFlat)
+            but.setFixedWidth(self.table_button_fixed_width)
+            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
             but.clicked.connect(lambda checked, r=r: self.duplicate_selected_epoch(r))
             self.table_widget.setCellWidget(r, DUPLICATE_COL, but)
 
             # delete button
             but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-delete.svg'))
             but.setToolTip('Delete epoch')
-            but.setFlat(True)
+            but.setFlat(buttonFlat)
+            but.setFixedWidth(self.table_button_fixed_width)
+            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
             but.clicked.connect(lambda checked, r=r: self.delete_selected_epoch(r))
             self.table_widget.setCellWidget(r, DELETE_COL, but)
 
