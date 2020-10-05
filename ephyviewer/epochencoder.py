@@ -205,14 +205,6 @@ class EpochEncoder(ViewerBase):
 
         self.mainlayout.addSpacing(10)
 
-        self.but_toggle_controls = QT.ToolButton()
-        self.but_toggle_controls.setStyleSheet('QToolButton { border: none; }');
-        self.but_toggle_controls.setToolButtonStyle(QT.Qt.ToolButtonTextBesideIcon)
-        self.but_toggle_controls.setText('Hide controls')
-        self.but_toggle_controls.setArrowType(QT.Qt.DownArrow)
-        self.mainlayout.addWidget(self.but_toggle_controls)
-        self.but_toggle_controls.clicked.connect(self.on_controls_visibility_changed)
-
         self.controls = QT.QWidget()
         self.controls.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Fixed)
         self.mainlayout.addWidget(self.controls)
@@ -221,54 +213,6 @@ class EpochEncoder(ViewerBase):
         h.setContentsMargins(0, 0, 0, 0)
         h.setSpacing(5)
         self.controls.setLayout(h)
-
-        v = QT.QVBoxLayout()
-        v.setContentsMargins(0, 0, 0, 0)
-        v.setSpacing(0)
-        h.addLayout(v)
-
-        but = QT.PushButton('Options')
-        v.addWidget(but)
-        but.clicked.connect(self.show_params_controller)
-
-        but = QT.PushButton('Merge neighbors')
-        v.addWidget(but)
-        but.clicked.connect(self.on_merge_neighbors)
-
-        but = QT.PushButton('Fill blank')
-        v.addWidget(but)
-        but.clicked.connect(self.on_fill_blank)
-
-        # Epoch insertion mode box
-
-        group_box = QT.QGroupBox('Epoch insertion mode')
-        group_box.setToolTip('Hold Shift when using shortcut keys to temporarily switch modes')
-        group_box_layout = QT.QVBoxLayout()
-        group_box_layout.setContentsMargins(0, 0, 0, 0)
-        group_box_layout.setSpacing(0)
-        group_box.setLayout(group_box_layout)
-        v.addWidget(group_box)
-
-        # Epoch insertion mode buttons
-
-        self.btn_insertion_mode_exclusive = QT.QRadioButton('Mutually exclusive')
-        self.btn_insertion_mode_overlapping = QT.QRadioButton('Overlapping')
-        group_box_layout.addWidget(self.btn_insertion_mode_exclusive)
-        group_box_layout.addWidget(self.btn_insertion_mode_overlapping)
-        self.btn_insertion_mode_exclusive.toggled.connect(self.params.param('exclusive_mode').setValue)
-        if self.params['exclusive_mode']:
-            self.btn_insertion_mode_exclusive.setChecked(True)
-        else:
-            self.btn_insertion_mode_overlapping.setChecked(True)
-
-        but = QT.PushButton('Save')
-        v.addWidget(but)
-        but.clicked.connect(self.on_save)
-
-        save_shortcut = QT.QShortcut(self)
-        save_shortcut.setKey('Ctrl+s')  # automatically converted to Cmd+s on Mac
-        save_shortcut.activated.connect(but.click)
-        but.setToolTip('Save with shortcut: Ctrl/Cmd+s')
 
         # Range box
 
@@ -324,12 +268,42 @@ class EpochEncoder(ViewerBase):
         range_group_box_layout.addWidget(self.but_del_region, 4, 0, 1, 2)
         self.but_del_region.clicked.connect(self.delete_region)
 
+        # Table
+
         self.table_widget = QT.QTableWidget()
         h.addWidget(self.table_widget, stretch=1)
         self.table_widget.setSelectionMode(QT.QAbstractItemView.SingleSelection)
         self.table_widget.setSelectionBehavior(QT.QAbstractItemView.SelectRows)
         self.table_widget.cellChanged.connect(self.on_table_cell_change)
 
+        # Toolbar
+
+        self.toolbar = QT.QToolBar()
+        self.toolbar.setToolButtonStyle(QT.Qt.ToolButtonTextBesideIcon)
+        self.toolbar.setIconSize(QT.QSize(16, 16))
+        self.mainlayout.addWidget(self.toolbar)
+
+        self.toggle_controls_visibility_action = self.toolbar.addAction('Hide controls', self.on_controls_visibility_changed)
+        self.toggle_controls_visibility_button = self.toolbar.widgetForAction(self.toggle_controls_visibility_action)
+        self.toggle_controls_visibility_button.setArrowType(QT.UpArrow)
+
+        self.toolbar.addSeparator()
+
+        save_action = self.toolbar.addAction('Save', self.on_save)
+        save_action.setShortcut('Ctrl+s')  # automatically converted to Cmd+s on Mac
+        save_action.setToolTip('Save with shortcut: Ctrl/Cmd+s')
+
+        self.toolbar.addAction('Options', self.show_params_controller)
+
+        self.toolbar.addAction('Merge neighbors', self.on_merge_neighbors)
+
+        self.toolbar.addAction('Fill blank', self.on_fill_blank)
+
+        self.allow_overlap_action = self.toolbar.addAction('Allow overlap')
+        self.allow_overlap_action.setToolTip('Hold Shift when using shortcut keys to temporarily switch modes')
+        self.allow_overlap_action.setCheckable(True)
+        self.allow_overlap_action.setChecked(not self.params['exclusive_mode'])
+        self.allow_overlap_action.toggled.connect(lambda checked: self.params.param('exclusive_mode').setValue(not checked))
 
 
     def make_param_controller(self):
@@ -382,21 +356,18 @@ class EpochEncoder(ViewerBase):
     def on_controls_visibility_changed(self):
         if self.controls.isVisible():
             self.controls.hide()
-            self.but_toggle_controls.setText('Show controls')
-            self.but_toggle_controls.setArrowType(QT.Qt.RightArrow)
+            self.toggle_controls_visibility_action.setText('Show controls')
+            self.toggle_controls_visibility_button.setArrowType(QT.RightArrow)
         else:
             self.controls.show()
-            self.but_toggle_controls.setText('Hide controls')
-            self.but_toggle_controls.setArrowType(QT.Qt.DownArrow)
+            self.toggle_controls_visibility_action.setText('Hide controls')
+            self.toggle_controls_visibility_button.setArrowType(QT.UpArrow)
 
     def show_params_controller(self):
         self.params_controller.show()
 
     def on_param_change(self):
-        if self.params['exclusive_mode']:
-            self.btn_insertion_mode_exclusive.setChecked(True)
-        else:
-            self.btn_insertion_mode_overlapping.setChecked(True)
+        self.allow_overlap_action.setChecked(not self.params['exclusive_mode'])
         self.vline.setPen(color=self.params['vline_color'])
         for label_item in self.label_items:
             font = label_item.textItem.font()
