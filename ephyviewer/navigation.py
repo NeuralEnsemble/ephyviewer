@@ -84,6 +84,8 @@ class NavigationToolBar(QT.QWidget) :
 
             h.addWidget(QT.QLabel('Speed:'))
             self.speedSpin = pg.SpinBox(bounds=(0.01, 100.), step=0.1, value=1.)
+            if 'compactHeight' in self.speedSpin.opts:  # pyqtgraph >= 0.11.0
+                self.speedSpin.setOpts(compactHeight=False)
             h.addWidget(self.speedSpin)
             self.speedSpin.valueChanged.connect(self.on_change_speed)
 
@@ -139,6 +141,8 @@ class NavigationToolBar(QT.QWidget) :
         if show_spinbox:
             h.addWidget(QT.QLabel('Time (s):'))
             self.spinbox_time =pg.SpinBox(decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, suffix='', int=False)
+            if 'compactHeight' in self.spinbox_time.opts:  # pyqtgraph >= 0.11.0
+                self.spinbox_time.setOpts(compactHeight=False)
             h.addWidget(self.spinbox_time)
             #trick for separator
             h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
@@ -157,6 +161,8 @@ class NavigationToolBar(QT.QWidget) :
         if show_global_xsize:
             h.addWidget(QT.QLabel('Time width (s):'))
             self.spinbox_xsize =pg.SpinBox(value=3., decimals = 8, bounds = (0.001, np.inf),step = 0.1, siPrefix=False, suffix='', int=False)
+            if 'compactHeight' in self.spinbox_xsize.opts:  # pyqtgraph >= 0.11.0
+                self.spinbox_xsize.setOpts(compactHeight=False)
             h.addWidget(self.spinbox_xsize)
             #~ self.spinbox_xsize.valueChanged.connect(self.on_spinbox_xsize_changed)
             self.spinbox_xsize.valueChanged.connect(self.xsize_changed.emit)

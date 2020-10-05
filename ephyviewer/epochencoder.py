@@ -234,6 +234,8 @@ class EpochEncoder(ViewerBase):
             buts.append(but)
             range_group_box_layout.addWidget(but, i, 0)
             spinbox = pg.SpinBox(value=float(i), decimals = 8, bounds = (-np.inf, np.inf),step = 0.05, siPrefix=False, int=False)
+            if 'compactHeight' in spinbox.opts:  # pyqtgraph >= 0.11.0
+                spinbox.setOpts(compactHeight=False)
             range_group_box_layout.addWidget(spinbox, i, 1)
             spinbox.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Preferred, )
             spinbox.valueChanged.connect(self.on_spin_limit_changed)
