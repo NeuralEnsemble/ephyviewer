@@ -288,7 +288,7 @@ def get_sources_from_neo_rawio(neorawio):
 
     if neorawio.signal_channels_count()>0:
         #Signals
-        for channel_indexes in neorawio.get_group_channel_indexes():
+        for channel_indexes in neorawio.get_group_signal_channel_indexes():
             #one soure by channel group
             sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, channel_indexes))
 
