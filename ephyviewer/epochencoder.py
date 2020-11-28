@@ -301,6 +301,7 @@ class EpochEncoder(ViewerBase):
         self.save_action = self.toolbar.addAction('Save', self.on_save)
         self.save_action.setShortcut('Ctrl+s')  # automatically converted to Cmd+s on Mac
         self.save_action.setToolTip('Save with shortcut: Ctrl/Cmd+s')
+        self.save_action.setIcon(QT.QIcon(':/epoch-encoder-save.svg'))
 
         self.undo_action = self.toolbar.addAction('Undo', self.on_undo)
         self.undo_action.setShortcut('Ctrl+z')  # automatically converted to Cmd+z on Mac

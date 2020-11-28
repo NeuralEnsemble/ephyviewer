@@ -3,6 +3,7 @@
             <file alias="epoch-encoder-delete.svg">img/epoch-encoder-delete.svg</file>
             <file alias="epoch-encoder-duplicate.svg">img/epoch-encoder-duplicate.svg</file>
             <file alias="epoch-encoder-redo.svg">img/epoch-encoder-redo.svg</file>
+            <file alias="epoch-encoder-save.svg">img/epoch-encoder-save.svg</file>
             <file alias="epoch-encoder-seek.svg">img/epoch-encoder-seek.svg</file>
             <file alias="epoch-encoder-split.svg">img/epoch-encoder-split.svg</file>
             <file alias="epoch-encoder-undo.svg">img/epoch-encoder-undo.svg</file>
