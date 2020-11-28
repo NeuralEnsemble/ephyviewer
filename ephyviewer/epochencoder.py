@@ -301,13 +301,13 @@ class EpochEncoder(ViewerBase):
         save_action.setToolTip('Save with shortcut: Ctrl/Cmd+s')
 
         self.undo_action = self.toolbar.addAction('Undo', self.on_undo)
-        self.undo_action.setShortcut('Ctrl+z')  # TODO: confirm automatically converted to Cmd+z on Mac
+        self.undo_action.setShortcut('Ctrl+z')
         self.undo_action.setToolTip('Undo with shortcut: Ctrl/Cmd+z')
         self.undo_action.setIcon(QT.QIcon(':/epoch-encoder-undo.svg'))
         self.undo_action.setEnabled(False)
 
         self.redo_action = self.toolbar.addAction('Redo', self.on_redo)
-        self.redo_action.setShortcut('Ctrl+y')  # TODO: confirm automatically converted to Cmd+y on Mac
+        self.redo_action.setShortcut('Ctrl+y')
         self.redo_action.setToolTip('Redo with shortcut: Ctrl/Cmd+y')
         self.redo_action.setIcon(QT.QIcon(':/epoch-encoder-redo.svg'))
         self.redo_action.setEnabled(False)
@@ -888,8 +888,8 @@ class EpochEncoder(ViewerBase):
             self.update_history()
 
             # update plot
-        self.refresh()
-        # refresh_table is not called to avoid deselecting table cell
+            self.refresh()
+            # refresh_table is not called to avoid deselecting table cell
 
     def on_change_label(self, id, new_label):
 
