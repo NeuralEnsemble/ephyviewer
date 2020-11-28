@@ -530,8 +530,6 @@ class EpochEncoder(ViewerBase):
 
     def on_label_shortcut(self, label, modifier_used):
 
-        self.has_unsaved_changes = True
-
         range_selection_is_enabled = self.range_group_box.isChecked()
 
         if range_selection_is_enabled:
@@ -562,7 +560,6 @@ class EpochEncoder(ViewerBase):
         self.refresh_table()
 
     def on_merge_neighbors(self):
-        self.has_unsaved_changes = True
         self.source.merge_neighbors()
         self.update_history()
         self.refresh()
@@ -573,7 +570,6 @@ class EpochEncoder(ViewerBase):
         dia = tools.ParamDialog(params, title='Fill blank method', parent=self)
         dia.resize(300, 100)
         if dia.exec_():
-            self.has_unsaved_changes = True
             d = dia.get()
             method = d['method']
             self.source.fill_blank(method=method)
@@ -587,6 +583,8 @@ class EpochEncoder(ViewerBase):
         self.has_unsaved_changes = False
 
     def update_history(self):
+        self.has_unsaved_changes = True
+
         # before appending a new state after the current position in the
         # history, remove any states that were undone
         while self.history_position < len(self.history) - 1:
@@ -644,7 +642,6 @@ class EpochEncoder(ViewerBase):
         self.spin_limit2.setMinimum(self.spin_limit1.value())
 
     def apply_region(self):
-        self.has_unsaved_changes = True
 
         rgn = self.region.getRegion()
         t = rgn[0]
@@ -663,7 +660,6 @@ class EpochEncoder(ViewerBase):
         self.refresh_table()
 
     def delete_region(self):
-        self.has_unsaved_changes = True
 
         rgn = self.region.getRegion()
 
@@ -840,8 +836,6 @@ class EpochEncoder(ViewerBase):
             self.table_widget.blockSignals(False)
 
         else:
-            self.has_unsaved_changes = True
-
             self.table_widget.blockSignals(True)
 
             # round and copy rounded number to table
@@ -893,8 +887,6 @@ class EpochEncoder(ViewerBase):
 
     def on_change_label(self, id, new_label):
 
-        self.has_unsaved_changes = True
-
         # get index corresponding to epoch id
         ind = self.source.id_to_ind[id]
 
@@ -915,7 +907,6 @@ class EpochEncoder(ViewerBase):
             if len(selected_ind)==0:
                 return
             ind = selected_ind[0].row()
-        self.has_unsaved_changes = True
         self.source.delete_epoch(ind)
         self.update_history()
         self.refresh()
@@ -929,7 +920,6 @@ class EpochEncoder(ViewerBase):
             if len(selected_ind)==0:
                 return
             ind = selected_ind[0].row()
-        self.has_unsaved_changes = True
         self.source.add_epoch(self.source.ep_times[ind], self.source.ep_durations[ind], self.source.ep_labels[ind])
         self.update_history()
         self.refresh()
@@ -945,7 +935,6 @@ class EpochEncoder(ViewerBase):
             ind = selected_ind[0].row()
         if self.t <= self.source.ep_times[ind] or self.source.ep_stops[ind] <= self.t:
             return
-        self.has_unsaved_changes = True
         self.source.split_epoch(ind, self.t)
         self.update_history()
         self.refresh()
