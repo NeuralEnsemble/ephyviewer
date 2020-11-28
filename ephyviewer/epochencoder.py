@@ -154,13 +154,15 @@ class EpochEncoder(ViewerBase):
         self.table_button_icon_size = 16
         self.refresh_table()
 
-        # IMPORTANT: Any time the contents of self.source are changed (e.g., by
-        # calling self.source.add_epoch), has_unsaved_changes must be set to
-        # True, and the history must be updated!
-        self.has_unsaved_changes = False
-        self.history_position = 0
         self.history = deque(maxlen=self.params['undo_history_size'])
-        self.update_history()
+        self.history_position = 0
+        self.changes_since_save = 0
+        self.append_history()
+
+        # reverse the automatic increment of changes_since_save done by
+        # append_history, then disable the save button
+        self.changes_since_save = 0
+        self.save_action.setEnabled(False)
 
 
     def make_params(self):
@@ -296,21 +298,20 @@ class EpochEncoder(ViewerBase):
 
         self.toolbar.addSeparator()
 
-        save_action = self.toolbar.addAction('Save', self.on_save)
-        save_action.setShortcut('Ctrl+s')  # automatically converted to Cmd+s on Mac
-        save_action.setToolTip('Save with shortcut: Ctrl/Cmd+s')
+        self.save_action = self.toolbar.addAction('Save', self.on_save)
+        self.save_action.setShortcut('Ctrl+s')  # automatically converted to Cmd+s on Mac
+        self.save_action.setToolTip('Save with shortcut: Ctrl/Cmd+s')
+        self.save_action.setIcon(QT.QIcon(':/epoch-encoder-save.svg'))
 
         self.undo_action = self.toolbar.addAction('Undo', self.on_undo)
-        self.undo_action.setShortcut('Ctrl+z')
+        self.undo_action.setShortcut('Ctrl+z')  # automatically converted to Cmd+z on Mac
         self.undo_action.setToolTip('Undo with shortcut: Ctrl/Cmd+z')
         self.undo_action.setIcon(QT.QIcon(':/epoch-encoder-undo.svg'))
-        self.undo_action.setEnabled(False)
 
         self.redo_action = self.toolbar.addAction('Redo', self.on_redo)
-        self.redo_action.setShortcut('Ctrl+y')
+        self.redo_action.setShortcut('Ctrl+y')  # automatically converted to Cmd+y on Mac
         self.redo_action.setToolTip('Redo with shortcut: Ctrl/Cmd+y')
         self.redo_action.setIcon(QT.QIcon(':/epoch-encoder-redo.svg'))
-        self.redo_action.setEnabled(False)
 
         self.toolbar.addAction('Options', self.show_params_controller)
 
@@ -332,7 +333,7 @@ class EpochEncoder(ViewerBase):
 
     def closeEvent(self, event):
 
-        if self.has_unsaved_changes:
+        if self.changes_since_save != 0:
             text = 'Do you want to save epoch encoder changes before closing?'
             title = 'Save?'
             mb = QT.QMessageBox.question(self, title,text,
@@ -404,7 +405,15 @@ class EpochEncoder(ViewerBase):
                     # otherwise remove newer, undone states
                     self.history.pop()
             self.history = deque(self.history, maxlen=self.params['undo_history_size'])
-            self.update_history_buttons()
+
+            # if the saved state was bumped off either end of the history
+            # queue, it will no longer be reachable via undo/redo, so set
+            # changes_since_save to None
+            if self.changes_since_save is not None:
+                if not (0 <= self.history_position - self.changes_since_save < len(self.history)):
+                    self.changes_since_save = None
+
+            self.refresh_toolbar()
 
     def assign_label_shortcuts(self, label, key):
 
@@ -530,8 +539,6 @@ class EpochEncoder(ViewerBase):
 
     def on_label_shortcut(self, label, modifier_used):
 
-        self.has_unsaved_changes = True
-
         range_selection_is_enabled = self.range_group_box.isChecked()
 
         if range_selection_is_enabled:
@@ -557,14 +564,13 @@ class EpochEncoder(ViewerBase):
             self.t += duration
             self.time_changed.emit(self.t)
 
-        self.update_history()
+        self.append_history()
         self.refresh()
         self.refresh_table()
 
     def on_merge_neighbors(self):
-        self.has_unsaved_changes = True
         self.source.merge_neighbors()
-        self.update_history()
+        self.append_history()
         self.refresh()
         self.refresh_table()
 
@@ -573,48 +579,60 @@ class EpochEncoder(ViewerBase):
         dia = tools.ParamDialog(params, title='Fill blank method', parent=self)
         dia.resize(300, 100)
         if dia.exec_():
-            self.has_unsaved_changes = True
             d = dia.get()
             method = d['method']
             self.source.fill_blank(method=method)
-            self.update_history()
+            self.append_history()
             self.refresh()
             self.refresh_table()
 
 
     def on_save(self):
         self.source.save()
-        self.has_unsaved_changes = False
+        self.changes_since_save = 0
+        self.save_action.setEnabled(False)
 
-    def update_history(self):
+    def append_history(self):
         # before appending a new state after the current position in the
         # history, remove any states that were undone
         while self.history_position < len(self.history) - 1:
             self.history.pop()
 
+        if self.changes_since_save is not None:
+            if self.changes_since_save < 0:
+                # undone saved state was removed from history and so is
+                # unreachable
+                self.changes_since_save = None
+            else:
+                # saved state will be one more step in the past
+                self.changes_since_save += 1
+
         self.history.append(deepcopy(self.source.all))
         self.history_position = len(self.history) - 1
-        self.update_history_buttons()
+        self.refresh_toolbar()
 
     def on_undo(self):
         if self.history_position > 0:
             self.history_position -= 1
-            self.update_history_buttons()
+            if self.changes_since_save is not None:
+                self.changes_since_save -= 1
             self.source.all = deepcopy(self.history[self.history_position])
-            self.has_unsaved_changes = True
             self.refresh()
             self.refresh_table()
+            self.refresh_toolbar()
 
     def on_redo(self):
         if self.history_position < len(self.history) - 1:
             self.history_position += 1
-            self.update_history_buttons()
+            if self.changes_since_save is not None:
+                self.changes_since_save += 1
             self.source.all = deepcopy(self.history[self.history_position])
-            self.has_unsaved_changes = True
             self.refresh()
             self.refresh_table()
+            self.refresh_toolbar()
 
-    def update_history_buttons(self):
+    def refresh_toolbar(self):
+        self.save_action.setEnabled(self.changes_since_save != 0)
         self.undo_action.setEnabled(self.history_position > 0)
         self.redo_action.setEnabled(self.history_position < len(self.history) - 1)
 
@@ -644,7 +662,6 @@ class EpochEncoder(ViewerBase):
         self.spin_limit2.setMinimum(self.spin_limit1.value())
 
     def apply_region(self):
-        self.has_unsaved_changes = True
 
         rgn = self.region.getRegion()
         t = rgn[0]
@@ -658,18 +675,17 @@ class EpochEncoder(ViewerBase):
         # create the new epoch
         self.source.add_epoch(t, duration, label)
 
-        self.update_history()
+        self.append_history()
         self.refresh()
         self.refresh_table()
 
     def delete_region(self):
-        self.has_unsaved_changes = True
 
         rgn = self.region.getRegion()
 
         self.source.delete_in_between(rgn[0], rgn[1])
 
-        self.update_history()
+        self.append_history()
         self.refresh()
         self.refresh_table()
 
@@ -840,8 +856,6 @@ class EpochEncoder(ViewerBase):
             self.table_widget.blockSignals(False)
 
         else:
-            self.has_unsaved_changes = True
-
             self.table_widget.blockSignals(True)
 
             # round and copy rounded number to table
@@ -885,7 +899,7 @@ class EpochEncoder(ViewerBase):
 
             self.table_widget.blockSignals(False)
 
-            self.update_history()
+            self.append_history()
 
             # update plot
             self.refresh()
@@ -893,15 +907,13 @@ class EpochEncoder(ViewerBase):
 
     def on_change_label(self, id, new_label):
 
-        self.has_unsaved_changes = True
-
         # get index corresponding to epoch id
         ind = self.source.id_to_ind[id]
 
         # change epoch label
         self.source.ep_labels[ind] = new_label
 
-        self.update_history()
+        self.append_history()
 
         # update plot
         self.refresh()
@@ -915,9 +927,8 @@ class EpochEncoder(ViewerBase):
             if len(selected_ind)==0:
                 return
             ind = selected_ind[0].row()
-        self.has_unsaved_changes = True
         self.source.delete_epoch(ind)
-        self.update_history()
+        self.append_history()
         self.refresh()
         self.refresh_table()
 
@@ -929,9 +940,8 @@ class EpochEncoder(ViewerBase):
             if len(selected_ind)==0:
                 return
             ind = selected_ind[0].row()
-        self.has_unsaved_changes = True
         self.source.add_epoch(self.source.ep_times[ind], self.source.ep_durations[ind], self.source.ep_labels[ind])
-        self.update_history()
+        self.append_history()
         self.refresh()
         self.refresh_table()
 
@@ -945,8 +955,7 @@ class EpochEncoder(ViewerBase):
             ind = selected_ind[0].row()
         if self.t <= self.source.ep_times[ind] or self.source.ep_stops[ind] <= self.t:
             return
-        self.has_unsaved_changes = True
         self.source.split_epoch(ind, self.t)
-        self.update_history()
+        self.append_history()
         self.refresh()
         self.refresh_table()
