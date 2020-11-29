@@ -151,7 +151,6 @@ class EpochEncoder(ViewerBase):
         self.request_data.connect(self.datagrabber.on_request_data)
 
         self.table_button_fixed_width = 32
-        self.table_button_icon_size = 16
         self.refresh_table()
 
         self.history = deque(maxlen=self.params['undo_history_size'])
@@ -283,7 +282,14 @@ class EpochEncoder(ViewerBase):
         h.addWidget(self.table_widget, stretch=1)
         self.table_widget.setSelectionMode(QT.QAbstractItemView.SingleSelection)
         self.table_widget.setSelectionBehavior(QT.QAbstractItemView.SelectRows)
+        self.table_widget.cellClicked.connect(self.on_table_cell_click)
         self.table_widget.cellChanged.connect(self.on_table_cell_change)
+        self.table_widget_icons = {
+            'seek': QT.QIcon(':/epoch-encoder-seek.svg'),
+            'split': QT.QIcon(':/epoch-encoder-split.svg'),
+            'duplicate': QT.QIcon(':/epoch-encoder-duplicate.svg'),
+            'delete': QT.QIcon(':/epoch-encoder-delete.svg'),
+        }
 
         # Toolbar
 
@@ -716,10 +722,10 @@ class EpochEncoder(ViewerBase):
         self.table_widget.blockSignals(True)
 
         self.table_widget.clear()
-        times, durations, labels, ids = self.source.ep_times, self.source.ep_durations, self.source.ep_labels, self.source.ep_ids
+        times, durations, labels = self.source.ep_times, self.source.ep_durations, self.source.ep_labels
         self.table_widget.setColumnCount(8)
         self.table_widget.setRowCount(times.size)
-        self.table_widget.setHorizontalHeaderLabels(['', 'start', 'stop', 'duration', 'label', '', '', ''])
+        self.table_widget.setHorizontalHeaderLabels(['', 'Start', 'Stop', 'Duration', 'Label', '', '', ''])
 
         # lock column widths for buttons to fixed button width
         self.table_widget.horizontalHeader().setMinimumSectionSize(self.table_button_fixed_width)
@@ -727,21 +733,12 @@ class EpochEncoder(ViewerBase):
             self.table_widget.horizontalHeader().setSectionResizeMode(col, QT.QHeaderView.Fixed)
             self.table_widget.setColumnWidth(col, self.table_button_fixed_width)
 
-        # lock column width for labels to fit contents
-        self.table_widget.horizontalHeader().setSectionResizeMode(LABEL_COL, QT.QHeaderView.ResizeToContents)
-
-        buttonFlat = True
-
         for r in range(times.size):
 
             # seek button
-            but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-seek.svg'))
-            but.setToolTip('Jump to epoch')
-            but.setFlat(buttonFlat)
-            but.setFixedWidth(self.table_button_fixed_width)
-            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
-            but.clicked.connect(lambda checked, r=r: self.on_seek_table(r))
-            self.table_widget.setCellWidget(r, SEEK_COL, but)
+            item = QT.QTableWidgetItem(self.table_widget_icons['seek'], '')
+            item.setToolTip('Jump to epoch')
+            self.table_widget.setItem(r, SEEK_COL, item)
 
             # start
             value = np.round(times[r], 6) # round to nearest microsecond
@@ -759,40 +756,23 @@ class EpochEncoder(ViewerBase):
             self.table_widget.setItem(r, DURATION_COL, item)
 
             # label
-            combo_labels = QT.QComboBox()
-            combo_labels.addItems(self.source.possible_labels)
-            combo_labels.setCurrentText(labels[r])
-            combo_labels.currentIndexChanged.connect(
-                lambda label_index, ep_id=ids[r]: self.on_change_label(ep_id, self.source.possible_labels[label_index])
-            )
-            self.table_widget.setCellWidget(r, LABEL_COL, combo_labels)
+            item = QT.QTableWidgetItem(labels[r])
+            self.table_widget.setItem(r, LABEL_COL, item)
 
             # split button
-            but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-split.svg'))
-            but.setToolTip('Split epoch at current time')
-            but.setFlat(buttonFlat)
-            but.setFixedWidth(self.table_button_fixed_width)
-            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
-            but.clicked.connect(lambda checked, r=r: self.split_selected_epoch(r))
-            self.table_widget.setCellWidget(r, SPLIT_COL, but)
+            item = QT.QTableWidgetItem(self.table_widget_icons['split'], '')
+            item.setToolTip('Split epoch at current time')
+            self.table_widget.setItem(r, SPLIT_COL, item)
 
             # duplicate button
-            but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-duplicate.svg'))
-            but.setToolTip('Duplicate epoch')
-            but.setFlat(buttonFlat)
-            but.setFixedWidth(self.table_button_fixed_width)
-            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
-            but.clicked.connect(lambda checked, r=r: self.duplicate_selected_epoch(r))
-            self.table_widget.setCellWidget(r, DUPLICATE_COL, but)
+            item = QT.QTableWidgetItem(self.table_widget_icons['duplicate'], '')
+            item.setToolTip('Duplicate epoch')
+            self.table_widget.setItem(r, DUPLICATE_COL, item)
 
             # delete button
-            but = QT.QPushButton(icon=QT.QIcon(':/epoch-encoder-delete.svg'))
-            but.setToolTip('Delete epoch')
-            but.setFlat(buttonFlat)
-            but.setFixedWidth(self.table_button_fixed_width)
-            but.setIconSize(QT.QSize(self.table_button_icon_size, self.table_button_icon_size))
-            but.clicked.connect(lambda checked, r=r: self.delete_selected_epoch(r))
-            self.table_widget.setCellWidget(r, DELETE_COL, but)
+            item = QT.QTableWidgetItem(self.table_widget_icons['delete'], '')
+            item.setToolTip('Delete epoch')
+            self.table_widget.setItem(r, DELETE_COL, item)
 
         self.table_widget.blockSignals(False)
 
@@ -829,6 +809,27 @@ class EpochEncoder(ViewerBase):
         self.t = self.source.ep_times[ind]
         self.refresh()
         self.time_changed.emit(self.t)
+
+    def on_table_cell_click(self, row, col):
+        if col == SEEK_COL:
+            self.on_seek_table(row)
+        elif col == SPLIT_COL:
+            self.split_selected_epoch(row)
+        elif col == DUPLICATE_COL:
+            self.duplicate_selected_epoch(row)
+        elif col == DELETE_COL:
+            self.delete_selected_epoch(row)
+        elif col == LABEL_COL:
+            # replace text cell with a combo box
+            combo_labels = QT.QComboBox()
+            combo_labels.addItems(self.source.possible_labels)
+            combo_labels.setCurrentText(self.source.ep_labels[row])
+            combo_labels.currentIndexChanged.connect(
+                lambda label_index, row=row: self.on_change_label(row, self.source.possible_labels[label_index])
+            )
+            self.table_widget.setCellWidget(row, LABEL_COL, combo_labels)
+        else:
+            return
 
     def on_table_cell_change(self, row, col):
         line_edit = self.table_widget.cellWidget(row, col)
@@ -905,10 +906,7 @@ class EpochEncoder(ViewerBase):
             self.refresh()
             # refresh_table is not called to avoid deselecting table cell
 
-    def on_change_label(self, id, new_label):
-
-        # get index corresponding to epoch id
-        ind = self.source.id_to_ind[id]
+    def on_change_label(self, ind, new_label):
 
         # change epoch label
         self.source.ep_labels[ind] = new_label
