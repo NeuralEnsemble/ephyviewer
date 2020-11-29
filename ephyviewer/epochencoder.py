@@ -30,7 +30,7 @@ default_params = [
     {'name': 'exclusive_mode', 'type': 'bool', 'value': True},
     {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
     {'name': 'keys_as_ticks', 'type': 'bool', 'value': True},
-    {'name': 'undo_history_size', 'type': 'int', 'value': 20, 'limits': (1, np.inf)},
+    {'name': 'undo_history_size', 'type': 'int', 'value': 500, 'limits': (1, np.inf)},
 
     #~ {'name': 'display_labels', 'type': 'bool', 'value': True},
     ]
