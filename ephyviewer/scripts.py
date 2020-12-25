@@ -7,7 +7,7 @@ from ephyviewer.standalone import all_neo_rawio_dict, rawio_gui_params
 from ephyviewer import __version__
 
 def launch_standalone_ephyviewer():
-    from ephyviewer.standalone import StandAloneViewer
+    from ephyviewer.standalone import WindowManager
     import pyqtgraph as pg
     assert HAVE_NEO, 'Must have Neo >= 0.6.0'
     import neo
@@ -35,8 +35,8 @@ def launch_standalone_ephyviewer():
                              ', '.join(all_neo_rawio_dict.keys())))
 
     app = pg.mkQApp()
-    win = StandAloneViewer()
-    win.show()
+
+    manager = WindowManager()
 
     if len(argv)>=1:
         args = parser.parse_args(argv)
@@ -54,10 +54,13 @@ def launch_standalone_ephyviewer():
         if name in rawio_gui_params:
             raise(Exception('This IO requires additional parameters. Run ephyviewer without arguments to input these via the GUI.'))
 
-        win.load_dataset(neo_rawio_class=neo_rawio_class, file_or_dir_names=[file_or_dir_name])
+        manager.load_dataset(neo_rawio_class=neo_rawio_class, file_or_dir_names=[file_or_dir_name])
 
+    else:
+        manager.open_dialog()
 
-    app.exec_()
+    if manager.windows:
+        app.exec_()
 
 if __name__=='__main__':
     launch_standalone_ephyviewer()

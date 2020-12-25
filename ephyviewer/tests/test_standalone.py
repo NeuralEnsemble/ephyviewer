@@ -1,16 +1,17 @@
 
 
 
-from ephyviewer.standalone import StandAloneViewer, RawNeoOpenDialog
+from ephyviewer.standalone import WindowManager, RawNeoOpenDialog
 import pyqtgraph as pg
 
 
 
-def test_StandAloneViewer():
+def test_WindowManager():
     app = pg.mkQApp()
-    win = StandAloneViewer()
-    win.show()
-    app.exec_()
+    manager = WindowManager()
+    manager.open_dialog()
+    if manager.windows:
+        app.exec_()
 
 
 def test_RawNeoOpenDialog():
@@ -24,5 +25,5 @@ def test_RawNeoOpenDialog():
 
 
 if __name__=='__main__':
-    test_StandAloneViewer()
+    test_WindowManager()
     #~ test_RawNeoOpenDialog()
