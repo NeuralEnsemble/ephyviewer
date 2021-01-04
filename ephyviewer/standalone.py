@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 #~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
+import gc
 from collections import OrderedDict
 
 from .myqt import QT, QT_MODE
@@ -39,23 +40,10 @@ for rawio_class in rawiolist:
 
 
 
-class StandAloneViewer(MainViewer):
+class WindowManager():
     def __init__(self):
 
-        navigation_params = {}
-        MainViewer.__init__(self, debug=False, settings_name=None, **navigation_params)
-
-        self.navigation_dock.hide()
-
-        self.create_actions_and_menu()
-
-
-    def create_actions_and_menu(self):
-        self.file_menu = self.menuBar().addMenu(self.tr("File"))
-
-        do_open = QT.QAction('&Open', self, shortcut = "Ctrl+O")
-        do_open.triggered.connect(self.open_dialog)
-        self.file_menu.addAction(do_open)
+        self.windows = []
 
     def open_dialog(self):
         dia = RawNeoOpenDialog()
@@ -74,17 +62,32 @@ class StandAloneViewer(MainViewer):
             kargs['dirname'] = file_or_dir_names[0]
         kargs.update(io_params)
 
-        self.neorawio = neo_rawio_class(**kargs)
-        self.neorawio.parse_header()
-        print(self.neorawio)
+        neorawio = neo_rawio_class(**kargs)
+        neorawio.parse_header()
+        print(neorawio)
 
-        self.navigation_dock.show()
+        # initialize a new main window and populate viewers
+        navigation_params = {}
+        win = MainViewer(debug=False, settings_name=None, **navigation_params)
+        sources = get_sources_from_neo_rawio(neorawio)
+        compose_mainviewer_from_sources(sources, mainviewer=win)
 
-        #TODO clear all
-        sources = get_sources_from_neo_rawio(self.neorawio)
+        # add menus
+        file_menu = win.menuBar().addMenu(win.tr("File"))
+        do_open = QT.QAction('&Open', win, shortcut = "Ctrl+O")
+        do_open.triggered.connect(self.open_dialog)
+        file_menu.addAction(do_open)
 
+        # store a reference to the window to prevent it from going out of scope
+        # immediately and being destroyed
+        self.windows.append(win)
 
-        compose_mainviewer_from_sources(sources, mainviewer=self)
+        # delete window on close so that memory and file resources are released
+        win.setAttribute(QT.WA_DeleteOnClose, True)
+        win.destroyed.connect(
+            lambda qobject, i=len(self.windows)-1: self.free_resources(i))
+
+        win.show()
 
         #~ for i, sig_source in enumerate(sources['signal']):
             #~ view = TraceViewer(source=sig_source, name='signal {}'.format(i))
@@ -107,6 +110,27 @@ class StandAloneViewer(MainViewer):
 
             #~ view = EventList(source=ep_source, name='Event list')
             #~ self.add_view(view, location='bottom',  orientation='horizontal')
+
+    def free_resources(self, i):
+        """
+        Run garbage collection to unlock files and free memory for the closed
+        window with index ``i``.
+        Data files opened by Neo in lazy mode remain locked for as long as the
+        RawIO objects pointing to them exist in memory. Normally such objects
+        would be automatically garbage collected when they go out of scope,
+        i.e., when the window that created them is closed. However, due to an
+        issue in Neo, circular references to these objects are always created,
+        so they persist even after the window is closed. This function performs
+        a manual garbage collection after a window has been closed to clean up
+        any lingering Neo objects that keep files locked. For more info about
+        the issue, see https://github.com/NeuralEnsemble/python-neo/issues/684.
+        """
+
+        # first remove the last remaining reference to the closed window
+        self.windows[i] = None
+
+        # run garbage collection
+        gc.collect()
 
 
 
