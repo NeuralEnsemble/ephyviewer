@@ -130,8 +130,8 @@ class EpochEncoder(ViewerBase):
         self.label_shortcuts = {}
 
         self.make_params()
-        self.set_layout()
         self.make_param_controller()
+        self.set_layout()
 
         self.viewBox.doubleclicked.connect(self.show_params_controller)
 
@@ -320,6 +320,8 @@ class EpochEncoder(ViewerBase):
         self.redo_action.setIcon(QT.QIcon(':/epoch-encoder-redo.svg'))
 
         self.toolbar.addAction('Options', self.show_params_controller)
+
+        self.toolbar.addAction('New label', self.params_controller.create_new_label)
 
         self.toolbar.addAction('Merge neighbors', self.on_merge_neighbors)
 
