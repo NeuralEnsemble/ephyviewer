@@ -19,6 +19,13 @@ epoch encoder for creating annotations.
 
 **ephyviewer** can be used at two levels: standalone app and library.
 
+For an example of an application that utilizes **ephyviewer**'s capabilities as
+a library, see the *[neurotic]* app and this paper:
+
+> Gill, J. P., Garcia, S., Ting, L. H., Wu, M., & Chiel, H. J. (2020).
+> *neurotic*: Neuroscience Tool for Interactive Characterization. eNeuro,
+> 7(3). https://doi.org/10.1523/ENEURO.0085-20.2020
+
 ## Standalone application
 
 The standalone app works with file types supported by [Neo]'s RawIO interface
@@ -83,4 +90,5 @@ Check the docs for more [examples].
 [pyqtgraph]:     http://www.pyqtgraph.org/
 [Neo]:           https://neo.readthedocs.io/en/latest/
 [neo.rawio]:     https://neo.readthedocs.io/en/latest/rawio.html#module-neo.rawio
+[neurotic]:      https://github.com/jpgill86/neurotic
 [examples]:      https://ephyviewer.readthedocs.io/en/latest/examples.html
