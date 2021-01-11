@@ -74,7 +74,7 @@ def create_plot_grid(graphiclayout, nb_column, visible_channels, ViewBoxClass=pg
         #~ plot.showAxis('left', False)
         #~ plot.showAxis('bottom', False)
 
-        graphiclayout.ci.layout.addItem(plot, r, c)  # , rowspan, colspan)
+        graphiclayout.addItem(plot, r, c)  # , rowspan, colspan)
         if r not in graphiclayout.ci.rows:
             graphiclayout.ci.rows[r] = {}
         graphiclayout.ci.rows[r][c] = plot
