@@ -715,10 +715,12 @@ class EpochEncoder(ViewerBase):
     def set_limit1(self):
         if self.t<self.spin_limit2.value():
             self.spin_limit1.setValue(self.t)
+            self.spin_limit1.repaint()  # needed on macOS
 
     def set_limit2(self):
         if self.t>self.spin_limit1.value():
             self.spin_limit2.setValue(self.t)
+            self.spin_limit2.repaint()  # needed on macOS
 
     def refresh_table(self):
         self.table_widget.blockSignals(True)
