@@ -54,4 +54,4 @@ app.exec_()
 
 
 # press '1', '2', '3', '4' to encode state.
-# or press 'show/hide range' and 'apply'
+# or toggle 'Time range selector' and then use 'Insert within range'
