@@ -869,14 +869,19 @@ class EpochEncoder(ViewerBase):
 
             if col == START_COL:
 
+                # get the epoch stop time
+                stop_time = self.source.ep_times[row] + self.source.ep_durations[row]
+
                 # change epoch start time
                 self.source.ep_times[row] = new_number
 
-                # update epoch stop time in table
-                stop_line_edit = self.table_widget.item(row, STOP_COL)
-                new_stop_time = self.source.ep_times[row] + self.source.ep_durations[row]
-                new_stop_time = np.round(new_stop_time, 6) # round to nearest microsecond
-                stop_line_edit.setText(str(new_stop_time))
+                # change epoch duration to keep stop time unchanged
+                self.source.ep_durations[row] = stop_time - self.source.ep_times[row]
+
+                # update epoch duration in table
+                duration_line_edit = self.table_widget.item(row, DURATION_COL)
+                new_duration = np.round(self.source.ep_durations[row], 6) # round to nearest microsecond
+                duration_line_edit.setText(str(new_duration))
 
             elif col == STOP_COL:
 
