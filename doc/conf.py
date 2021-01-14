@@ -52,7 +52,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'ephyviewer'
-copyright = '2019, Samuel Garcia, Jeffrey Gill'
+copyright = '2021, Samuel Garcia, Jeffrey Gill'
 author = 'Samuel Garcia, Jeffrey Gill'
 
 # The version info for the project you're documenting, acts as replacement for
