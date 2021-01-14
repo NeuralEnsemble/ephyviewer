@@ -3,12 +3,12 @@
 Overview
 ========
 
-ephyviewer is a Python library for building custom viewers for
+**ephyviewer** is a Python library for building custom viewers for
 electrophysiological signals, video, events, epochs, spike trains, data tables,
-and time-frequency representations of signals. It also provides an epoch encoder
-for creating annotations.
+and time-frequency representations of signals. It also provides an epoch
+encoder for creating annotations.
 
-ephyviewer can be used as a standalone application (requires Neo_ ≥ 0.6) by
+**ephyviewer** can be used as a standalone application (requires Neo_ ≥ 0.6) by
 launching it from the console, then using the menu to open a data file::
 
     ephyviewer
@@ -21,8 +21,8 @@ optionally the format, though this can usually be detected automatically)::
     ephyviewer File_axon_1.abf
     ephyviewer File_axon_1.abf -f Axon
 
-However, where ephyviewer really shines is as a library for designing custom
-viewers in simple Python scripts that meet your individual needs::
+However, where **ephyviewer** really shines is as a library for designing
+custom viewers in simple Python scripts that meet your individual needs::
 
     import ephyviewer
     import numpy as np

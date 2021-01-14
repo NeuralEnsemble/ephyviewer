@@ -80,7 +80,7 @@ Check the docs for more [examples].
 [pypi]:                        https://pypi.org/project/ephyviewer
 [pypi-badge]:                  https://img.shields.io/pypi/v/ephyviewer.svg?logo=python&logoColor=white
 [rtd-status]:                  https://readthedocs.org/projects/ephyviewer
-[rtd-status-badge]:            https://readthedocs.org/projects/ephyviewer/badge/?version=latest
+[rtd-status-badge]:            https://img.shields.io/readthedocs/ephyviewer/latest.svg?logo=read-the-docs&logoColor=white
 
 [Documentation]: https://ephyviewer.readthedocs.io/en/latest/
 [Release Notes]: https://ephyviewer.readthedocs.io/en/latest/releasenotes.html
