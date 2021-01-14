@@ -118,12 +118,17 @@ html_theme = 'alabaster'
 #
 html_theme_options = {
     'description': 'Simple viewers for ephys signals, events, video and more',
+    'description_font_style': 'italic',
+    'font_family': 'Arial',
+    'page_width': '1200px',  # default is 940
+    'sidebar_width': '280px',  # default is 220
+    'show_relbars': True,
     'fixed_sidebar': True,
-    'github_user': 'NeuralEnsemble',
-    'github_repo': 'ephyviewer',
-    'github_button': True,
-    'github_type': 'watch', # watch, fork, follow, star
-    'github_count': False,
+    # 'github_user': 'NeuralEnsemble',
+    # 'github_repo': 'ephyviewer',
+    # 'github_button': True,
+    # 'github_type': 'watch', # watch, fork, follow, star
+    # 'github_count': False,
     # 'github_banner': True,
 }
 
