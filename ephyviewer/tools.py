@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 #~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
+from functools import lru_cache
+
 from .myqt import QT
 import pyqtgraph as pg
 
@@ -91,3 +93,9 @@ def create_plot_grid(graphiclayout, nb_column, visible_channels, ViewBoxClass=pg
             r+=1
 
     return plots
+
+
+@lru_cache(maxsize=None)
+def mkCachedBrush(rgba):
+    '''Create a QBrush from a color and cache it'''
+    return pg.mkBrush(rgba)

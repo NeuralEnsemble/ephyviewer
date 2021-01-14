@@ -12,6 +12,7 @@ import pyqtgraph as pg
 
 from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
 from .datasource import InMemoryAnalogSignalSource, AnalogSignalSourceWithScatter, NeoAnalogSignalSource, AnalogSignalFromNeoRawIOSource
+from .tools import mkCachedBrush
 
 
 
@@ -156,7 +157,7 @@ class TraceViewer_ParamController(Base_MultiChannel_ParamController):
             # to fast auto scale on long signal
             ind = np.random.randint(0, sigs.shape[0], size=1000)
             sigs = sigs[ind, :]
-        
+
         if sigs.shape[0] > 0:
             sigs = sigs * self.raw_gains + self.raw_offsets  # calculate on real values
             self.signals_med = med = np.median(sigs, axis=0)
@@ -580,9 +581,9 @@ class TraceViewer(BaseMultiChannelViewer):
         if self.t != t:
             #~ print('on_data_ready not same t')
             return
-        
+
         self.graphicsview.setBackground(self.params['background_color'])
-        
+
         self.last_sigs_chunk = sigs_chunk
 
         offsets = self.params_controller.offsets
@@ -590,7 +591,7 @@ class TraceViewer(BaseMultiChannelViewer):
         if not hasattr(self.params_controller, 'signals_med'):
             self.params_controller.estimate_median_mad()
         signals_med = self.params_controller.signals_med
-        
+
 
         for i, c in enumerate(visibles):
             self.curves[c].show()
@@ -627,8 +628,12 @@ class TraceViewer(BaseMultiChannelViewer):
             for k, (x, y) in dict_scatter.items():
                 all_x.append(x)
                 all_y.append(y)
+
+                # here we must use cached brushes to avoid issues with
+                # the SymbolAtlas in pyqtgraph >= 0.11.1.
+                # see https://github.com/NeuralEnsemble/ephyviewer/issues/132
                 color = self.source.scatter_colors.get(k, '#FFFFFF')
-                all_brush.append(np.array([pg.mkBrush(color)]*len(x)))
+                all_brush.append(np.array([mkCachedBrush(color)]*len(x)))
 
             if len(all_x):
                 all_x = np.concatenate(all_x)
