@@ -34,7 +34,6 @@ setup(
     description = 'Simple viewers for ephys signals, events, video and more',
     entry_points = entry_points,
     long_description = long_description,
-    long_description_content_type = 'text/markdown',
     license = 'MIT',
     url='https://github.com/NeuralEnsemble/ephyviewer',
     project_urls={

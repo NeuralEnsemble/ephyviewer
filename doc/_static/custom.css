@@ -1,0 +1,7 @@
+/* style badges table to look more like PyPI project page */
+div.container#badges table.field-list th,
+div.container#badges table.field-list td {
+    background-color: #F8F8F8;
+    border: 1px solid #D3D3D3 !important;
+    padding: 6px;
+}

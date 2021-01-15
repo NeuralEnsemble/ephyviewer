@@ -3,7 +3,12 @@
 
 *Simple viewers for ephys signals, events, video and more*
 
-|pypi-badge| |anaconda-cloud-badge| |github-badge| |conda-forge-feedstock-badge| |rtd-status-badge|
+.. container::
+    :name: badges
+
+    :Distributions: |pypi-badge| |anaconda-cloud-badge|
+    :Source Code:   |github-badge| |conda-forge-feedstock-badge|
+    :Docs Status:   |rtd-status-badge|
 
 **Version:** |version| (`other versions`_)
 
@@ -59,7 +64,7 @@ Table of Contents
     :alt: Documentation Status
 
 .. |screenshot| image:: img/mixed_viewer_example.png
-    :alt: Screeshot
+    :alt: Screenshot
 
 .. _anaconda-cloud:         https://anaconda.org/conda-forge/ephyviewer
 .. _conda-forge-feedstock:  https://github.com/conda-forge/ephyviewer-feedstock
@@ -68,4 +73,4 @@ Table of Contents
 .. _pypi:                   https://pypi.org/project/ephyviewer
 .. _rtd-status:             https://readthedocs.org/projects/ephyviewer
 
-.. _neurotic:               https://neurotic.readthedocs.io/en/latest/
+.. _neurotic:               https://neurotic.readthedocs.io/en/latest
