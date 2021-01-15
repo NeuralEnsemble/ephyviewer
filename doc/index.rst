@@ -3,7 +3,12 @@
 
 *Simple viewers for ephys signals, events, video and more*
 
-|pypi-badge| |anaconda-cloud-badge| |github-badge| |conda-forge-feedstock-badge| |rtd-status-badge|
+.. container::
+    :name: badges
+
+    :Distributions: |pypi-badge| |anaconda-cloud-badge|
+    :Source Code:   |github-badge| |conda-forge-feedstock-badge|
+    :Docs Status:   |rtd-status-badge|
 
 **Version:** |version| (`other versions`_)
 

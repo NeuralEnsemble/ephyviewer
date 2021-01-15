@@ -3,7 +3,9 @@ ephyviewer
 
 *Simple viewers for ephys signals, events, video and more*
 
-|pypi-badge| |anaconda-cloud-badge| |github-badge| |conda-forge-feedstock-badge| |rtd-status-badge|
+:Distributions: |pypi-badge| |anaconda-cloud-badge|
+:Source Code:   |github-badge| |conda-forge-feedstock-badge|
+:Docs Status:   |rtd-status-badge|
 
 Documentation_ | `Release Notes`_ | `Issue Tracker`_
 
