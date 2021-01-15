@@ -59,7 +59,7 @@ Table of Contents
     :alt: Documentation Status
 
 .. |screenshot| image:: img/mixed_viewer_example.png
-    :alt: Screeshot
+    :alt: Screenshot
 
 .. _anaconda-cloud:         https://anaconda.org/conda-forge/ephyviewer
 .. _conda-forge-feedstock:  https://github.com/conda-forge/ephyviewer-feedstock
@@ -68,4 +68,4 @@ Table of Contents
 .. _pypi:                   https://pypi.org/project/ephyviewer
 .. _rtd-status:             https://readthedocs.org/projects/ephyviewer
 
-.. _neurotic:               https://neurotic.readthedocs.io/en/latest/
+.. _neurotic:               https://neurotic.readthedocs.io/en/latest
