@@ -12,7 +12,7 @@ install_requires = [
 
 # Read in the README to serve as the long_description, which will be presented
 # on pypi.org as the project description.
-with open('README.md', 'r') as f:
+with open('README.rst', 'r') as f:
     long_description = f.read()
 
 with open('ephyviewer/version.py') as f:
@@ -40,6 +40,7 @@ setup(
         'Documentation': 'https://ephyviewer.readthedocs.io/en/latest/',
         'Source code': 'https://github.com/NeuralEnsemble/ephyviewer/',
         'Bug tracker': 'https://github.com/NeuralEnsemble/ephyviewer/issues',
+        'Change log': 'https://ephyviewer.readthedocs.io/en/latest/releasenotes.html',
     },
     classifiers = [
         'Intended Audience :: Science/Research',

@@ -1,0 +1,63 @@
+Version 1.4.0
+-------------
+
+2021-01-16
+
+Epoch encoder enhancements
+..........................
+
+The epoch encoder received major improvements in functionality, appearance, and
+performance.
+
+* Reorganize EpochEncoder controls to reduce crowding
+  (:pr:`113`, :pr:`108`)
+
+* Add editable fields and row buttons to EpochEncoder table
+  (:pr:`103`, :pr:`110`, :pr:`111`, :pr:`112`, :pr:`131`)
+
+* Add undo/redo functionality to EpochEncoder
+  (:pr:`118`, :pr:`119`, :pr:`121`)
+
+* Allow new EpochEncoder labels to be created on-the-fly
+  (:pr:`105`, :pr:`127`)
+
+* Display EpochEncoder shortcut keys as y-axis tick mark labels
+  (:pr:`104`)
+
+* Dramatically improve EpochEncoder performance when there are many epochs
+  (:pr:`120`)
+
+Bug fixes
+.........
+
+* Allow standalone app to open multiple files, each in independent windows
+  (:pr:`122`, :pr:`123`)
+
+* Fix signal grouping in ``get_sources_from_neo_rawio()`` for Neo 0.9.0
+  (:pr:`117`)
+
+* Fix ``'method' object is not connected`` TimeFreqViewer error for pyqtgraph
+  0.11.0
+  (:pr:`124`, :pr:`126`)
+
+* Fix TraceViewer scatter points changing color randomly with pyqtgraph 0.11.1
+  (:pr:`132`, :pr:`133`)
+
+* Fix bounds of EpochEncoder start/stop spin boxes
+  (:pr:`106`, :pr:`107`)
+
+* Fix EpochEncoder start/stop spin box values not immediately updating when
+  "Set start"/"Set stop" buttons are pressed on macOS
+  (:pr:`115`, :pr:`129`)
+
+* Prevent overzealous spin box height correction in pyqtgraph 0.11.0
+  (:pr:`114`)
+
+Documentation
+.............
+
+* Update docs style and content
+  (:pr:`128`, :pr:`134`, :pr:`135`)
+
+* Cite eNeuro paper
+  (:pr:`125`)
