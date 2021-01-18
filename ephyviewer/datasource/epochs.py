@@ -77,7 +77,7 @@ class WritableEpochSource(InMemoryEpochSource):
         # add labels missing from possible_labels but found in epoch data
         new_labels_from_data = list(set(epoch['label'])-set(self.possible_labels))
         if restrict_to_possible_labels:
-            assert len(new_labels_from_data)==0, f'epoch data contains labels not found in possible_labels: {new_labels_from_data}'
+            assert len(new_labels_from_data)==0, 'epoch data contains labels not found in possible_labels: ' + str(new_labels_from_data)
         self.possible_labels += new_labels_from_data
 
         # put the epochs into a canonical order after loading
