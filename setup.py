@@ -2,13 +2,8 @@ from setuptools import setup, find_packages
 import os
 
 
-install_requires = [
-                    'numpy',
-                    #~ 'PyQt5',
-                    'pyqtgraph>=0.10.0',
-                    'matplotlib>=2.0',
-                    'scipy',
-                    ]
+with open('requirements.txt', 'r') as f:
+    install_requires = f.read()
 
 # Read in the README to serve as the long_description, which will be presented
 # on pypi.org as the project description.
