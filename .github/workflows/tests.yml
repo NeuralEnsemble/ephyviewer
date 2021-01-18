@@ -1,0 +1,35 @@
+name: tests
+
+on: [push, pull_request]
+
+jobs:
+  test-linux:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Set up Python 3.x
+          uses: actions/setup-python@v2
+          with:
+            python-version: '3.x'
+
+        - name: Checkout repository
+          uses: actions/checkout@v2
+
+        - name: Install package from repository
+          run: |
+            pip install -e .
+
+        - name: Install other required dependencies
+          run: |
+            pip install PyQt5
+
+        - name: List pip packages
+          run: |
+            pip -V
+            pip list
+
+        - name: Test imports
+          run: |
+            python -c "import ephyviewer"
+            python -c "import ephyviewer.datasource"
+            python -c "import ephyviewer.icons"
+            python -c "import ephyviewer.tests"
