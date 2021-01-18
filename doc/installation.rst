@@ -4,7 +4,7 @@ Installation
 ============
 
 Requirements:
-  * Python ≥ 3.4
+  * Python ≥ 3.5
   * numpy
   * scipy
   * matplotlib ≥ 2.0
