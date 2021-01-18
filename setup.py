@@ -2,9 +2,6 @@ from setuptools import setup, find_packages
 import os
 
 
-with open('requirements.txt', 'r') as f:
-    install_requires = f.read()
-
 # Read in the README to serve as the long_description, which will be presented
 # on pypi.org as the project description.
 with open('README.rst', 'r') as f:
@@ -15,15 +12,21 @@ with open('ephyviewer/version.py') as f:
     exec(f.read(), None, d)
     version = d['version']
 
+with open('requirements.txt', 'r') as f:
+    install_requires = f.read()
+
+extras_require = {}
+with open('requirements-docs.txt', 'r') as f:
+    extras_require['docs'] = f.read()
 
 entry_points={'console_scripts': ['ephyviewer=ephyviewer.scripts:launch_standalone_ephyviewer']}
-
 
 setup(
     name = 'ephyviewer',
     version = version,
     packages = find_packages(),
     install_requires = install_requires,
+    extras_require = extras_require,
     author = 'S.Garcia, Jeffrey Gill',
     author_email = '',  # left blank because multiple emails cannot be provided
     description = 'Simple viewers for ephys signals, events, video and more',
