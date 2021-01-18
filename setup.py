@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import setup, find_packages
 import os
 
 
@@ -26,17 +26,17 @@ entry_points={'console_scripts': ['ephyviewer=ephyviewer.scripts:launch_standalo
 
 setup(
     name = 'ephyviewer',
-    version=version,
-    packages = ['ephyviewer', 'ephyviewer.datasource', 'ephyviewer.tests', 'ephyviewer.icons'],
-    install_requires=install_requires,
+    version = version,
+    packages = find_packages(),
+    install_requires = install_requires,
     author = 'S.Garcia, Jeffrey Gill',
     author_email = '',  # left blank because multiple emails cannot be provided
     description = 'Simple viewers for ephys signals, events, video and more',
     entry_points = entry_points,
     long_description = long_description,
     license = 'MIT',
-    url='https://github.com/NeuralEnsemble/ephyviewer',
-    project_urls={
+    url ='https://github.com/NeuralEnsemble/ephyviewer',
+    project_urls = {
         'Documentation': 'https://ephyviewer.readthedocs.io/en/latest/',
         'Source code': 'https://github.com/NeuralEnsemble/ephyviewer/',
         'Bug tracker': 'https://github.com/NeuralEnsemble/ephyviewer/issues',
