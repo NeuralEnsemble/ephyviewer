@@ -1,0 +1,3 @@
+# these restricted versions are defaults on ReadTheDocs, so use the same in
+# local builds and in tests
+sphinx<2

@@ -1,0 +1,63 @@
+name: tests
+
+on: [push, pull_request]
+
+jobs:
+  test-docs:
+    runs-on: ubuntu-latest
+    steps:
+        - name: Set up Python 3.7
+          uses: actions/setup-python@v2
+          with:
+            python-version: 3.7
+
+        - name: Checkout repository
+          uses: actions/checkout@v2
+
+        - name: Install package from repository with docs dependencies
+          run: |
+            pip install -e .[docs]
+
+        - name: List pip packages
+          run: |
+            pip -V
+            pip list
+
+        - name: Build docs
+          run: |
+            cd doc
+            make html
+
+  test-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.5', '3.6', '3.7', '3.8', '3.9']
+    steps:
+        - name: Set up Python ${{ matrix.python-version }}
+          uses: actions/setup-python@v2
+          with:
+            python-version: ${{ matrix.python-version }}
+
+        - name: Checkout repository
+          uses: actions/checkout@v2
+
+        - name: Install package from repository
+          run: |
+            pip install -e .
+
+        - name: Install other required dependencies
+          run: |
+            pip install PyQt5
+
+        - name: List pip packages
+          run: |
+            pip -V
+            pip list
+
+        - name: Test imports
+          run: |
+            python -c "import ephyviewer"
+            python -c "import ephyviewer.datasource"
+            python -c "import ephyviewer.icons"
+            python -c "import ephyviewer.tests"
