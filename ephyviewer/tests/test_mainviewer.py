@@ -10,6 +10,9 @@ from ephyviewer.base import ViewerBase
 def test_mainviewer():
 
     class FakeView(ViewerBase):
+        def __init__(self, name=''):
+            ViewerBase.__init__(self, name)
+            self.v = None
         def refresh(self):
             self.v = self.t
             #~ print('refresh', self.name, self.t)
@@ -87,6 +90,6 @@ def test_save_load_params():
 
 
 if __name__=='__main__':
-    #~ test_mainviewer()
+    test_mainviewer()
     test_mainviewer2()
     #~ test_save_load_params()
