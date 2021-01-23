@@ -4,7 +4,7 @@ import ephyviewer
 from  ephyviewer.tests.testing_tools import make_fake_event_source
 
 
-def test_eventlist():
+def test_eventlist(interactive=False):
     source = make_fake_event_source()
 
 
@@ -13,11 +13,15 @@ def test_eventlist():
 
     win = ephyviewer.MainViewer(debug=True)
     win.add_view(view)
-    win.show()
 
-    app.exec_()
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 
 if __name__=='__main__':
-    test_eventlist()
+    test_eventlist(interactive=True)

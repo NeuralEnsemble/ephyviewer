@@ -4,7 +4,7 @@ import ephyviewer
 from  ephyviewer.tests.testing_tools import make_fake_signals
 
 
-def test_traceviewer():
+def test_traceviewer(interactive=False):
     source = make_fake_signals()
 
 
@@ -17,10 +17,14 @@ def test_traceviewer():
 
     win = ephyviewer.MainViewer(debug=True, show_auto_scale=True)
     win.add_view(view)
-    win.show()
 
-    app.exec_()
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 if __name__=='__main__':
-    test_traceviewer()
+    test_traceviewer(interactive=True)

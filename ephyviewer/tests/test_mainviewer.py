@@ -7,7 +7,7 @@ from ephyviewer.base import ViewerBase
 
 
 
-def test_mainviewer():
+def test_mainviewer(interactive=False):
 
     class FakeView(ViewerBase):
         def __init__(self, name=''):
@@ -38,10 +38,14 @@ def test_mainviewer():
     win.add_view(view4, split_with='view1', orientation='horizontal')
     win.add_view(view5, location='bottom',  orientation='horizontal')
 
-    win.show()
-    app.exec_()
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
-def test_mainviewer2():
+def test_mainviewer2(interactive=False):
     from  ephyviewer.tests.testing_tools import make_fake_video_source
     from  ephyviewer.tests.testing_tools import make_fake_signals
     from  ephyviewer.tests.testing_tools import make_fake_event_source
@@ -66,11 +70,15 @@ def test_mainviewer2():
     win.add_view(view4)
     win.add_view(view3, location='bottom',  orientation='horizontal')
 
-    win.show()
-    app.exec_()
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
-def test_save_load_params():
+def test_save_load_params(interactive=False):
     from  ephyviewer.tests.testing_tools import make_fake_signals
 
 
@@ -84,12 +92,16 @@ def test_save_load_params():
     #TODO bug because new params!!!!!!!
     win.add_view(view1)
 
-    win.show()
-    app.exec_()
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 
 if __name__=='__main__':
     test_mainviewer()
     test_mainviewer2()
-    test_save_load_params()
+    test_save_load_params(interactive=True)

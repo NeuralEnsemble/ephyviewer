@@ -5,7 +5,7 @@ import pandas as pd
 
 
 
-def test_dataframe_view():
+def test_dataframe_view(interactive=False):
 
 
     df = pd.DataFrame()
@@ -20,11 +20,14 @@ def test_dataframe_view():
 
     win = ephyviewer.MainViewer(debug=True)
     win.add_view(view)
-    win.show()
 
-    app.exec_()
-
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 if __name__=='__main__':
-    test_dataframe_view()
+    test_dataframe_view(interactive=True)
