@@ -102,6 +102,6 @@ def test_save_load_params(interactive=False):
 
 
 if __name__=='__main__':
-    test_mainviewer()
-    test_mainviewer2()
+    test_mainviewer(interactive=True)
+    test_mainviewer2(interactive=True)
     test_save_load_params(interactive=True)
