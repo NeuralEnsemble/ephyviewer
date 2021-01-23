@@ -1,1 +1,5 @@
+av
+neo
 nose
+pandas
+PyQt5
