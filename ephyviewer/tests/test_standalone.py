@@ -26,4 +26,4 @@ def test_RawNeoOpenDialog():
 
 if __name__=='__main__':
     test_WindowManager()
-    #~ test_RawNeoOpenDialog()
+    test_RawNeoOpenDialog()

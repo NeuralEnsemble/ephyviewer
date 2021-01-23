@@ -60,5 +60,5 @@ def test_EpochEncoder_empty():
 
 if __name__=='__main__':
     test_EpochEncoder()
-    #~ test_EpochEncoder_settings()
+    test_EpochEncoder_settings()
     test_EpochEncoder_empty()

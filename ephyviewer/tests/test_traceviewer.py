@@ -73,7 +73,7 @@ def test_traceviewer_cls_method_neo():
 
 
 if __name__=='__main__':
-    #~ test_traceviewer()
-    #~ test_traceviewer_with_scatter()
-    #~ test_traceviewer_cls_method_numpy()
+    test_traceviewer()
+    test_traceviewer_with_scatter()
+    test_traceviewer_cls_method_numpy()
     test_traceviewer_cls_method_neo()
