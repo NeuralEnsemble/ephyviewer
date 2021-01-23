@@ -3,13 +3,14 @@ import ephyviewer
 import numpy as np
 import os
 
+from ephyviewer.tests.testing_tools import get_tdt_test_files
 
 
 def test_neoviewer():
-    #TODO make autorun neo tdtrawio test before
     from neo.rawio.tdtrawio import TdtRawIO
 
-    dirname = '/tmp/files_for_testing_neo/tdt/aep_05/'
+    local_test_dir = get_tdt_test_files()
+    dirname = os.path.join(local_test_dir, 'aep_05')
     neorawio = TdtRawIO(dirname=dirname)
     neorawio.parse_header()
     print(neorawio)
