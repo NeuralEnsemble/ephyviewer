@@ -8,7 +8,7 @@
 
     :Distributions: |pypi-badge| |anaconda-cloud-badge|
     :Source Code:   |github-badge| |conda-forge-feedstock-badge|
-    :Docs Status:   |rtd-status-badge|
+    :Tests Status:  |github-actions-badge| |conda-forge-azure-badge| |rtd-status-badge|
 
 **Version:** |version| (`other versions`_)
 
@@ -59,6 +59,14 @@ Table of Contents
     :target: conda-forge-feedstock_
     :alt: conda-forge Feedstock
 
+.. |github-actions-badge| image:: https://img.shields.io/github/workflow/status/NeuralEnsemble/ephyviewer/tests/master?label=tests&logo=github&logoColor=white
+    :target: github-actions_
+    :alt: Tests Status
+
+.. |conda-forge-azure-badge| image:: https://dev.azure.com/conda-forge/feedstock-builds/_apis/build/status/ephyviewer-feedstock?branchName=master
+    :target: conda-forge-azure_
+    :alt: conda-forge Build Status
+
 .. |rtd-status-badge| image:: https://img.shields.io/readthedocs/ephyviewer/latest.svg?logo=read-the-docs&logoColor=white
     :target: rtd-status_
     :alt: Documentation Status
@@ -67,8 +75,10 @@ Table of Contents
     :alt: Screenshot
 
 .. _anaconda-cloud:         https://anaconda.org/conda-forge/ephyviewer
+.. _conda-forge-azure:      https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=8410&branchName=master
 .. _conda-forge-feedstock:  https://github.com/conda-forge/ephyviewer-feedstock
 .. _github:                 https://github.com/NeuralEnsemble/ephyviewer
+.. _github-actions:         https://github.com/NeuralEnsemble/ephyviewer/actions?query=workflow%3Atests
 .. _other versions:         https://readthedocs.org/projects/ephyviewer/versions/
 .. _pypi:                   https://pypi.org/project/ephyviewer
 .. _rtd-status:             https://readthedocs.org/projects/ephyviewer
