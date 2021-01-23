@@ -1,0 +1,44 @@
+name: Publish to PyPI
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag for OFFICIAL release'
+        required: true
+  # push:
+  #   tags:
+  #       - '*'
+
+jobs:
+  publish-pypi:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set up Python 3.9
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.9
+
+    - name: Install tools
+      run: |
+        python -m pip install --upgrade pip
+        pip install setuptools wheel twine
+
+    - name: Checkout tag ${{ github.event.inputs.tag }}
+      uses: actions/checkout@v2
+      with:
+          ref: ${{ github.event.inputs.tag }}
+
+    - name: Build source distribution and wheel
+      run: |
+        python setup.py sdist bdist_wheel
+
+    - name: List distribution artifacts
+      run: |
+        ls -l dist/
+
+    - name: Publish package to PyPI
+      uses: pypa/gh-action-pypi-publish@v1.4.1
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
