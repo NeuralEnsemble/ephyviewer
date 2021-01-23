@@ -42,9 +42,9 @@ jobs:
         - name: Checkout repository
           uses: actions/checkout@v2
 
-        - name: Install package from repository
+        - name: Install package from repository with test dependencies
           run: |
-            pip install -e .
+            pip install -e .[tests]
 
         - name: Install other required dependencies
           run: |
@@ -55,9 +55,6 @@ jobs:
             pip -V
             pip list
 
-        - name: Test imports
+        - name: Run tests
           run: |
-            python -c "import ephyviewer"
-            python -c "import ephyviewer.datasource"
-            python -c "import ephyviewer.icons"
-            python -c "import ephyviewer.tests"
+            nosetests
