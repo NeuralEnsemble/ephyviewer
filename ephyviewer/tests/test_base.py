@@ -3,14 +3,19 @@ import ephyviewer.base
 
 
 
-def test_base():
+def test_base(interactive=False):
     app = ephyviewer.mkQApp()
     win = ephyviewer.base.ViewerBase()
-    win.show()
-    app.exec_()
+
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 
 
 if __name__=='__main__':
-    test_base()
+    test_base(interactive=True)

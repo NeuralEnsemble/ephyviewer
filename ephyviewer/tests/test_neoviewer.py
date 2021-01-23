@@ -3,13 +3,14 @@ import ephyviewer
 import numpy as np
 import os
 
+from ephyviewer.tests.testing_tools import get_tdt_test_files
 
 
-def test_neoviewer():
-    #TODO make autorun neo tdtrawio test before
+def test_neoviewer(interactive=False):
     from neo.rawio.tdtrawio import TdtRawIO
 
-    dirname = '/tmp/files_for_testing_neo/tdt/aep_05/'
+    local_test_dir = get_tdt_test_files()
+    dirname = os.path.join(local_test_dir, 'aep_05')
     neorawio = TdtRawIO(dirname=dirname)
     neorawio.parse_header()
     print(neorawio)
@@ -28,11 +29,14 @@ def test_neoviewer():
         view = ephyviewer.EpochViewer(source=ep_source, name='epochs')
         win.add_view(view)
 
-    win.show()
-
-    app.exec_()
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 
 if __name__=='__main__':
-    test_neoviewer()
+    test_neoviewer(interactive=True)

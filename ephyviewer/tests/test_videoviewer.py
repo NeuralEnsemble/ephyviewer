@@ -4,7 +4,7 @@ import ephyviewer
 from  ephyviewer.tests.testing_tools import make_fake_video_source
 
 
-def test_videoviewer():
+def test_videoviewer(interactive=False):
     source = make_fake_video_source()
 
     #~ exit()
@@ -15,11 +15,14 @@ def test_videoviewer():
 
     win = ephyviewer.MainViewer(debug=True)
     win.add_view(view)
-    win.show()
 
-    app.exec_()
-
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 if __name__=='__main__':
-    test_videoviewer()
+    test_videoviewer(interactive=True)

@@ -6,7 +6,7 @@ import neo
 import quantities as pq
 
 
-def test_traceviewer():
+def test_traceviewer(interactive=False):
     source = make_fake_signals()
 
 
@@ -17,12 +17,16 @@ def test_traceviewer():
 
     win = ephyviewer.MainViewer(debug=True, show_auto_scale=True)
     win.add_view(view)
-    win.show()
 
-    app.exec_()
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
-def test_traceviewer_with_scatter():
+def test_traceviewer_with_scatter(interactive=False):
     source = make_fake_signals_with_scatter()
 
     #~ exit()
@@ -34,13 +38,17 @@ def test_traceviewer_with_scatter():
 
     win = ephyviewer.MainViewer(debug=True, show_auto_scale=True)
     win.add_view(view)
-    win.show()
 
-    app.exec_()
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 
-def test_traceviewer_cls_method_numpy():
+def test_traceviewer_cls_method_numpy(interactive=False):
     sigs = np.random.rand(100000,16)
     sample_rate = 1000.
     t_start = 0.
@@ -50,10 +58,15 @@ def test_traceviewer_cls_method_numpy():
 
     win = ephyviewer.MainViewer(debug=True, show_auto_scale=True)
     win.add_view(view)
-    win.show()
-    app.exec_()
 
-def test_traceviewer_cls_method_neo():
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
+
+def test_traceviewer_cls_method_neo(interactive=False):
     sigs = np.random.rand(100000,16)
     sample_rate = 1000.
     t_start = 0.
@@ -67,13 +80,18 @@ def test_traceviewer_cls_method_neo():
     view = ephyviewer.TraceViewer.from_neo_analogsignal(neo_anasig, 'sigs')
     win = ephyviewer.MainViewer(debug=True, show_auto_scale=True)
     win.add_view(view)
-    win.show()
-    app.exec_()
+
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 
 if __name__=='__main__':
-    #~ test_traceviewer()
-    #~ test_traceviewer_with_scatter()
-    #~ test_traceviewer_cls_method_numpy()
-    test_traceviewer_cls_method_neo()
+    test_traceviewer(interactive=True)
+    test_traceviewer_with_scatter(interactive=True)
+    test_traceviewer_cls_method_numpy(interactive=True)
+    test_traceviewer_cls_method_neo(interactive=True)

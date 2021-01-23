@@ -4,7 +4,7 @@ import ephyviewer
 from  ephyviewer.tests.testing_tools import make_fake_epoch_source
 
 
-def test_epoch_viewer():
+def test_epoch_viewer(interactive=False):
     source = make_fake_epoch_source()
 
 
@@ -13,10 +13,14 @@ def test_epoch_viewer():
 
     win = ephyviewer.MainViewer(debug=True)
     win.add_view(view)
-    win.show()
 
-    app.exec_()
+    if interactive:
+        win.show()
+        app.exec_()
+    else:
+        # close thread properly
+        win.close()
 
 
 if __name__=='__main__':
-    test_epoch_viewer()
+    test_epoch_viewer(interactive=True)

@@ -148,3 +148,23 @@ def make_fake_spiketrain_source():
 
     source = ephyviewer.InMemorySpikeSource(all_spikes=all_spikes)
     return source
+
+
+def get_tdt_test_files():
+    from neo.test.rawiotest.test_tdtrawio import TestTdtRawIO
+    t = TestTdtRawIO()
+    t.files_to_download = [
+        # first Neo Segment
+        'aep_05/Block-1/aep_05_Block-1.Tbk',
+        'aep_05/Block-1/aep_05_Block-1.Tdx',
+        'aep_05/Block-1/aep_05_Block-1.tev',
+        'aep_05/Block-1/aep_05_Block-1.tsq',
+
+        # second Neo Segment -- not yet used by ephyviewer
+        # 'aep_05/Block-2/aep_05_Block-2.Tbk',
+        # 'aep_05/Block-2/aep_05_Block-2.Tdx',
+        # 'aep_05/Block-2/aep_05_Block-2.tev',
+        # 'aep_05/Block-2/aep_05_Block-2.tsq',
+    ]
+    t.setUp()
+    return t.local_test_dir

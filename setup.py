@@ -18,6 +18,8 @@ with open('requirements.txt', 'r') as f:
 extras_require = {}
 with open('requirements-docs.txt', 'r') as f:
     extras_require['docs'] = f.read()
+with open('requirements-tests.txt', 'r') as f:
+    extras_require['tests'] = f.read()
 
 entry_points={'console_scripts': ['ephyviewer=ephyviewer.scripts:launch_standalone_ephyviewer']}
 
