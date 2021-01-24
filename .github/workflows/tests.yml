@@ -62,4 +62,26 @@ jobs:
 
         - name: Run tests
           run: |
-            nosetests
+            nosetests --with-coverage --cover-package=ephyviewer
+
+        - name: Report coverage to Coveralls
+          run: coveralls
+          env:
+            COVERALLS_SERVICE_NAME: github
+            COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            COVERALLS_FLAG_NAME: test-linux-${{ matrix.python-version }}
+            COVERALLS_PARALLEL: true
+
+  coveralls:
+    name: Finish Coveralls
+    needs: test-linux
+    runs-on: ubuntu-latest
+    container: python:3-slim
+    steps:
+    - name: Finish Coveralls
+      run: |
+        pip3 install --upgrade coveralls
+        coveralls --finish
+      env:
+        COVERALLS_SERVICE_NAME: github
+        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}

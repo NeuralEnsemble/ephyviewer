@@ -1,0 +1,8 @@
+# configuration of coverage.py
+# https://coverage.readthedocs.io
+
+[report]
+omit =
+    ephyviewer/icons/icons_py2_Qt4.py
+    ephyviewer/icons/make_resources.py
+    ephyviewer/tests/*

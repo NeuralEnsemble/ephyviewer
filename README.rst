@@ -5,7 +5,7 @@ ephyviewer
 
 :Distributions: |pypi-badge| |anaconda-cloud-badge|
 :Source Code:   |github-badge| |conda-forge-feedstock-badge|
-:Tests Status:  |github-actions-badge| |conda-forge-azure-badge| |rtd-status-badge|
+:Tests Status:  |github-actions-badge| |conda-forge-azure-badge| |rtd-status-badge| |coveralls-badge|
 
 Documentation_ | `Release Notes`_ | `Issue Tracker`_
 
@@ -97,6 +97,10 @@ Check the docs for more examples_.
     :target: rtd-status_
     :alt: Documentation Status
 
+.. |coveralls-badge| image:: https://coveralls.io/repos/github/NeuralEnsemble/ephyviewer/badge.svg?branch=master
+    :target: coveralls_
+    :alt: Coverage status
+
 .. |screenshot| image:: https://raw.githubusercontent.com/NeuralEnsemble/ephyviewer/master/doc/img/mixed_viewer_example.png
     :target: https://raw.githubusercontent.com/NeuralEnsemble/ephyviewer/master/doc/img/mixed_viewer_example.png
     :alt: Screenshot
@@ -104,6 +108,7 @@ Check the docs for more examples_.
 .. _anaconda-cloud:         https://anaconda.org/conda-forge/ephyviewer
 .. _conda-forge-azure:      https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=8410&branchName=master
 .. _conda-forge-feedstock:  https://github.com/conda-forge/ephyviewer-feedstock
+.. _coveralls:              https://coveralls.io/github/NeuralEnsemble/ephyviewer?branch=master
 .. _Documentation:          https://ephyviewer.readthedocs.io/en/latest
 .. _examples:               https://ephyviewer.readthedocs.io/en/latest/examples.html
 .. _github:                 https://github.com/NeuralEnsemble/ephyviewer

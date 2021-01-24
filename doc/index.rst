@@ -8,7 +8,7 @@
 
     :Distributions: |pypi-badge| |anaconda-cloud-badge|
     :Source Code:   |github-badge| |conda-forge-feedstock-badge|
-    :Tests Status:  |github-actions-badge| |conda-forge-azure-badge| |rtd-status-badge|
+    :Tests Status:  |github-actions-badge| |conda-forge-azure-badge| |rtd-status-badge| |coveralls-badge|
 
 **Version:** |version| (`other versions`_)
 
@@ -71,12 +71,17 @@ Table of Contents
     :target: rtd-status_
     :alt: Documentation Status
 
+.. |coveralls-badge| image:: https://coveralls.io/repos/github/NeuralEnsemble/ephyviewer/badge.svg?branch=master
+    :target: coveralls_
+    :alt: Coverage status
+
 .. |screenshot| image:: img/mixed_viewer_example.png
     :alt: Screenshot
 
 .. _anaconda-cloud:         https://anaconda.org/conda-forge/ephyviewer
 .. _conda-forge-azure:      https://dev.azure.com/conda-forge/feedstock-builds/_build/latest?definitionId=8410&branchName=master
 .. _conda-forge-feedstock:  https://github.com/conda-forge/ephyviewer-feedstock
+.. _coveralls:              https://coveralls.io/github/NeuralEnsemble/ephyviewer?branch=master
 .. _github:                 https://github.com/NeuralEnsemble/ephyviewer
 .. _github-actions:         https://github.com/NeuralEnsemble/ephyviewer/actions?query=workflow%3Atests
 .. _other versions:         https://readthedocs.org/projects/ephyviewer/versions/
