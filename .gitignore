@@ -6,3 +6,4 @@ ephyviewer.egg-info/*
 *.csv
 /.idea
 /venv
+.coverage
