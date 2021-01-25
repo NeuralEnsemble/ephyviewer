@@ -16,6 +16,7 @@ jobs:
 
         - name: Install package from repository with docs dependencies
           run: |
+            python -m pip install --upgrade pip
             pip install -e .[docs]
 
         - name: List pip packages
@@ -36,6 +37,7 @@ jobs:
     env:
       DISPLAY: ':99.0'
       XDG_RUNTIME_DIR: /tmp/runtime-runner
+      NEO_TEST_FILES: /tmp/files_for_testing_neo
     steps:
         - name: Set up virtual framebuffer (xvfb) for Qt GUI testing
           # https://pytest-qt.readthedocs.io/en/latest/troubleshooting.html#github-actions
@@ -53,12 +55,31 @@ jobs:
 
         - name: Install package from repository with test dependencies
           run: |
+            python -m pip install --upgrade pip
             pip install -e .[tests]
 
         - name: List pip packages
           run: |
             pip -V
             pip list
+
+        - name: Restore cached Neo data files (if available)
+          # if the data files were recently downloaded during another job, they
+          # will be available in a cache. otherwise, this step prepares a cache
+          # to be created after the job completes.
+          uses: actions/cache@v2
+          with:
+            path: ${{ env.NEO_TEST_FILES }}
+            key: ${{ runner.os }}-${{ hashFiles('**/testing_tools.py') }}
+
+        - name: Download Neo data files (if cache could not be restored)
+          # these data files would be downloaded automatically when tests are
+          # run, but by downloading them ahead of time in a separate step we
+          # can monitor the progress in GitHub Actions. if the files already
+          # exist (because they were restored from the cache), no work is done.
+          run: |
+            python -c "from ephyviewer.tests.testing_tools import get_tdt_test_files; get_tdt_test_files()"
+            ls -lR ${{ env.NEO_TEST_FILES }}
 
         - name: Run tests
           run: |
@@ -78,10 +99,10 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3-slim
     steps:
-    - name: Finish Coveralls
-      run: |
-        pip3 install --upgrade coveralls
-        coveralls --finish
-      env:
-        COVERALLS_SERVICE_NAME: github
-        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        - name: Finish Coveralls
+          run: |
+            pip3 install --upgrade coveralls
+            coveralls --finish
+          env:
+            COVERALLS_SERVICE_NAME: github
+            COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
