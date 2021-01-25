@@ -16,6 +16,7 @@ jobs:
 
         - name: Install package from repository with docs dependencies
           run: |
+            python -m pip install --upgrade pip
             pip install -e .[docs]
 
         - name: List pip packages
@@ -53,6 +54,7 @@ jobs:
 
         - name: Install package from repository with test dependencies
           run: |
+            python -m pip install --upgrade pip
             pip install -e .[tests]
 
         - name: List pip packages
@@ -78,10 +80,10 @@ jobs:
     runs-on: ubuntu-latest
     container: python:3-slim
     steps:
-    - name: Finish Coveralls
-      run: |
-        pip3 install --upgrade coveralls
-        coveralls --finish
-      env:
-        COVERALLS_SERVICE_NAME: github
-        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        - name: Finish Coveralls
+          run: |
+            pip3 install --upgrade coveralls
+            coveralls --finish
+          env:
+            COVERALLS_SERVICE_NAME: github
+            COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
