@@ -63,10 +63,20 @@ jobs:
             pip -V
             pip list
 
-        - name: Download Neo data files
+        - name: Restore cached Neo data files (if available)
+          # if the data files were recently downloaded during another job, they
+          # will be available in a cache. otherwise, this step prepares a cache
+          # to be created after the job completes.
+          uses: actions/cache@v2
+          with:
+            path: ${{ env.NEO_TEST_FILES }}
+            key: ${{ runner.os }}-${{ hashFiles('**/testing_tools.py') }}
+
+        - name: Download Neo data files (if cache could not be restored)
           # these data files would be downloaded automatically when tests are
           # run, but by downloading them ahead of time in a separate step we
-          # can monitor the progress in GitHub Actions
+          # can monitor the progress in GitHub Actions. if the files already
+          # exist (because they were restored from the cache), no work is done.
           run: |
             python -c "from ephyviewer.tests.testing_tools import get_tdt_test_files; get_tdt_test_files()"
             ls -lR ${{ env.NEO_TEST_FILES }}
