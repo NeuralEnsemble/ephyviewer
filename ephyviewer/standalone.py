@@ -85,7 +85,7 @@ class WindowManager():
         # delete window on close so that memory and file resources are released
         win.setAttribute(QT.WA_DeleteOnClose, True)
         win.destroyed.connect(
-            lambda qobject, i=len(self.windows)-1: self.free_resources(i))  # TODO: fix PySide2 TypeError
+            lambda *args, i=len(self.windows)-1: self.free_resources(i))
 
         win.show()
 
