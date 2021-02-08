@@ -3,4 +3,3 @@ coveralls
 neo
 nose
 pandas
-PyQt5
