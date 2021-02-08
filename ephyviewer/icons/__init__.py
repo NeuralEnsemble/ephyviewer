@@ -1,12 +1,7 @@
 import sys
+from ephyviewer.myqt import QT_MODE
 
-
-if sys.version_info > (3,):
-    # py3x Qt5
-    from . import  icons_py3_PyQt5 as icons
-else:
-    # py27 Qt4
-    from . import  icons_py2_PyQt4 as icons
-
-
-# TODO : make py3_Qt4 (normally never the case)
+if QT_MODE == 'PyQt5':
+    from . import  icons_PyQt5 as icons
+elif QT_MODE == 'PyQt4':
+    from . import  icons_PyQt4 as icons
