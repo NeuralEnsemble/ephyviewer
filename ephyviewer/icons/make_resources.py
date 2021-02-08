@@ -21,13 +21,13 @@ def make_resources_icons():
 
     if QT_MODE=='PyQt4':
         if sys.version_info > (3,):
-            os.popen('pyrcc4 -py3 icons.qrc -o icons_py3_Qt4.py')
+            os.popen('pyrcc4 -py3 icons.qrc -o icons_py3_PyQt4.py')
         else:
-            os.popen('pyrcc4 icons.qrc -o icons_py2_Qt4.py')
+            os.popen('pyrcc4 icons.qrc -o icons_py2_PyQt4.py')
 
     elif QT_MODE=='PyQt5':
         if sys.version_info > (3,):
-            os.popen('pyrcc5  icons.qrc -o icons_py3.py')
+            os.popen('pyrcc5 icons.qrc -o icons_py3_PyQt5.py')
         else:
             raise(NotImplementedError)
 
