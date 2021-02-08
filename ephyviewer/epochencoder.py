@@ -232,7 +232,7 @@ class EpochEncoder(ViewerBase):
         self.range_group_box.setLayout(range_group_box_layout)
 
         range_shortcut = QT.QShortcut(self)
-        range_shortcut.setKey('r')
+        range_shortcut.setKey(QT.QKeySequence('r'))
         range_shortcut.activated.connect(self.range_group_toggle)
         self.range_group_box.setToolTip('Toggle with shortcut: r')
 
@@ -254,12 +254,12 @@ class EpochEncoder(ViewerBase):
         buts[1].clicked.connect(self.set_limit2)
 
         limit1_shortcut = QT.QShortcut(self)
-        limit1_shortcut.setKey('[')
+        limit1_shortcut.setKey(QT.QKeySequence('['))
         limit1_shortcut.activated.connect(buts[0].click)
         buts[0].setToolTip('Set start with shortcut: [')
 
         limit2_shortcut = QT.QShortcut(self)
-        limit2_shortcut.setKey(']')
+        limit2_shortcut.setKey(QT.QKeySequence(']'))
         limit2_shortcut.activated.connect(buts[1].click)
         buts[1].setToolTip('Set stop with shortcut: ]')
 
@@ -437,8 +437,8 @@ class EpochEncoder(ViewerBase):
             shortcut_without_modifier, shortcut_with_modifier = self.label_shortcuts[label]
 
         # set/change the shortcut keys
-        shortcut_without_modifier.setKey(key)
-        shortcut_with_modifier   .setKey('Shift+' + key)
+        shortcut_without_modifier.setKey(QT.QKeySequence(key))
+        shortcut_with_modifier   .setKey(QT.QKeySequence('Shift+' + key))
 
     def on_change_keys(self, refresh=True):
 

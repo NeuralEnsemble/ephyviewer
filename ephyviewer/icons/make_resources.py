@@ -16,11 +16,14 @@ def make_resources_icons(qt_mode):
 </RCC>
 """)
 
-    if qt_mode == 'PyQt4':
-        os.popen('pyrcc4 -py3 icons.qrc -o icons_PyQt4.py')
-
-    elif qt_mode == 'PyQt5':
+    if qt_mode == 'PyQt5':
         os.popen('pyrcc5 icons.qrc -o icons_PyQt5.py')
+
+    elif qt_mode == 'PySide2':
+        os.popen('pyside2-rcc icons.qrc -o icons_PySide2.py')
+
+    elif qt_mode == 'PyQt4':
+        os.popen('pyrcc4 -py3 icons.qrc -o icons_PyQt4.py')
 
     else:
         raise ValueError('Cannot build icons for unrecognized Qt bindings: ' + qt_mode)
