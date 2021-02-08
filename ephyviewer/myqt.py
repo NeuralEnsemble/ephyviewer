@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 
-Helper for import PyQt5/PtQt4
+Helper for importing Qt bindings library
 see
 http://mikeboers.com/blog/2015/07/04/static-libraries-in-a-dynamic-world#the-fold
 """
@@ -28,20 +28,26 @@ try:
     import PyQt5
     from PyQt5 import QtCore, QtGui, QtWidgets
     QT_MODE = 'PyQt5'
-except :
+except ImportError:
     try:
-        import PyQt4
-        from PyQt4 import QtCore, QtGui
-        QT_MODE = 'PyQt4'
+        import PySide2
+        from PySide2 import QtCore, QtGui, QtWidgets
+        QT_MODE = 'PySide2'
     except ImportError:
-        print('no PyQt5/PyQt4')
+        try:
+            import PyQt4
+            from PyQt4 import QtCore, QtGui
+            QT_MODE = 'PyQt4'
+        except ImportError:
+            raise ImportError('Could not locate a supported Qt bindings library (PyQt5, PySide2, PyQt4)')
 #~ print(QT_MODE)
 
 if QT_MODE == 'PyQt5':
-    #~ from PyQt5 import QtCore, QtGui, QtWidgets
     QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
+elif QT_MODE == 'PySide2':
+    QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
+    QT.pyqtSignal = QtCore.Signal  # alias for cross-compatibility with PyQt
 elif QT_MODE == 'PyQt4':
-    #~ from PyQt4 import QtCore, QtGui
     QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui])
 else:
     QT = None

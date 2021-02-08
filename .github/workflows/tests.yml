@@ -34,6 +34,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.5', '3.6', '3.7', '3.8', '3.9']
+        qt-version: [PyQt5, PySide2]
     env:
       DISPLAY: ':99.0'
       XDG_RUNTIME_DIR: /tmp/runtime-runner
@@ -56,12 +57,17 @@ jobs:
         - name: Install package from repository with test dependencies
           run: |
             python -m pip install --upgrade pip
+            pip install ${{ matrix.qt-version }}
             pip install -e .[tests]
 
         - name: List pip packages
           run: |
             pip -V
             pip list
+
+        - name: Check Qt bindings library
+          run: |
+            python -c "from ephyviewer import QT_MODE; assert QT_MODE == '${{ matrix.qt-version }}', 'Wrong Qt bindings: ' + QT_MODE"
 
         - name: Restore cached Neo data files (if available)
           # if the data files were recently downloaded during another job, they
@@ -90,7 +96,7 @@ jobs:
           env:
             COVERALLS_SERVICE_NAME: github
             COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            COVERALLS_FLAG_NAME: test-linux-${{ matrix.python-version }}
+            COVERALLS_FLAG_NAME: test-linux-${{ matrix.python-version }}-${{ matrix.qt-version }}
             COVERALLS_PARALLEL: true
 
   coveralls:

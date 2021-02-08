@@ -96,7 +96,7 @@ class NavigationToolBar(QT.QWidget) :
 
             # add spacebar shortcut for play/pause
             play_pause_shortcut = QT.QShortcut(self)
-            play_pause_shortcut.setKey(' ')
+            play_pause_shortcut.setKey(QT.QKeySequence(' '))
             play_pause_shortcut.activated.connect(self.on_play_pause_shortcut)
 
         self.steps = ['60 s', '10 s', '1 s', '100 ms', '50 ms', '5 ms', '1 ms', '200 us']
@@ -134,7 +134,7 @@ class NavigationToolBar(QT.QWidget) :
             ]
             for s in shortcuts:
                 shortcut = QT.QShortcut(self)
-                shortcut.setKey(s['key'])
+                shortcut.setKey(QT.QKeySequence(s['key']))
                 shortcut.activated.connect(s['callback'])
 
 
