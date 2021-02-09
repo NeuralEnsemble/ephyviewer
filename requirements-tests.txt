@@ -1,5 +1,6 @@
 av
 coveralls
 neo
-nose
 pandas
+pytest
+pytest-cov
