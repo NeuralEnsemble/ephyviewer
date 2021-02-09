@@ -4,7 +4,7 @@ import ephyviewer
 from  ephyviewer.tests.testing_tools import make_fake_signals
 
 
-def test_traceviewer(interactive=False):
+def test_timefreqviewer(interactive=False):
     source = make_fake_signals()
 
 
@@ -27,4 +27,4 @@ def test_traceviewer(interactive=False):
 
 
 if __name__=='__main__':
-    test_traceviewer(interactive=True)
+    test_timefreqviewer(interactive=True)
