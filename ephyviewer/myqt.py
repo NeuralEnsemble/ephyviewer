@@ -25,32 +25,35 @@ class ModuleProxy(object):
 
 QT_MODE = None
 try:
-    import PyQt5
-    from PyQt5 import QtCore, QtGui, QtWidgets
-    QT_MODE = 'PyQt5'
+    import PySide6
+    from PySide6 import QtCore, QtGui, QtWidgets
+    QT_MODE = 'PySide6'
 except ImportError:
     try:
-        import PySide2
-        from PySide2 import QtCore, QtGui, QtWidgets
-        QT_MODE = 'PySide2'
+        import PyQt5
+        from PyQt5 import QtCore, QtGui, QtWidgets
+        QT_MODE = 'PyQt5'
     except ImportError:
         try:
-            import PyQt4
-            from PyQt4 import QtCore, QtGui
-            QT_MODE = 'PyQt4'
+            import PySide2
+            from PySide2 import QtCore, QtGui, QtWidgets
+            QT_MODE = 'PySide2'
         except ImportError:
-            raise ImportError('Could not locate a supported Qt bindings library (PyQt5, PySide2, PyQt4)')
+            try:
+                import PyQt4
+                from PyQt4 import QtCore, QtGui
+                QT_MODE = 'PyQt4'
+            except ImportError:
+                raise ImportError('Could not locate a supported Qt bindings library (PySide6, PyQt5, PySide2, PyQt4)')
 #~ print(QT_MODE)
 
-if QT_MODE == 'PyQt5':
-    QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
-elif QT_MODE == 'PySide2':
-    QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
-    QT.pyqtSignal = QtCore.Signal  # alias for cross-compatibility with PyQt
-elif QT_MODE == 'PyQt4':
-    QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui])
+if QT_MODE == 'PyQt4':
+    modules = [QtCore.Qt, QtCore, QtGui]
 else:
-    QT = None
+    modules = [QtCore.Qt, QtCore, QtGui, QtWidgets]
+QT = ModuleProxy(['', 'Q', 'Qt'], modules)
 
-if QT is not None:
-    from pyqtgraph import mkQApp
+if QT_MODE.startswith('PySide'):
+    QT.pyqtSignal = QtCore.Signal  # alias for cross-compatibility with PyQt
+
+from pyqtgraph import mkQApp

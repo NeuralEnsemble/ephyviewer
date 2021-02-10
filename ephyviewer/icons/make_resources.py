@@ -16,7 +16,10 @@ def make_resources_icons(qt_mode):
 </RCC>
 """)
 
-    if qt_mode == 'PyQt5':
+    if qt_mode == 'PySide6':
+        os.popen('pyside6-rcc icons.qrc -o icons_PySide6.py')
+
+    elif qt_mode == 'PyQt5':
         os.popen('pyrcc5 icons.qrc -o icons_PyQt5.py')
 
     elif qt_mode == 'PySide2':
