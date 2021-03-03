@@ -121,7 +121,7 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
             channel_indexes = slice(None)
         self.channel_indexes = channel_indexes
         self.channels = self.neorawio.header['signal_channels'][channel_indexes]
-        self.sample_rate = self.neorawio.get_signal_sampling_rate(channel_indexes=self.channel_indexes)
+        self.sample_rate = self.neorawio.get_signal_sampling_rate(stream_index=self.channel_indexes[0])
 
         #TODO: something for multi segment
         self.block_index = 0
@@ -137,7 +137,7 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
     @property
     def t_start(self):
         t_start = self.neorawio.get_signal_t_start(self.block_index, self.seg_index,
-                    channel_indexes=self.channel_indexes)
+                    stream_index=self.channel_indexes[0])
         return t_start
 
     @property
@@ -147,7 +147,7 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
 
     def get_length(self):
         length = self.neorawio.get_signal_size(self.block_index, self.seg_index,
-                        channel_indexes=self.channel_indexes)
+                        stream_index=self.channel_indexes[0])
         return length
 
     def get_gains(self):
