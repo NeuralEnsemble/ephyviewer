@@ -110,7 +110,8 @@ def get_sources_from_neo_segment(neo_seg):
 
 ## neo.rawio stuff
 
-class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
+# this can be remove when neo version 0.10 will be out
+class AnalogSignalFromNeoRawIOSource_until_v9(BaseAnalogSignalSource):
     def __init__(self, neorawio, channel_indexes=None):
 
         BaseAnalogSignalSource.__init__(self)
@@ -162,9 +163,67 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
     def get_chunk(self, i_start=None, i_stop=None):
         sigs = self.neorawio.get_analogsignal_chunk(block_index=self.block_index, seg_index=self.seg_index,
                         i_start=i_start, i_stop=i_stop, channel_indexes=self.channel_indexes)
+        return sigs
 
-        #TODO add an option to pre load evrything in memory for short length
 
+# this fit the new API of neo with streams concept
+class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
+    def __init__(self, neorawio, stream_index):
+
+        BaseAnalogSignalSource.__init__(self)
+        self.with_scatter = False
+
+        self.neorawio =neorawio
+        self.stream_index = stream_index
+        
+        
+        self.stream_id = self.neorawio.header['signal_streams'][stream_index]['id']
+        signal_channels = self.neorawio.header['signal_channels']
+        mask = signal_channels['stream_id'] == self.stream_id
+        self.channels = signal_channels[mask]
+        
+        self.sample_rate = self.neorawio.get_signal_sampling_rate(stream_index=self.stream_index)
+
+        #TODO: something for multi segment
+        self.block_index = 0
+        self.seg_index = 0
+
+    @property
+    def nb_channel(self):
+        return len(self.channels)
+
+    def get_channel_name(self, chan=0):
+        return self.channels[chan]['name']
+
+    @property
+    def t_start(self):
+        t_start = self.neorawio.get_signal_t_start(self.block_index, self.seg_index,
+                    stream_index=self.stream_index)
+        return t_start
+
+    @property
+    def t_stop(self):
+        t_stop = self.t_start + self.get_length()/self.sample_rate
+        return t_stop
+
+    def get_length(self):
+        length = self.neorawio.get_signal_size(self.block_index, self.seg_index,
+                        stream_index=self.stream_index)
+        return length
+
+    def get_gains(self):
+        return self.neorawio.header['signal_channels']['gain'][self.channel_indexes]
+
+    def get_offsets(self):
+        return self.neorawio.header['signal_channels']['offset'][self.channel_indexes]
+
+    def get_shape(self):
+        return (self.get_length(), self.nb_channel)
+
+    def get_chunk(self, i_start=None, i_stop=None):
+        sigs = self.neorawio.get_analogsignal_chunk(block_index=self.block_index, seg_index=self.seg_index,
+                        i_start=i_start, i_stop=i_stop, stream_index=self.stream_index, 
+                        channel_indexes=None)
         return sigs
 
 
@@ -287,17 +346,26 @@ def get_sources_from_neo_rawio(neorawio):
     sources = {'signal':[], 'epoch':[], 'spike':[]}
 
     if neorawio.signal_channels_count()>0:
-        #Signals
-        try:
-            # Neo >= 0.9.0
+        # handle of neo version
+        # this will be simplified in a while
+        if hasattr(self.neo_reader, 'get_group_signal_channel_indexes'):
+            # Neo >= 0.9.0 and  < 0.10
             channel_indexes_list = neorawio.get_group_signal_channel_indexes()
-        except AttributeError:
+            for channel_indexes in channel_indexes_list:
+                #one soure by channel group
+                sources['signal'].append(AnalogSignalFromNeoRawIOSource_until_v9(neorawio, channel_indexes))
+        elif hasattr(self.neo_reader, 'get_group_channel_indexes'):
             # Neo < 0.9.0
-            channel_indexes_list = neorawio.get_group_channel_indexes()
-        for channel_indexes in channel_indexes_list:
-            #one soure by channel group
-            sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, channel_indexes))
-
+            channel_indexes_list = neorawio.get_group_signal_channel_indexes()
+            for channel_indexes in channel_indexes_list:
+                #one soure by channel group
+                sources['signal'].append(AnalogSignalFromNeoRawIOSource_until_v9(neorawio, channel_indexes))
+        elif hasattr(self.neo_reader, 'signal_streams_count'):
+            # Neo >= 0.10.0 (not release yet in march 2021)
+            num_streams = self.neo_reader.signal_streams_count()
+            for stream_index in range(num_streams):
+                #one soure by stream
+                sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, stream_index))
 
 
     if neorawio.unit_channels_count()>0:
