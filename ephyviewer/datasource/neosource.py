@@ -29,13 +29,9 @@ from .spikes import BaseSpikeSource, InMemorySpikeSource
 from .events import BaseEventAndEpoch, InMemoryEventSource
 from .epochs import InMemoryEpochSource
 
-
-
 logger = logging.getLogger()
 
 #~ print('HAVE_NEO', HAVE_NEO)
-
-
 
 ## neo.core stuff
 
@@ -59,6 +55,7 @@ class NeoSpikeTrainSource(InMemorySpikeSource):
                                         'name' : name})
         InMemorySpikeSource.__init__(self, all_spikes=all_spikes)
 
+
 class NeoEventSource(InMemoryEventSource):
     def __init__(self, neo_events=[]):
         all_events = []
@@ -69,6 +66,7 @@ class NeoEventSource(InMemoryEventSource):
                 'label': np.array(neo_event.labels),
             })
         InMemoryEventSource.__init__(self, all_events = all_events)
+
 
 class NeoEpochSource(InMemoryEpochSource):
     def __init__(self, neo_epochs=[]):
@@ -81,9 +79,6 @@ class NeoEpochSource(InMemoryEpochSource):
                 'label': np.array(neo_epoch.labels),
             })
         epoch_source = InMemoryEpochSource.__init__(self, all_epochs = all_epochs)
-
-
-
 
 
 def get_sources_from_neo_segment(neo_seg):
@@ -105,25 +100,44 @@ def get_sources_from_neo_segment(neo_seg):
     return sources
 
 
-
-
-
 ## neo.rawio stuff
 
 class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
-    def __init__(self, neorawio, channel_indexes=None):
+    def __init__(self, neorawio, channel_indexes=None, stream_index=None):
+        """
+        Initialize AnalogSignal sources from channels in NeoRawIO.
+
+        :param neorawio: NeoRawIO to use
+        :param channel_indexes: list of channel indexes to use alone when Neo <= 0.9
+        :param stream_index: index of stream of signals when Neo > 0.9
+        """
 
         BaseAnalogSignalSource.__init__(self)
         self.with_scatter = False
 
-        self.neorawio =neorawio
-        if channel_indexes is None:
-            channel_indexes = slice(None)
-        self.channel_indexes = channel_indexes
-        self.channels = self.neorawio.header['signal_channels'][channel_indexes]
-        self.sample_rate = self.neorawio.get_signal_sampling_rate(channel_indexes=self.channel_indexes)
+        self.neorawio = neorawio
+        if stream_index is None: # Neo <= 0.9 case
+            self.has_streams = False
+            if channel_indexes is None:
+                channel_indexes = slice(None)
+            self.channel_indexes = channel_indexes
+            self.channels = self.neorawio.header['signal_channels'][channel_indexes]
+            self.sample_rate = self.neorawio.get_signal_sampling_rate(
+                channel_indexes=self.channel_indexes)
+        else: # Neo > 0.9, with streams, case
+            self.has_streams = True
+            self.stream_index = stream_index
+            stream_id = self.neorawio.header['signal_streams'][stream_index]['id']
+            channels = self.neorawio.header['signal_channels']
+            header_indexes = [i for i in range(channels.size) if
+                              channels[i]['stream_id'] == stream_id]
+            if channel_indexes is None:
+                channel_indexes = slice(None)
+            self.channel_indexes = channel_indexes
+            self.channels = channels[header_indexes]
+            self.sample_rate = self.neorawio.get_signal_sampling_rate(stream_index)
 
-        #TODO: something for multi segment
+        # :TODO: something for multi segment
         self.block_index = 0
         self.seg_index = 0
 
@@ -136,8 +150,12 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
 
     @property
     def t_start(self):
-        t_start = self.neorawio.get_signal_t_start(self.block_index, self.seg_index,
-                    channel_indexes=self.channel_indexes)
+        if self.has_streams:
+            t_start = self.neorawio.get_signal_t_start(self.block_index, self.seg_index,
+                                                       self.stream_index)
+        else:
+            t_start = self.neorawio.get_signal_t_start(self.block_index, self.seg_index,
+                                                        channel_indexes=self.channel_indexes)
         return t_start
 
     @property
@@ -146,24 +164,34 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
         return t_stop
 
     def get_length(self):
-        length = self.neorawio.get_signal_size(self.block_index, self.seg_index,
+        if self.has_streams:
+            length = self.neorawio.get_signal_size(self.block_index, self.seg_index,
+                                                   self.stream_index)
+        else:
+            length = self.neorawio.get_signal_size(self.block_index, self.seg_index,
                         channel_indexes=self.channel_indexes)
         return length
 
     def get_gains(self):
-        return self.neorawio.header['signal_channels']['gain'][self.channel_indexes]
+        return self.channels['gain'][self.channel_indexes]
 
     def get_offsets(self):
-        return self.neorawio.header['signal_channels']['offset'][self.channel_indexes]
+        return self.channels['offset'][self.channel_indexes]
 
     def get_shape(self):
         return (self.get_length(), self.nb_channel)
 
     def get_chunk(self, i_start=None, i_stop=None):
-        sigs = self.neorawio.get_analogsignal_chunk(block_index=self.block_index, seg_index=self.seg_index,
-                        i_start=i_start, i_stop=i_stop, channel_indexes=self.channel_indexes)
+        if self.has_streams:
+            sigs = self.neorawio.get_analogsignal_chunk(block_index=self.block_index,
+                        seg_index=self.seg_index, i_start=i_start, i_stop=i_stop,
+                        stream_index=self.stream_index, channel_indexes=self.channel_indexes)
+        else:
+            sigs = self.neorawio.get_analogsignal_chunk(block_index=self.block_index,
+                        seg_index=self.seg_index, i_start=i_start, i_stop=i_stop,
+                        channel_indexes=self.channel_indexes)
 
-        #TODO add an option to pre load evrything in memory for short length
+        #TODO add an option to pre load everything in memory for short length
 
         return sigs
 
@@ -175,7 +203,7 @@ class SpikeFromNeoRawIOSource(BaseSpikeSource):
             channel_indexes = slice(None)
         self.channel_indexes = channel_indexes
 
-        self.channels = self.neorawio.header['unit_channels'][channel_indexes]
+        self.channels = self.neorawio.header['spike_channels'][channel_indexes]
 
         #TODO: something for multi segment
         self.block_index = 0
@@ -208,8 +236,6 @@ class SpikeFromNeoRawIOSource(BaseSpikeSource):
         spike_times = self.neorawio.rescale_spike_timestamp(spike_timestamp, dtype='float64')
 
         return spike_times
-
-
 
 
 class EpochFromNeoRawIOSource(BaseEventAndEpoch):
@@ -273,9 +299,6 @@ class EpochFromNeoRawIOSource(BaseEventAndEpoch):
         return ep_times, ep_durations, ep_labels
 
 
-
-
-
 def get_sources_from_neo_rawio(neorawio):
     assert HAVE_NEO
     assert isinstance(neorawio, BaseRawIO)
@@ -286,28 +309,33 @@ def get_sources_from_neo_rawio(neorawio):
 
     sources = {'signal':[], 'epoch':[], 'spike':[]}
 
-    if neorawio.signal_channels_count()>0:
-        #Signals
-        try:
-            # Neo >= 0.9.0
-            channel_indexes_list = neorawio.get_group_signal_channel_indexes()
-        except AttributeError:
-            # Neo < 0.9.0
-            channel_indexes_list = neorawio.get_group_channel_indexes()
-        for channel_indexes in channel_indexes_list:
-            #one soure by channel group
-            sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, channel_indexes))
+    #Signals
+    try:
+        # Neo > 0.9.0 with streams of AnalogSignals
+        for si in range(0, neorawio.signal_streams_count()):
+            sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio,
+                                                                    channel_indexes=None,
+                                                                    stream_index=si))
 
+    except AttributeError:
+        if neorawio.signal_channels_count()>0:
+            try: # Neo = 0.9.0
+                channel_indexes_list = neorawio.get_group_signal_channel_indexes()
 
+            except AttributeError:
+                # Neo < 0.9.0
+                channel_indexes_list = neorawio.get_group_channel_indexes()
 
-    if neorawio.unit_channels_count()>0:
+            # one source for each group of channel_indexes
+            for channel_indexes in channel_indexes_list:
+                sources['signal'].append(
+                    AnalogSignalFromNeoRawIOSource(neorawio, channel_indexes=channel_indexes))
+
+    if neorawio.spike_channels_count()>0:
         #Spikes: TODO
         sources['spike'].append(SpikeFromNeoRawIOSource(neorawio, None))
 
-
     if neorawio.event_channels_count()>0:
         sources['epoch'].append(EpochFromNeoRawIOSource(neorawio, None))
-
-
 
     return sources
