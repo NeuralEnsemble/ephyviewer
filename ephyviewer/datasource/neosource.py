@@ -231,7 +231,8 @@ class SpikeFromNeoRawIOSource(BaseSpikeSource):
 
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
         spike_timestamp = self.neorawio.get_spike_timestamps(block_index=self.block_index,
-                        seg_index=self.seg_index, unit_index=chan, t_start=t_start, t_stop=t_stop)
+                            seg_index=self.seg_index, spike_channel_index=chan,
+                            t_start=t_start, t_stop=t_stop)
 
         spike_times = self.neorawio.rescale_spike_timestamp(spike_timestamp, dtype='float64')
 
