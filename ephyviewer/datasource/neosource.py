@@ -108,15 +108,15 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
         Initialize AnalogSignal sources from channels in NeoRawIO.
 
         :param neorawio: NeoRawIO to use
-        :param channel_indexes: list of channel indexes to use alone when Neo <= 0.9
-        :param stream_index: index of stream of signals when Neo > 0.9
+        :param channel_indexes: list of channel indexes to use when Neo < 0.10
+        :param stream_index: index of stream of signals when Neo >=0.10
         """
 
         BaseAnalogSignalSource.__init__(self)
         self.with_scatter = False
 
         self.neorawio = neorawio
-        if stream_index is None: # Neo <= 0.9 case
+        if stream_index is None: # Neo < 0.10 case
             self.has_streams = False
             if channel_indexes is None:
                 channel_indexes = slice(None)
@@ -124,7 +124,7 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
             self.channels = self.neorawio.header['signal_channels'][channel_indexes]
             self.sample_rate = self.neorawio.get_signal_sampling_rate(
                 channel_indexes=self.channel_indexes)
-        else: # Neo > 0.9, with streams, case
+        else: # Neo > 0.10, with streams, case
             self.has_streams = True
             self.stream_index = stream_index
             stream_id = self.neorawio.header['signal_streams'][stream_index]['id']
@@ -312,7 +312,7 @@ def get_sources_from_neo_rawio(neorawio):
 
     #Signals
     try:
-        # Neo > 0.9.0 with streams of AnalogSignals
+        # Neo >= 0.10 with streams of AnalogSignals
         for si in range(0, neorawio.signal_streams_count()):
             sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio,
                                                                     channel_indexes=None,
@@ -320,7 +320,7 @@ def get_sources_from_neo_rawio(neorawio):
 
     except AttributeError:
         if neorawio.signal_channels_count()>0:
-            try: # Neo = 0.9.0
+            try: # 0.9.0 <= Neo < 0.10
                 channel_indexes_list = neorawio.get_group_signal_channel_indexes()
 
             except AttributeError:
