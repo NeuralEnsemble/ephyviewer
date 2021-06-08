@@ -13,6 +13,9 @@ import matplotlib.colors
 class BaseAnalogSignalSource(BaseDataSource):
     type = 'AnalogSignal'
 
+    def __init__(self):
+        self.with_scatter = False
+    
     def get_length(self):
         raise(NotImplementedError)
 
@@ -41,7 +44,6 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
         if channel_names is None:
             self.channel_names = ['Channel {:3}'.format(c) for c in range(self.signals.shape[1])]
 
-        self.with_scatter = False
 
     @property
     def nb_channel(self):

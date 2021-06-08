@@ -1,3 +1,4 @@
+import pytest
 
 import ephyviewer
 import numpy as np
@@ -146,15 +147,32 @@ def test_neo_object_sources():
         print(s.get_chunk_by_time(chan=0,  t_start=0., t_stop=10.))
         #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
 
+@pytest.mark.skip('spikeinterface not relased yet')
+def test_spikeinterface_sources():
+    import spikeinterface as si
+    from spikeinterface.core.tests.testing_tools import generate_recording, generate_sorting
+    
+    recording = generate_recording()
+    source = ephyviewer.FromSpikeinterfaceRecordingSource(recording=recording)
+    print(source)
+    
+    print(source.t_start, source.nb_channel, source.sample_rate)
+        
+    sorting = generate_sorting()
+    source = ephyviewer.FromSpikeinterfaceSorintgSource(sorting=sorting)
+    print(source)
+    
+    print(source.t_start, source.nb_channel, source.get_channel_name())
 
 
 
 
 if __name__=='__main__':
-    test_InMemoryAnalogSignalSource()
-    test_VideoMultiFileSource()
-    test_InMemoryEventSource()
-    test_InMemoryEpochSource()
-    test_spikesource()
-    test_neo_rawio_sources()
-    test_neo_object_sources()
+    #~ test_InMemoryAnalogSignalSource()
+    #~ test_VideoMultiFileSource()
+    #~ test_InMemoryEventSource()
+    #~ test_InMemoryEpochSource()
+    #~ test_spikesource()
+    #~ test_neo_rawio_sources()
+    #~ test_neo_object_sources()
+    test_spikeinterface_sources()
