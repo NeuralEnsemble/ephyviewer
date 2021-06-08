@@ -4,3 +4,4 @@ neo
 pandas
 pytest
 pytest-cov
+datalad
