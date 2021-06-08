@@ -96,10 +96,8 @@ def test_spikesource():
 def test_neo_rawio_sources():
     from neo.rawio.tdtrawio import TdtRawIO
 
-    local_test_dir = get_tdt_test_files()
-    local_test_dir = str(local_test_dir)
-    #~ dirname = os.path.join(local_test_dir, 'aep_05')
-    neorawio = TdtRawIO(dirname=local_test_dir)
+    local_tdt_folder = get_tdt_test_files()
+    neorawio = TdtRawIO(dirname=local_tdt_folder)
     neorawio.parse_header()
     print(neorawio)
 
@@ -152,10 +150,10 @@ def test_neo_object_sources():
 
 
 if __name__=='__main__':
-    #~ test_InMemoryAnalogSignalSource()
-    #~ test_VideoMultiFileSource()
-    #~ test_InMemoryEventSource()
-    #~ test_InMemoryEpochSource()
-    #~ test_spikesource()
+    test_InMemoryAnalogSignalSource()
+    test_VideoMultiFileSource()
+    test_InMemoryEventSource()
+    test_InMemoryEpochSource()
+    test_spikesource()
     test_neo_rawio_sources()
-    #~ test_neo_object_sources()
+    test_neo_object_sources()

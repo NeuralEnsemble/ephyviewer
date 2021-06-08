@@ -166,7 +166,7 @@ class AnalogSignalFromNeoRawIOSource_until_v9(BaseAnalogSignalSource):
         return sigs
 
 
-# this fit the new API of neo with streams concept
+# this fit the neo API >= 0.10 (with streams concept)
 class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
     def __init__(self, neorawio, stream_index):
 
@@ -212,10 +212,10 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
         return length
 
     def get_gains(self):
-        return self.neorawio.header['signal_channels']['gain'][self.channel_indexes]
+        return  self.channels['gain']
 
     def get_offsets(self):
-        return self.neorawio.header['signal_channels']['offset'][self.channel_indexes]
+        return  self.channels['offset']
 
     def get_shape(self):
         return (self.get_length(), self.nb_channel)
