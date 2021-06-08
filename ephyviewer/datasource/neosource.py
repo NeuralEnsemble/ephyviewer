@@ -227,7 +227,8 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
         return sigs
 
 
-class SpikeFromNeoRawIOSource(BaseSpikeSource):
+# handle old neo API <0.10
+class SpikeFromNeoRawIOSource_until_v9(BaseSpikeSource):
     def __init__(self, neorawio, channel_indexes=None):
         self.neorawio =neorawio
         if channel_indexes is None:
@@ -268,6 +269,47 @@ class SpikeFromNeoRawIOSource(BaseSpikeSource):
 
         return spike_times
 
+# this fit the new  neo rawio API >=0.10
+class SpikeFromNeoRawIOSource(BaseSpikeSource):
+    def __init__(self, neorawio, channel_indexes=None):
+        self.neorawio =neorawio
+        if channel_indexes is None:
+            channel_indexes = slice(None)
+        self.channel_indexes = channel_indexes
+
+        self.channels = self.neorawio.header['spike_channels'][channel_indexes]
+
+        #TODO: something for multi segment
+        self.block_index = 0
+        self.seg_index = 0
+
+    @property
+    def nb_channel(self):
+        return len(self.channels)
+
+    def get_channel_name(self, chan=0):
+        return self.channels[chan]['name']
+
+    @property
+    def t_start(self):
+        t_start = self.neorawio.segment_t_start(self.block_index, self.seg_index)
+        return t_start
+
+    @property
+    def t_stop(self):
+        t_stop = self.neorawio.segment_t_stop(self.block_index, self.seg_index)
+        return t_stop
+
+    def get_chunk(self, chan=0,  i_start=None, i_stop=None):
+        raise(NotImplementedError)
+
+    def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
+        spike_timestamp = self.neorawio.get_spike_timestamps(block_index=self.block_index,
+                        seg_index=self.seg_index, spike_channel_index=chan, t_start=t_start, t_stop=t_stop)
+
+        spike_times = self.neorawio.rescale_spike_timestamp(spike_timestamp, dtype='float64')
+
+        return spike_times
 
 
 
@@ -345,33 +387,41 @@ def get_sources_from_neo_rawio(neorawio):
 
     sources = {'signal':[], 'epoch':[], 'spike':[]}
 
-    if neorawio.signal_channels_count()>0:
-        # handle of neo version
-        # this will be simplified in a while
-        if hasattr(self.neo_reader, 'get_group_signal_channel_indexes'):
-            # Neo >= 0.9.0 and  < 0.10
+    
+    # handle of neo version
+    # this will be simplified in a while
+    if hasattr(neorawio, 'get_group_signal_channel_indexes'):
+        # Neo >= 0.9.0 and  < 0.10
+        if neorawio.signal_channels_count() > 0:
             channel_indexes_list = neorawio.get_group_signal_channel_indexes()
             for channel_indexes in channel_indexes_list:
                 #one soure by channel group
                 sources['signal'].append(AnalogSignalFromNeoRawIOSource_until_v9(neorawio, channel_indexes))
-        elif hasattr(self.neo_reader, 'get_group_channel_indexes'):
-            # Neo < 0.9.0
+    elif hasattr(neorawio, 'get_group_channel_indexes'):
+        # Neo < 0.9.0
+        if neorawio.signal_channels_count() > 0:
             channel_indexes_list = neorawio.get_group_signal_channel_indexes()
             for channel_indexes in channel_indexes_list:
                 #one soure by channel group
                 sources['signal'].append(AnalogSignalFromNeoRawIOSource_until_v9(neorawio, channel_indexes))
-        elif hasattr(self.neo_reader, 'signal_streams_count'):
-            # Neo >= 0.10.0 (not release yet in march 2021)
-            num_streams = self.neo_reader.signal_streams_count()
-            for stream_index in range(num_streams):
-                #one soure by stream
-                sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, stream_index))
+    elif hasattr(neorawio, 'signal_streams_count'):
+        # Neo >= 0.10.0 (not release yet in march 2021)
+        num_streams = neorawio.signal_streams_count()
+        for stream_index in range(num_streams):
+            #one soure by stream
+            sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, stream_index))
 
 
-    if neorawio.unit_channels_count()>0:
-        #Spikes: TODO
-        sources['spike'].append(SpikeFromNeoRawIOSource(neorawio, None))
-
+    
+    if hasattr(neorawio, 'unit_channels_count'):
+        # Neo   < 0.10
+        if neorawio.unit_channels_count()>0:
+            sources['spike'].append(SpikeFromNeoRawIOSource_until_v9(neorawio, None))
+    elif hasattr(neorawio, 'spike_channels_count'):
+        # neo >= 0.10
+        if neorawio.spike_channels_count()>0:
+            sources['spike'].append(SpikeFromNeoRawIOSource(neorawio, None))
+        
 
     if neorawio.event_channels_count()>0:
         sources['epoch'].append(EpochFromNeoRawIOSource(neorawio, None))
