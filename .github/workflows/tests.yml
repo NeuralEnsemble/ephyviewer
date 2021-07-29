@@ -38,20 +38,20 @@ jobs:
     env:
       DISPLAY: ':99.0'
       XDG_RUNTIME_DIR: /tmp/runtime-runner
-      NEO_TEST_FILES: ~/ephy_testing_data
+      NEO_TEST_FILES: ~/ephy_testing_data_http
     steps:
         - name: Set up virtual framebuffer (xvfb) for Qt GUI testing
           # https://pytest-qt.readthedocs.io/en/latest/troubleshooting.html#github-actions
           run: |
             sudo apt-get install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
             /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
-        - name: install git-annex (used for datalad)
-          run: |
-            # this is for datalad and download testing datasets
-            sudo apt update
-            sudo apt-get install git-annex
-            git config --global user.email "CI@example.com"
-            git config --global user.name "CI Almighty"
+#        - name: install git-annex (used for datalad)
+#          run: |
+#            # this is for datalad and download testing datasets
+#            sudo apt update
+#            sudo apt-get install git-annex
+#            git config --global user.email "CI@example.com"
+#            git config --global user.name "CI Almighty"
 
         - name: Set up Python ${{ matrix.python-version }}
           uses: actions/setup-python@v2

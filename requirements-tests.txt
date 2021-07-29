@@ -4,4 +4,3 @@ neo>=0.10.0
 pandas
 pytest
 pytest-cov
-datalad==0.14.4
