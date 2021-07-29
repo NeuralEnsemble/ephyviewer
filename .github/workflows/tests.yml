@@ -33,8 +33,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ['3.7', '3.8', '3.9']
-        qt-version: [PyQt5, PySide2]
+        #python-version: ['3.7', '3.8', '3.9']
+        python-version: ['3.8']
+        qt-version: [PyQt5]
     env:
       DISPLAY: ':99.0'
       XDG_RUNTIME_DIR: /tmp/runtime-runner
