@@ -3,7 +3,7 @@ import ephyviewer
 import numpy as np
 import os
 
-# from ephyviewer.tests.testing_tools import get_tdt_test_files
+# get_tdt_test_files
 from ephyviewer.tests.testing_tools import get_blackrock_files
 
 
