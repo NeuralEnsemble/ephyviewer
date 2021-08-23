@@ -153,7 +153,7 @@ def test_neo_object_sources():
         print(s.get_chunk_by_time(chan=0,  t_start=0., t_stop=10.))
         #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
 
-@pytest.mark.skip('spikeinterface not relased yet')
+
 def test_spikeinterface_sources():
     import spikeinterface as si
     from spikeinterface.core.tests.testing_tools import generate_recording, generate_sorting

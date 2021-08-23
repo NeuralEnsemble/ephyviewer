@@ -3,8 +3,6 @@ import ephyviewer
 import numpy as np
 import os
 
-from ephyviewer.tests.testing_tools import get_tdt_test_files
-
 
 def test_spikeinterface_viewer(interactive=False):
     import spikeinterface as si
