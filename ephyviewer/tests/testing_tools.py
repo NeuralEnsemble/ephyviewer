@@ -182,3 +182,32 @@ def get_tdt_test_files():
     
     tdt_folder = str(local_folder / 'tdt' / 'aep_05')
     return tdt_folder
+
+def get_blackrock_files():
+    url_for_tests = "https://web.gin.g-node.org/NeuralEnsemble/ephy_testing_data/raw/master/"
+
+    files_to_download = [
+        'blackrock/FileSpec2.3001.ns5',
+        'blackrock/FileSpec2.3001.nev',
+    ]
+
+    local_folder = Path.home() / 'ephy_testing_data_http'
+    
+    for file in files_to_download:
+        localfile = local_folder / file
+        distantfile = url_for_tests + file
+        if not localfile.is_file():
+            localfile.parent.mkdir(exist_ok=True, parents=True)
+            dist = urlopen(distantfile)
+            with open(localfile, 'wb') as f:
+                f.write(dist.read())
+    
+    filename = str(local_folder / 'blackrock' / 'FileSpec2.3001')
+    return filename
+
+
+
+    
+    
+    
+    
