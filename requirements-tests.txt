@@ -1,6 +1,6 @@
 av
 coveralls
-neo
+neo>=0.10.0
 pandas
 pytest
 pytest-cov
