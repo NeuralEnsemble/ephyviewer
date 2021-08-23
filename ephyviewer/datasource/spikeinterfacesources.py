@@ -10,8 +10,8 @@ import numpy as np
 
 try:
     from distutils.version import LooseVersion as V
-    import neo
-    if V(neo.__version__)>='0.9.0':
+    import spikeinterface
+    if V(spikeinterface.__version__)>='0.90.0':
         HAVE_SI = True
         from neo.rawio.baserawio import BaseRawIO
     else:
@@ -19,7 +19,6 @@ try:
 except ImportError:
     HAVE_SI = False
 
-print(HAVE_SI)
 
 from .signals import BaseAnalogSignalSource
 from .spikes import BaseSpikeSource
