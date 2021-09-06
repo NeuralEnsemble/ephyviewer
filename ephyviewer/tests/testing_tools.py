@@ -83,8 +83,7 @@ def make_video_file(filename, codec='mpeg4', rate=25.): # mpeg4 mjpeg libx264
         #~ ax.set_title()
         #~ line.set_markersize(i)
         fig.canvas.draw()
-        # one_img = np.frombuffer(fig.canvas.tostring_rgb(), dtype='u1').reshape(h,w,3)
-        one_img = np.zeros((h, w, 3), 'u1')  # TODO FIX -- this is a hack for testing -- it creates a uniform black image
+        one_img = np.asarray(fig.canvas.buffer_rgba())[:,:,:3]
         one_img = one_img[:,:,::-1].copy()
         #~ one_img = one_img .swapaxes(0,1).copy()
 
