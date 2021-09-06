@@ -6,8 +6,8 @@ import os
 
 def test_spikeinterface_viewer(interactive=False):
     import spikeinterface as si
-    from spikeinterface.core.tests.testing_tools import generate_recording, generate_sorting
-    
+    from spikeinterface.core.testing_tools import generate_recording, generate_sorting
+
     recording = generate_recording()
     sig_source = ephyviewer.FromSpikeinterfaceRecordingSource(recording=recording)
 

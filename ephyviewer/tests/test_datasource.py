@@ -107,7 +107,7 @@ def test_neo_rawio_sources():
     neorawio = BlackrockRawIO(filename=filename)
     neorawio.parse_header()
     print(neorawio)
-    
+
 
     sources = ephyviewer.get_sources_from_neo_rawio(neorawio)
     #~ print(sources)
@@ -156,18 +156,18 @@ def test_neo_object_sources():
 
 def test_spikeinterface_sources():
     import spikeinterface as si
-    from spikeinterface.core.tests.testing_tools import generate_recording, generate_sorting
-    
+    from spikeinterface.core.testing_tools import generate_recording, generate_sorting
+
     recording = generate_recording()
     source = ephyviewer.FromSpikeinterfaceRecordingSource(recording=recording)
     print(source)
-    
+
     print(source.t_start, source.nb_channel, source.sample_rate)
-        
+
     sorting = generate_sorting()
     source = ephyviewer.FromSpikeinterfaceSorintgSource(sorting=sorting)
     print(source)
-    
+
     print(source.t_start, source.nb_channel, source.get_channel_name())
 
 
