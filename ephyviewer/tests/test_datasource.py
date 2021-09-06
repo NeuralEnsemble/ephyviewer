@@ -156,7 +156,7 @@ def test_neo_object_sources():
 
 def test_spikeinterface_sources():
     import spikeinterface as si
-    from spikeinterface.core.tests.testing_tools import generate_recording, generate_sorting
+    from spikeinterface.core.testing_tools import generate_recording, generate_sorting
     
     recording = generate_recording()
     source = ephyviewer.FromSpikeinterfaceRecordingSource(recording=recording)
