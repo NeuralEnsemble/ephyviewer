@@ -45,37 +45,37 @@ def test_mainviewer(interactive=False):
         # close thread properly
         win.close()
 
-def test_mainviewer2(interactive=False):
-    from  ephyviewer.tests.testing_tools import make_fake_video_source
-    from  ephyviewer.tests.testing_tools import make_fake_signals
-    from  ephyviewer.tests.testing_tools import make_fake_event_source
-    from  ephyviewer.tests.testing_tools import make_fake_epoch_source
-
-
-    app = ephyviewer.mkQApp()
-
-    view1 = ephyviewer.TraceViewer(source=make_fake_signals(), name='signals')
-    view2 = ephyviewer.VideoViewer(source=make_fake_video_source(), name='video')
-    view3 = ephyviewer.EventList(source=make_fake_event_source(), name='events')
-    view4 = ephyviewer.EpochViewer(source=make_fake_epoch_source(), name='epoch')
-    view5 = ephyviewer.TimeFreqViewer(source=make_fake_signals(), name='timefreq')
-
-
-    win = ephyviewer.MainViewer(debug=True, settings_name='test1', show_global_xsize=True, show_auto_scale=True)
-    #TODO bug because new params!!!!!!!
-    #~ win = ephyviewer.MainViewer(debug=True, show_global_xsize=True)
-    win.add_view(view1)
-    win.add_view(view5)
-    win.add_view(view2)
-    win.add_view(view4)
-    win.add_view(view3, location='bottom',  orientation='horizontal')
-
-    if interactive:
-        win.show()
-        app.exec_()
-    else:
-        # close thread properly
-        win.close()
+# def test_mainviewer2(interactive=False):
+#     from  ephyviewer.tests.testing_tools import make_fake_video_source
+#     from  ephyviewer.tests.testing_tools import make_fake_signals
+#     from  ephyviewer.tests.testing_tools import make_fake_event_source
+#     from  ephyviewer.tests.testing_tools import make_fake_epoch_source
+#
+#
+#     app = ephyviewer.mkQApp()
+#
+#     view1 = ephyviewer.TraceViewer(source=make_fake_signals(), name='signals')
+#     view2 = ephyviewer.VideoViewer(source=make_fake_video_source(), name='video')
+#     view3 = ephyviewer.EventList(source=make_fake_event_source(), name='events')
+#     view4 = ephyviewer.EpochViewer(source=make_fake_epoch_source(), name='epoch')
+#     view5 = ephyviewer.TimeFreqViewer(source=make_fake_signals(), name='timefreq')
+#
+#
+#     win = ephyviewer.MainViewer(debug=True, settings_name='test1', show_global_xsize=True, show_auto_scale=True)
+#     #TODO bug because new params!!!!!!!
+#     #~ win = ephyviewer.MainViewer(debug=True, show_global_xsize=True)
+#     win.add_view(view1)
+#     win.add_view(view5)
+#     win.add_view(view2)
+#     win.add_view(view4)
+#     win.add_view(view3, location='bottom',  orientation='horizontal')
+#
+#     if interactive:
+#         win.show()
+#         app.exec_()
+#     else:
+#         # close thread properly
+#         win.close()
 
 
 def test_save_load_params(interactive=False):

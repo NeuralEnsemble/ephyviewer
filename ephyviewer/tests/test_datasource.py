@@ -25,19 +25,19 @@ def test_InMemoryAnalogSignalSource():
 
 
 
-def test_VideoMultiFileSource():
-    import av
-
-    #~ video_filenames = ['video0.avi', 'video1.avi', 'video2.avi',]
-    video_filenames = ['video0.avi',]
-    for filename in video_filenames:
-        if not os.path.exists(filename):
-            make_video_file(filename)
-
-    videotimes = None
-    source = ephyviewer.MultiVideoFileSource(video_filenames, videotimes)
-    assert source.t_start==0
-    assert source.t_stop==10.
+# def test_VideoMultiFileSource():
+#     import av
+#
+#     #~ video_filenames = ['video0.avi', 'video1.avi', 'video2.avi',]
+#     video_filenames = ['video0.avi',]
+#     for filename in video_filenames:
+#         if not os.path.exists(filename):
+#             make_video_file(filename)
+#
+#     videotimes = None
+#     source = ephyviewer.MultiVideoFileSource(video_filenames, videotimes)
+#     assert source.t_start==0
+#     assert source.t_stop==10.
 
 
 def test_InMemoryEventSource():
