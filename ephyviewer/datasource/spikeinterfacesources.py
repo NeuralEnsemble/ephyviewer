@@ -1,5 +1,5 @@
 """
-Integrate
+Data sources for SpikeInterface
 """
 
 from .sourcebase import BaseDataSource
@@ -13,7 +13,6 @@ try:
     import spikeinterface
     if V(spikeinterface.__version__)>='0.90.0':
         HAVE_SI = True
-        from neo.rawio.baserawio import BaseRawIO
     else:
         HAVE_SI = False
 except ImportError:
@@ -27,7 +26,7 @@ from .spikes import BaseSpikeSource
 class FromSpikeinterfaceRecordingSource(BaseAnalogSignalSource):
     def __init__(self, recording, segment_index=0):
         BaseAnalogSignalSource.__init__(self)
-        
+
         self.recording = recording
         self.segment_index = segment_index
 
@@ -70,10 +69,10 @@ class FromSpikeinterfaceRecordingSource(BaseAnalogSignalSource):
 class FromSpikeinterfaceSorintgSource(BaseSpikeSource):
     def __init__(self, sorting, segment_index=0):
         BaseSpikeSource.__init__(self)
-        
+
         self.sorting = sorting
         self.segment_index = segment_index
-        
+
         #TODO
         self._t_stop = 10.
 
