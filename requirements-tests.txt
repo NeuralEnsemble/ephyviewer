@@ -5,5 +5,3 @@ spikeinterface>=0.90.1
 pandas
 pytest
 pytest-cov
-pytest-xvfb
-
