@@ -83,7 +83,7 @@ jobs:
           # run, but by downloading them ahead of time in a separate step we
           # can monitor the progress in GitHub Actions. if the files already
           # exist (because they were restored from the cache), no work is done.
-          
+
           # python -c "from ephyviewer.tests.testing_tools import get_tdt_test_files; get_tdt_test_files();"
           run: |
             python -c "from ephyviewer.tests.testing_tools import get_blackrock_files; get_blackrock_files();"
