@@ -1,41 +1,33 @@
 Version 1.4.1
 -------------
 
-2021-08-XX
+2021-09-XX
 
+Compatibility
+.............
+
+Support for Python < 3.7 and for PyQt4 were dropped.
+
+* Add compatibility with Neo 0.10.0
+  (:pr:`151`)
+
+* Add PySide2 support
+  (:pr:`148`)
 
 New data sources
-................
+----------------
 
-* integrate change related to neo 0.10.0 (:pr:`151`)
-
-* integrate spikeinterface object (recording, sorting) (:pr:`153`)
+* Add data sources for SpikeInterface recording and sorting objects
+  (:pr:`153`)
 
 Continuous integration
 ......................
 
-* switch to github actions (:pr:`137` :pr:`142`)
+* Run automated test suite with GitHub Actions
+  (:pr:`137`, :pr:`138`, :pr:`142`, :pr:`145`, :pr:`149`)
 
-* add badges (:pr:`138`)
+* Add manually-triggerable GitHub Action workflows for publishing to PyPI
+  (:pr:`140`)
 
-* Add manually-triggerable GitHub Action workflows for publishing to PyPI (:pr:`139`)
-
-* Add Coveralls test coverage reporting to GitHub Actions workflow (:pr:`144`)
-
-* Cache Neo data files used for testing on GitHub Actions (:pr:`145`)
-
-* Add PySide2 support (:pr:`148`)
-
-* Switch test runners from nose to pytest (:pr:`149`)
-  
-Documentation
-.............
-
-* Improve setup.py (:pr:`136`)
-
-* Add basic ReadTheDocs config file (:pr:`139`)
-
-Bug fix
-.......
-
-* compatibility with latest pyqtgraph 0.12.2 and matplotlib (:pr:`155`)
+* Add Coveralls test coverage reporting
+  (:pr:`144`)
