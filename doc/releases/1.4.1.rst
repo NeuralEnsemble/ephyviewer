@@ -34,3 +34,8 @@ Documentation
 * Improve setup.py (:pr:`136`)
 
 * Add basic ReadTheDocs config file (:pr:`139`)
+
+Bug fix
+.......
+
+* compatibility with latest pyqtgraph 0.12.2 and matplotlib (:pr:`155`)
