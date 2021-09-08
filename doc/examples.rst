@@ -95,4 +95,8 @@ Viewers from Neo objects
 Viewers for SpikeInterface objects
 ----------------------------------
 
-TODO
+.. image:: img/viewers_with_spikeinterface_objects.png
+
+:download:`viewers_with_spikeinterface_objects.py <../examples/viewers_with_spikeinterface_objects.py>`
+
+.. literalinclude:: ../examples/viewers_with_spikeinterface_objects.py
