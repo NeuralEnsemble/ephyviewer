@@ -168,19 +168,25 @@ class AnalogSignalFromNeoRawIOSource_until_v9(BaseAnalogSignalSource):
 
 # this fit the neo API >= 0.10 (with streams concept)
 class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
-    def __init__(self, neorawio, stream_index, channel_indexes=None):
+    def __init__(self, neorawio, channel_indexes=None, stream_index=None):
 
         BaseAnalogSignalSource.__init__(self)
         self.with_scatter = False
 
-        self.neorawio =neorawio
-        self.stream_index = stream_index
+        self.neorawio = neorawio
+
+        if stream_index is not None:
+            self.stream_index = stream_index
+        elif self.neorawio.signal_streams_count() == 1:
+            self.stream_index = 0
+        else:
+            raise ValueError(f'Because the Neo RawIO source contains multiple signal streams ({self.neorawio.signal_streams_count()}), stream_index must be provided')
+
         if channel_indexes is None:
             channel_indexes = slice(None)
         self.channel_indexes = channel_indexes
-        
-        
-        self.stream_id = self.neorawio.header['signal_streams'][stream_index]['id']
+
+        self.stream_id = self.neorawio.header['signal_streams'][self.stream_index]['id']
         signal_channels = self.neorawio.header['signal_channels']
         mask = signal_channels['stream_id'] == self.stream_id
         self.channels = signal_channels[mask][self.channel_indexes]
@@ -225,7 +231,7 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
 
     def get_chunk(self, i_start=None, i_stop=None):
         sigs = self.neorawio.get_analogsignal_chunk(block_index=self.block_index, seg_index=self.seg_index,
-                        i_start=i_start, i_stop=i_stop, stream_index=self.stream_index, 
+                        i_start=i_start, i_stop=i_stop, stream_index=self.stream_index,
                         channel_indexes=self.channel_indexes)
         return sigs
 
@@ -390,7 +396,7 @@ def get_sources_from_neo_rawio(neorawio):
 
     sources = {'signal':[], 'epoch':[], 'spike':[]}
 
-    
+
     # handle of neo version
     # this will be simplified in a while
     if hasattr(neorawio, 'get_group_signal_channel_indexes'):
@@ -399,23 +405,23 @@ def get_sources_from_neo_rawio(neorawio):
             channel_indexes_list = neorawio.get_group_signal_channel_indexes()
             for channel_indexes in channel_indexes_list:
                 #one soure by channel group
-                sources['signal'].append(AnalogSignalFromNeoRawIOSource_until_v9(neorawio, channel_indexes))
+                sources['signal'].append(AnalogSignalFromNeoRawIOSource_until_v9(neorawio, channel_indexes=channel_indexes))
     elif hasattr(neorawio, 'get_group_channel_indexes'):
         # Neo < 0.9.0
         if neorawio.signal_channels_count() > 0:
             channel_indexes_list = neorawio.get_group_signal_channel_indexes()
             for channel_indexes in channel_indexes_list:
                 #one soure by channel group
-                sources['signal'].append(AnalogSignalFromNeoRawIOSource_until_v9(neorawio, channel_indexes))
+                sources['signal'].append(AnalogSignalFromNeoRawIOSource_until_v9(neorawio, channel_indexes=channel_indexes))
     elif hasattr(neorawio, 'signal_streams_count'):
-        # Neo >= 0.10.0 (not release yet in march 2021)
+        # Neo >= 0.10.0
         num_streams = neorawio.signal_streams_count()
         for stream_index in range(num_streams):
             #one soure by stream
-            sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, stream_index))
+            sources['signal'].append(AnalogSignalFromNeoRawIOSource(neorawio, stream_index=stream_index))
 
 
-    
+
     if hasattr(neorawio, 'unit_channels_count'):
         # Neo   < 0.10
         if neorawio.unit_channels_count()>0:
@@ -424,7 +430,7 @@ def get_sources_from_neo_rawio(neorawio):
         # neo >= 0.10
         if neorawio.spike_channels_count()>0:
             sources['spike'].append(SpikeFromNeoRawIOSource(neorawio, None))
-        
+
 
     if neorawio.event_channels_count()>0:
         sources['epoch'].append(EpochFromNeoRawIOSource(neorawio, None))
