@@ -11,7 +11,7 @@ import numpy as np
 try:
     from distutils.version import LooseVersion as V
     import spikeinterface
-    if V(spikeinterface.__version__)>='0.90.0':
+    if V(spikeinterface.__version__)>='0.90.1':
         HAVE_SI = True
     else:
         HAVE_SI = False
@@ -66,7 +66,7 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
 
 
 
-class FromSpikeinterfaceSorintgSource(BaseSpikeSource):
+class SpikeInterfaceSortingSource(BaseSpikeSource):
     def __init__(self, sorting, segment_index=0):
         BaseSpikeSource.__init__(self)
 
