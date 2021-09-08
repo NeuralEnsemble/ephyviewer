@@ -23,7 +23,7 @@ from .signals import BaseAnalogSignalSource
 from .spikes import BaseSpikeSource
 
 
-class FromSpikeinterfaceRecordingSource(BaseAnalogSignalSource):
+class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
     def __init__(self, recording, segment_index=0):
         BaseAnalogSignalSource.__init__(self)
 

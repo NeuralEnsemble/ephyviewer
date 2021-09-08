@@ -10,10 +10,10 @@ def test_spikeinterface_viewer(interactive=False):
 
 
     recording = generate_recording()
-    sig_source = ephyviewer.FromSpikeinterfaceRecordingSource(recording=recording)
+    sig_source = ephyviewer.SpikeInterfaceRecordingSource(recording=recording)
 
     sorting = generate_sorting()
-    spike_source = ephyviewer.FromSpikeinterfaceSorintgSource(sorting=sorting)
+    spike_source = ephyviewer.SpikeInterfaceSortingSource(sorting=sorting)
 
     app = ephyviewer.mkQApp()
     win = ephyviewer.MainViewer(debug=True, show_auto_scale=True)

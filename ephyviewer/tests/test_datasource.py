@@ -159,13 +159,13 @@ def test_spikeinterface_sources():
     from spikeinterface.core.testing_tools import generate_recording, generate_sorting
 
     recording = generate_recording()
-    source = ephyviewer.FromSpikeinterfaceRecordingSource(recording=recording)
+    source = ephyviewer.SpikeInterfaceRecordingSource(recording=recording)
     print(source)
 
     print(source.t_start, source.nb_channel, source.sample_rate)
 
     sorting = generate_sorting()
-    source = ephyviewer.FromSpikeinterfaceSorintgSource(sorting=sorting)
+    source = ephyviewer.SpikeInterfaceSortingSource(sorting=sorting)
     print(source)
 
     print(source.t_start, source.nb_channel, source.get_channel_name())
