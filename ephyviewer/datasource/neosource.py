@@ -168,20 +168,23 @@ class AnalogSignalFromNeoRawIOSource_until_v9(BaseAnalogSignalSource):
 
 # this fit the neo API >= 0.10 (with streams concept)
 class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
-    def __init__(self, neorawio, stream_index):
+    def __init__(self, neorawio, stream_index, channel_indexes=None):
 
         BaseAnalogSignalSource.__init__(self)
         self.with_scatter = False
 
         self.neorawio =neorawio
         self.stream_index = stream_index
+        if channel_indexes is None:
+            channel_indexes = slice(None)
+        self.channel_indexes = channel_indexes
         
         
         self.stream_id = self.neorawio.header['signal_streams'][stream_index]['id']
         signal_channels = self.neorawio.header['signal_channels']
         mask = signal_channels['stream_id'] == self.stream_id
-        self.channels = signal_channels[mask]
-        
+        self.channels = signal_channels[mask][self.channel_indexes]
+
         self.sample_rate = self.neorawio.get_signal_sampling_rate(stream_index=self.stream_index)
 
         #TODO: something for multi segment
@@ -223,7 +226,7 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
     def get_chunk(self, i_start=None, i_stop=None):
         sigs = self.neorawio.get_analogsignal_chunk(block_index=self.block_index, seg_index=self.seg_index,
                         i_start=i_start, i_stop=i_stop, stream_index=self.stream_index, 
-                        channel_indexes=None)
+                        channel_indexes=self.channel_indexes)
         return sigs
 
 
