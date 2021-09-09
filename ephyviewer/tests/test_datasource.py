@@ -179,6 +179,6 @@ if __name__=='__main__':
     #~ test_InMemoryEventSource()
     #~ test_InMemoryEpochSource()
     #~ test_spikesource()
-    #~ test_neo_rawio_sources()
+    test_neo_rawio_sources()
     #~ test_neo_object_sources()
-    test_spikeinterface_sources()
+    #~ test_spikeinterface_sources()
