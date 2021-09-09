@@ -1,7 +1,7 @@
-Version 1.4.1
+Version 1.5.0
 -------------
 
-2021-09-XX
+2021-09-09
 
 Compatibility
 .............
@@ -9,13 +9,13 @@ Compatibility
 Support for Python < 3.7 and for PyQt4 were dropped.
 
 * Add compatibility with Neo 0.10.0
-  (:pr:`151`)
+  (:pr:`151`, :pr:`157`, :pr:`159`)
 
 * Add PySide2 support
   (:pr:`148`)
 
 New data sources
-----------------
+................
 
 * Add data sources for SpikeInterface recording and sorting objects
   (:pr:`153`)
