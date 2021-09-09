@@ -15,7 +15,7 @@ import numpy as np
 try:
     from distutils.version import LooseVersion as V
     import neo
-    if V(neo.__version__)>='0.8.0':
+    if V(neo.__version__)>='0.6.0':
         HAVE_NEO = True
         from neo.rawio.baserawio import BaseRawIO
     else:

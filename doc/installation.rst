@@ -12,7 +12,7 @@ Requirements:
   * PyQt5 or PySide2 (manual installation required)
 
 Optional dependencies:
-  * Neo ≥ 0.8 (standalone app and Neo sources)
+  * Neo ≥ 0.6 (standalone app and Neo sources)
   * PyAV (video viewer)
   * pandas (dataframes and CSV writable epoch sources)
 
