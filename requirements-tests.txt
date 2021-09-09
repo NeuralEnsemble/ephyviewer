@@ -1,6 +1,6 @@
 av
 coveralls
-neo>=0.6.0
+neo>=0.10.0
 spikeinterface>=0.90.1
 pandas
 pytest
