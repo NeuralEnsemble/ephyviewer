@@ -1,0 +1,10 @@
+Version 1.5.1
+-------------
+
+2021-09-09
+
+Packaging
+.........
+
+* Add missing requirements*.txt to source tarball
+  :pr:`161`
