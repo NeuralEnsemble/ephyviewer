@@ -4,12 +4,12 @@ Installation
 ============
 
 Requirements:
-  * Python ≥ 3.5
+  * Python ≥ 3.7
   * numpy
   * scipy
   * matplotlib ≥ 2.0
   * pyqtgraph ≥ 0.10.0
-  * PyQt5, PySide2, or PyQt4 (manual installation required)
+  * PyQt5 or PySide2 (manual installation required)
 
 Optional dependencies:
   * Neo ≥ 0.6 (standalone app and Neo sources)

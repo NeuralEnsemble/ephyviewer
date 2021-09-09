@@ -90,3 +90,13 @@ Viewers from Neo objects
 :download:`viewers_with_neo_objects.py <../examples/viewers_with_neo_objects.py>`
 
 .. literalinclude:: ../examples/viewers_with_neo_objects.py
+
+
+Viewers for SpikeInterface objects
+----------------------------------
+
+.. image:: img/viewers_with_spikeinterface_objects.png
+
+:download:`viewers_with_spikeinterface_objects.py <../examples/viewers_with_spikeinterface_objects.py>`
+
+.. literalinclude:: ../examples/viewers_with_spikeinterface_objects.py

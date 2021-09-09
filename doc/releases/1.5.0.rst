@@ -1,0 +1,33 @@
+Version 1.5.0
+-------------
+
+2021-09-09
+
+Compatibility
+.............
+
+Support for Python < 3.7 and for PyQt4 were dropped.
+
+* Add compatibility with Neo 0.10.0
+  (:pr:`151`, :pr:`157`, :pr:`159`)
+
+* Add PySide2 support
+  (:pr:`148`)
+
+New data sources
+................
+
+* Add data sources for SpikeInterface recording and sorting objects
+  (:pr:`153`)
+
+Continuous integration
+......................
+
+* Run automated test suite with GitHub Actions
+  (:pr:`137`, :pr:`138`, :pr:`142`, :pr:`145`, :pr:`149`)
+
+* Add manually-triggerable GitHub Action workflows for publishing to PyPI
+  (:pr:`140`)
+
+* Add Coveralls test coverage reporting
+  (:pr:`144`)
