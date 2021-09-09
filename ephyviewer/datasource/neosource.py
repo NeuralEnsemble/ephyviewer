@@ -112,11 +112,31 @@ def get_sources_from_neo_segment(neo_seg):
 
 class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
     def __init__(self, neorawio, channel_indexes=None, stream_index=None):
+        """
+        Create an analog signal source from a Neo RawIO.
+
+        Parameters
+        ----------
+        neorawio : subclass of neo.rawio.BaseRawIO
+            Neo RawIO reader from which to load signals.
+        channel_indexes : list of ints
+            Indexes of signals to use. Note that for Neo>=0.10, channels within
+            a signal stream are indexed independently of channels in other
+            streams; for Neo<0.10, channels are indexed globally, regardless of
+            signal group membership. If None is passed, uses all channels within
+            a stream (or all channels globally for Neo<0.10).
+        stream_index : int
+            Index of signal stream to use. If only one signal stream exists,
+            this parameter is not required. For Neo<0.10, signal streams do not
+            exist and this parameter must be None.
+        """
 
         BaseAnalogSignalSource.__init__(self)
         self.with_scatter = False
 
         self.neorawio = neorawio
+        if self.neorawio.header is None:
+            self.neorawio.parse_header()
 
         if channel_indexes is None:
             channel_indexes = slice(None)
@@ -138,6 +158,7 @@ class AnalogSignalFromNeoRawIOSource(BaseAnalogSignalSource):
         else:
             # Neo < 0.10
             # - versions 0.6-0.9 index channels globally (ignoring signal group)
+            assert stream_index is None, f'Neo version {neo.__version__} is installed, but only Neo>=0.10 uses stream_index'
             self.channels = self.neorawio.header['signal_channels'][self.channel_indexes]
 
         if V(neo.__version__)>='0.10.0':
