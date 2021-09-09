@@ -53,10 +53,11 @@ class MainViewer(QT.QMainWindow):
 
         self.navigation_toolbar = NavigationToolBar(**navigation_params)
 
-        dock = self.navigation_dock =  QT.QDockWidget('navigation',self)
-        dock.setObjectName( 'navigation')
+        dock = self.navigation_dock = QT.QDockWidget('navigation', self)
+        dock.setObjectName('navigation')
         dock.setWidget(self.navigation_toolbar)
-        dock.setTitleBarWidget(QT.QWidget())
+        dock.setTitleBarWidget(QT.QWidget())  # hide the widget title bar
+        dock.setFeatures(QT.DockWidget.NoDockWidgetFeatures)  # prevent accidental movement and undockingx
         self.addDockWidget(QT.TopDockWidgetArea, dock)
 
         self.navigation_toolbar.time_changed.connect(self.on_time_changed)
