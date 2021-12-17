@@ -31,7 +31,8 @@ default_params = [
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     {'name': 'show_axis', 'type': 'bool', 'value': True},
     {'name': 'scalogram', 'type': 'group', 'children': [
-                    {'name': 'winsize', 'type': 'float', 'value': 1., 'step': 1.},
+                    {'name': 'binsize', 'type': 'float', 'value': 1., 'step': .1, 'limits': (0,np.inf)},
+                    {'name': 'overlapsize', 'type': 'float', 'value': 0., 'step': .05, 'limits': (0,np.inf)},
                     {'name': 'scaling', 'type': 'list', 'value': 'density', 'values' : ['density', 'spectrum'] },
                     {'name': 'mode', 'type': 'list', 'value': 'psd', 'values' : ['psd'] },
                     {'name': 'detrend', 'type': 'list', 'value': 'constant', 'values' : ['constant'] },
@@ -55,7 +56,7 @@ class SpectrogramViewer_ParamController(Base_MultiChannel_ParamController):
     some_clim_changed = QT.pyqtSignal()
 
     def on_channel_visibility_changed(self):
-        print('SpectrogramViewer_ParamController.on_channel_visibility_changed')
+        #~ print('SpectrogramViewer_ParamController.on_channel_visibility_changed')
         self.viewer.create_grid()
         self.viewer.refresh()
 
@@ -126,32 +127,54 @@ class SpectrogramWorker(QT.QObject):
             # viewer has moved already
             return
 
-        winsize = worker_params['winsize']
+        binsize = worker_params['binsize']
+        overlapsize = worker_params['overlapsize']
         scaling = worker_params['scaling']
         detrend = worker_params['detrend']
         mode = worker_params['mode']
+        
 
         i_start = self.source.time_to_index(t_start)
         i_stop = self.source.time_to_index(t_stop)
+        # clip
+        i_start = min(max(0, i_start), self.source.get_length())
+        i_stop = min(max(0, i_stop), self.source.get_length())
+        
 
-        sigs_chunk = self.source.get_chunk(i_start=i_start, i_stop=i_stop)
-        #~ print('sigs_chunk.shape', sigs_chunk.shape,)
-        #~ print('chan', chan)
-        sig = sigs_chunk[:, chan]
-        
         sr = self.source.sample_rate
-        nperseg = int(winsize * sr)
-        #~ print(sig.shape, nperseg, detrend, scaling)
-        freqs, times, Sxx = scipy.signal.spectrogram(sig, fs=sr,nperseg=nperseg, detrend=detrend, scaling=scaling, mode=mode)
-        #~ print(Sxx.shape, Sxx.dtype)
+        nperseg = int(binsize * sr)
+        noverlap = int(overlapsize * sr)
         
-        if  worker_params['scale'] == 'dB':
-            if mode == 'psd':
-                Sxx = 10. * np.log10(Sxx)
-        
-        t1 = t_start
-        t2 = t_stop
-        self.data_ready.emit(chan, t,   t_start, t_stop, t1, t2, Sxx)
+        if noverlap >= nperseg:
+            noverlap = noverlap - 1
+
+        if nperseg== 0 or (i_stop - i_start) < nperseg:
+            # too short
+            t1, t2 = t_start, t_stop
+            Sxx = None
+            self.data_ready.emit(chan, t,   t_start, t_stop, t1, t2, Sxx)
+        else:
+
+            sigs_chunk = self.source.get_chunk(i_start=i_start, i_stop=i_stop)
+            sig = sigs_chunk[:, chan]
+
+            freqs, times, Sxx = scipy.signal.spectrogram(sig, fs=sr,nperseg=nperseg, noverlap=noverlap,
+                        detrend=detrend, scaling=scaling, mode=mode)
+            
+            if  worker_params['scale'] == 'dB':
+                if mode == 'psd':
+                    Sxx = 10. * np.log10(Sxx)
+            
+            if len(times) >=2:
+                bin_slide = times[1] - times[0]
+                t1 = self.source.index_to_time(i_start) + times[0] - bin_slide /2.
+                t2 = self.source.index_to_time(i_start) + times[-1] + bin_slide /2.
+                self.data_ready.emit(chan, t,   t_start, t_stop, t1, t2, Sxx)
+            else:
+                t1, t2 = t_start, t_stop
+                Sxx = None
+                self.data_ready.emit(chan, t,   t_start, t_stop, t1, t2, Sxx)
+
 
 
 
@@ -196,6 +219,8 @@ class SpectrogramViewer(BaseMultiChannelViewer):
             self.timefreq_makers.append(worker)
             worker.moveToThread(thread)
             thread.start()
+            
+            self.last_Sxx[c] = None
 
 
             worker.data_ready.connect(self.on_data_ready)
@@ -276,7 +301,7 @@ class SpectrogramViewer(BaseMultiChannelViewer):
         self.lut = np.array(lut, dtype='uint8')
 
     def auto_scale(self):
-        print('auto_scale', self.params['scale_mode'])
+        #~ print('auto_scale', self.params['scale_mode'])
         self.params_controller.compute_auto_clim()
         self.refresh()
 
@@ -289,7 +314,7 @@ class SpectrogramViewer(BaseMultiChannelViewer):
         t_start, t_stop = self.t-xsize*xratio , self.t+xsize*(1-xratio)
         
         worker_params = get_dict_from_group_param(self.params.param('scalogram'))
-        print('worker_params', worker_params)
+        #~ print('worker_params', worker_params)
         
         
         for c in range(self.source.nb_channel):
@@ -304,14 +329,24 @@ class SpectrogramViewer(BaseMultiChannelViewer):
 
         if self.images[chan] is None:
             return
-
+        
+        
         self.last_Sxx[chan] = Sxx
+        
+        image = self.images[chan]
+        
+        if Sxx is None:
+            image.hide()
+            return
+        
+        image.show()
+        
         f_start = 0
         f_stop = self.source.sample_rate / 2.
         #~ f_start = self.params['timefreq', 'f_start']
         #~ f_stop = self.params['timefreq', 'f_stop']
 
-        image = self.images[chan]
+        
         #~ print(t_start, f_start,self.worker_params['wanted_size'], f_stop-f_start)
 
         #~ image.updateImage(wt_map)

@@ -41,6 +41,15 @@ Time-frequency viewer
 
 .. literalinclude:: ../examples/timefreq_viewer.py
 
+Spectrogram viewer
+------------------
+
+.. image:: img/spectrogram_viewer_example.png
+
+:download:`spectrogram_viewer.py <../examples/spectrogram_viewer.py>`
+
+.. literalinclude:: ../examples/spectrogram_viewer.py
+
 
 Spike train viewer
 ------------------
