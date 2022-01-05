@@ -31,8 +31,8 @@ default_params = [
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     {'name': 'show_axis', 'type': 'bool', 'value': True},
     {'name': 'scalogram', 'type': 'group', 'children': [
-                    {'name': 'binsize', 'type': 'float', 'value': 1., 'step': .1, 'limits': (0,np.inf)},
-                    {'name': 'overlapsize', 'type': 'float', 'value': 0., 'step': .05, 'limits': (0,np.inf)},
+                    {'name': 'binsize', 'type': 'float', 'value': 0.01, 'step': .01, 'limits': (0,np.inf)},
+                    {'name': 'overlapratio', 'type': 'float', 'value': 0., 'step': .05, 'limits': (0., 0.95)},
                     {'name': 'scaling', 'type': 'list', 'value': 'density', 'values' : ['density', 'spectrum'] },
                     {'name': 'mode', 'type': 'list', 'value': 'psd', 'values' : ['psd'] },
                     {'name': 'detrend', 'type': 'list', 'value': 'constant', 'values' : ['constant'] },
@@ -128,7 +128,7 @@ class SpectrogramWorker(QT.QObject):
             return
 
         binsize = worker_params['binsize']
-        overlapsize = worker_params['overlapsize']
+        overlapratio = worker_params['overlapratio']
         scaling = worker_params['scaling']
         detrend = worker_params['detrend']
         mode = worker_params['mode']
@@ -143,10 +143,11 @@ class SpectrogramWorker(QT.QObject):
 
         sr = self.source.sample_rate
         nperseg = int(binsize * sr)
-        noverlap = int(overlapsize * sr)
+        noverlap = int(overlapratio * nperseg)
         
         if noverlap >= nperseg:
             noverlap = noverlap - 1
+        print(nperseg, noverlap)
 
         if nperseg== 0 or (i_stop - i_start) < nperseg:
             # too short
