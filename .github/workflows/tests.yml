@@ -6,10 +6,10 @@ jobs:
   test-docs:
     runs-on: ubuntu-latest
     steps:
-        - name: Set up Python 3.7
+        - name: Set up Python 3.8
           uses: actions/setup-python@v2
           with:
-            python-version: 3.7
+            python-version: 3.8
 
         - name: Checkout repository
           uses: actions/checkout@v2
@@ -33,20 +33,12 @@ jobs:
     runs-on: ubuntu-20.04  # because Qt 6 requires glibc >= 2.28, which ubuntu-latest does not have
     strategy:
       matrix:
-        python-version: ['3.5', '3.6', '3.7', '3.8', '3.9']
+        python-version: ['3.7', '3.8', '3.9']
         qt-version: [PySide6, PyQt5, PySide2]
-        exclude:
-            - qt-version: PySide6
-              python-version: '3.5'  # because PySide6 requires Python >= 3.6
-            - qt-version: PySide6
-              python-version: '3.6'  # because dev pyqtgraph requires Python >= 3.7
-        include:
-            - qt-version: PySide6
-              pyqtgraph-dev: true  # because released pyqtgraph does not support Qt 6
     env:
       DISPLAY: ':99.0'
       XDG_RUNTIME_DIR: /tmp/runtime-runner
-      NEO_TEST_FILES: /tmp/files_for_testing_neo
+      NEO_TEST_FILES: ~/ephy_testing_data_http
     steps:
         - name: Set up virtual framebuffer (xvfb) for Qt GUI testing
           # https://pytest-qt.readthedocs.io/en/latest/troubleshooting.html#github-actions
@@ -102,8 +94,10 @@ jobs:
           # run, but by downloading them ahead of time in a separate step we
           # can monitor the progress in GitHub Actions. if the files already
           # exist (because they were restored from the cache), no work is done.
+
+          # python -c "from ephyviewer.tests.testing_tools import get_tdt_test_files; get_tdt_test_files();"
           run: |
-            python -c "from ephyviewer.tests.testing_tools import get_tdt_test_files; get_tdt_test_files()"
+            python -c "from ephyviewer.tests.testing_tools import get_blackrock_files; get_blackrock_files();"
             ls -lR ${{ env.NEO_TEST_FILES }}
 
         - name: Run tests

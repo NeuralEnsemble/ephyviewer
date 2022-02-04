@@ -5,3 +5,5 @@ from .events import *
 from .epochs import *
 from .spikes import *
 from .neosource import *
+from .spikeinterfacesources import *
+

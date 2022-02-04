@@ -6,13 +6,17 @@ import numpy as np
 
 from .sourcebase import BaseDataSource
 
-import matplotlib.pyplot as plt
+
+import matplotlib.cm
 import matplotlib.colors
 
 
 class BaseAnalogSignalSource(BaseDataSource):
     type = 'AnalogSignal'
 
+    def __init__(self):
+        self.with_scatter = False
+    
     def get_length(self):
         raise(NotImplementedError)
 
@@ -41,7 +45,6 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
         if channel_names is None:
             self.channel_names = ['Channel {:3}'.format(c) for c in range(self.signals.shape[1])]
 
-        self.with_scatter = False
 
     @property
     def nb_channel(self):
@@ -82,7 +85,7 @@ class AnalogSignalSourceWithScatter(InMemoryAnalogSignalSource):
         if self.scatter_colors is None:
             self.scatter_colors = {}
             n = len(self._labels)
-            colors = plt.cm.get_cmap('Accent', n)
+            colors = matplotlib.cm.get_cmap('Accent', n)
             for i,k in enumerate(self._labels):
                 self.scatter_colors[k] = matplotlib.colors.to_hex(colors(i))
 

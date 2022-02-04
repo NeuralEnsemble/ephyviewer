@@ -16,6 +16,7 @@ from .videoviewer import VideoViewer
 from .eventlist import EventList
 from .epochviewer import EpochViewer
 from .timefreqviewer import TimeFreqViewer
+from .spectrogramviewer import SpectrogramViewer
 from .dataframeview import DataFrameView
 from .spiketrainviewer import SpikeTrainViewer
 

@@ -1,9 +1,11 @@
+import pytest
 
 import ephyviewer
 import numpy as np
 import os
 
-from  ephyviewer.tests.testing_tools import make_video_file, get_tdt_test_files
+# get_tdt_test_files
+from  ephyviewer.tests.testing_tools import make_video_file, get_blackrock_files
 
 
 def test_InMemoryAnalogSignalSource():
@@ -94,13 +96,18 @@ def test_spikesource():
 
 
 def test_neo_rawio_sources():
-    from neo.rawio.tdtrawio import TdtRawIO
+    #~ from neo.rawio.tdtrawio import TdtRawIO
+    #~ local_tdt_folder = get_tdt_test_files()
+    #~ neorawio = TdtRawIO(dirname=local_tdt_folder)
+    #~ neorawio.parse_header()
+    #~ print(neorawio)
 
-    local_test_dir = get_tdt_test_files()
-    dirname = os.path.join(local_test_dir, 'aep_05')
-    neorawio = TdtRawIO(dirname=dirname)
+    from neo.rawio.blackrockrawio import BlackrockRawIO
+    filename = get_blackrock_files()
+    neorawio = BlackrockRawIO(filename=filename)
     neorawio.parse_header()
     print(neorawio)
+
 
     sources = ephyviewer.get_sources_from_neo_rawio(neorawio)
     #~ print(sources)
@@ -147,6 +154,22 @@ def test_neo_object_sources():
         #~ print(s.get_chunk(i_start=0, i_stop=1024).shape)
 
 
+def test_spikeinterface_sources():
+    import spikeinterface as si
+    from spikeinterface.core.testing_tools import generate_recording, generate_sorting
+
+    recording = generate_recording()
+    source = ephyviewer.SpikeInterfaceRecordingSource(recording=recording)
+    print(source)
+
+    print(source.t_start, source.nb_channel, source.sample_rate)
+
+    sorting = generate_sorting()
+    source = ephyviewer.SpikeInterfaceSortingSource(sorting=sorting)
+    print(source)
+
+    print(source.t_start, source.nb_channel, source.get_channel_name())
+
 
 
 
@@ -158,3 +181,4 @@ if __name__=='__main__':
     test_spikesource()
     test_neo_rawio_sources()
     test_neo_object_sources()
+    test_spikeinterface_sources()

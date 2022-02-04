@@ -8,6 +8,9 @@ import os
 import numpy as np
 import matplotlib.pyplot as plt
 
+from pathlib import Path
+from urllib.request import urlopen
+
 
 def make_fake_signals():
     np.random.seed(2205)
@@ -80,7 +83,7 @@ def make_video_file(filename, codec='mpeg4', rate=25.): # mpeg4 mjpeg libx264
         #~ ax.set_title()
         #~ line.set_markersize(i)
         fig.canvas.draw()
-        one_img = np.frombuffer(fig.canvas.tostring_rgb(), dtype='u1').reshape(h,w,3)
+        one_img = np.asarray(fig.canvas.buffer_rgba())[:,:,:3]
         one_img = one_img[:,:,::-1].copy()
         #~ one_img = one_img .swapaxes(0,1).copy()
 
@@ -151,20 +154,53 @@ def make_fake_spiketrain_source():
 
 
 def get_tdt_test_files():
-    from neo.test.rawiotest.test_tdtrawio import TestTdtRawIO
-    t = TestTdtRawIO()
-    t.files_to_download = [
-        # first Neo Segment
-        'aep_05/Block-1/aep_05_Block-1.Tbk',
-        'aep_05/Block-1/aep_05_Block-1.Tdx',
-        'aep_05/Block-1/aep_05_Block-1.tev',
-        'aep_05/Block-1/aep_05_Block-1.tsq',
+    # this implementation is based on datalad which is buggy on GH actions
+    # from neo.utils import download_dataset
+    # local_folder = download_dataset(remote_path='tdt/aep_05')
+    # return str(local_folder)
 
-        # second Neo Segment -- not yet used by ephyviewer
-        # 'aep_05/Block-2/aep_05_Block-2.Tbk',
-        # 'aep_05/Block-2/aep_05_Block-2.Tdx',
-        # 'aep_05/Block-2/aep_05_Block-2.tev',
-        # 'aep_05/Block-2/aep_05_Block-2.tsq',
+    # we use old implementation with http
+    url_for_tests = "https://web.gin.g-node.org/NeuralEnsemble/ephy_testing_data/raw/master/"
+
+    files_to_download = [
+        'tdt/aep_05/Block-1/aep_05_Block-1.Tbk',
+        'tdt/aep_05/Block-1/aep_05_Block-1.Tdx',
+        'tdt/aep_05/Block-1/aep_05_Block-1.tev',
+        'tdt/aep_05/Block-1/aep_05_Block-1.tsq',
     ]
-    t.setUp()
-    return t.local_test_dir
+
+    local_folder = Path.home() / 'ephy_testing_data_http'
+
+    for file in files_to_download:
+        localfile = local_folder / file
+        distantfile = url_for_tests + file
+        if not localfile.is_file():
+            localfile.parent.mkdir(exist_ok=True, parents=True)
+            dist = urlopen(distantfile)
+            with open(localfile, 'wb') as f:
+                f.write(dist.read())
+
+    tdt_folder = str(local_folder / 'tdt' / 'aep_05')
+    return tdt_folder
+
+def get_blackrock_files():
+    url_for_tests = "https://web.gin.g-node.org/NeuralEnsemble/ephy_testing_data/raw/master/"
+
+    files_to_download = [
+        'blackrock/FileSpec2.3001.ns5',
+        'blackrock/FileSpec2.3001.nev',
+    ]
+
+    local_folder = Path.home() / 'ephy_testing_data_http'
+
+    for file in files_to_download:
+        localfile = local_folder / file
+        distantfile = url_for_tests + file
+        if not localfile.is_file():
+            localfile.parent.mkdir(exist_ok=True, parents=True)
+            dist = urlopen(distantfile)
+            with open(localfile, 'wb') as f:
+                f.write(dist.read())
+
+    filename = str(local_folder / 'blackrock' / 'FileSpec2.3001')
+    return filename

@@ -24,28 +24,61 @@ class ModuleProxy(object):
         raise AttributeError(name)
 
 QT_MODE = None
-try:
-    import PySide6
-    from PySide6 import QtCore, QtGui, QtWidgets
-    QT_MODE = 'PySide6'
-except ImportError:
+
+
+if QT_MODE is None:
+    try:
+        import PySide6
+        from PySide6 import QtCore, QtGui, QtWidgets
+        QT_MODE = 'PySide6'
+    except ImportError:
+        pass
+
+if QT_MODE is None:
+    try:
+        import PyQt6
+        from PyQt6 import QtCore, QtGui, QtWidgets
+        QT_MODE = 'PyQt6'
+    except ImportError:
+        pass
+
+if QT_MODE is None:
     try:
         import PyQt5
         from PyQt5 import QtCore, QtGui, QtWidgets
         QT_MODE = 'PyQt5'
     except ImportError:
-        try:
-            import PySide2
-            from PySide2 import QtCore, QtGui, QtWidgets
-            QT_MODE = 'PySide2'
-        except ImportError:
-            try:
-                import PyQt4
-                from PyQt4 import QtCore, QtGui
-                QT_MODE = 'PyQt4'
-            except ImportError:
-                raise ImportError('Could not locate a supported Qt bindings library (PySide6, PyQt5, PySide2, PyQt4)')
+        pass
+
+if QT_MODE is None:
+    try:
+        import PySide2
+        from PySide2 import QtCore, QtGui, QtWidgets
+        QT_MODE = 'PySide2'
+    except ImportError:
+        pass
+
+if QT_MODE is None:
+    try:
+        import PyQt4
+        from PyQt4 import QtCore, QtGui
+        QT_MODE = 'PyQt4'
+    except ImportError:
+        pass
+
+
+if QT_MODE is None:
+    raise ImportError('Could not locate a supported Qt bindings library (PySide6, PyQt6, PyQt5, PySide2, PyQt4)')
 #~ print(QT_MODE)
+
+if QT_MODE == 'PySide6':
+    QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
+elif QT_MODE == 'PyQt6':
+    QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
+elif QT_MODE == 'PyQt5':
+    QT = ModuleProxy(['', 'Q', 'Qt'], [QtCore.Qt, QtCore, QtGui, QtWidgets])
+else:
+    QT = None
 
 if QT_MODE == 'PyQt4':
     modules = [QtCore.Qt, QtCore, QtGui]

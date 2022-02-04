@@ -37,7 +37,7 @@ default_params = [
     ]
 
 default_by_channel_params = [
-    {'name': 'color', 'type': 'color', 'value': "55FF00"},
+    {'name': 'color', 'type': 'color', 'value': "#55FF00"},
     {'name': 'visible', 'type': 'bool', 'value': True},
     ]
 

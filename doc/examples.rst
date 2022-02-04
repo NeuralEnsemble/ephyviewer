@@ -41,6 +41,15 @@ Time-frequency viewer
 
 .. literalinclude:: ../examples/timefreq_viewer.py
 
+Spectrogram viewer
+------------------
+
+.. image:: img/spectrogram_viewer_example.png
+
+:download:`spectrogram_viewer.py <../examples/spectrogram_viewer.py>`
+
+.. literalinclude:: ../examples/spectrogram_viewer.py
+
 
 Spike train viewer
 ------------------
@@ -90,3 +99,13 @@ Viewers from Neo objects
 :download:`viewers_with_neo_objects.py <../examples/viewers_with_neo_objects.py>`
 
 .. literalinclude:: ../examples/viewers_with_neo_objects.py
+
+
+Viewers for SpikeInterface objects
+----------------------------------
+
+.. image:: img/viewers_with_spikeinterface_objects.png
+
+:download:`viewers_with_spikeinterface_objects.py <../examples/viewers_with_spikeinterface_objects.py>`
+
+.. literalinclude:: ../examples/viewers_with_spikeinterface_objects.py
