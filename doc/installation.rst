@@ -9,8 +9,7 @@ Requirements:
   * scipy
   * matplotlib ≥ 2.0
   * pyqtgraph ≥ 0.10.0
-  * PySide6, PyQt6, PyQt5, PySide2, or PyQt4 (manual installation required)
-  * PyQt5 or PySide2 (manual installation required)
+  * PySide6, PyQt5, PySide2, or PyQt4 (manual installation required)
 
 Optional dependencies:
   * Neo ≥ 0.6 (standalone app and Neo sources)

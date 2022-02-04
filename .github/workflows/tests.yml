@@ -34,7 +34,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.7', '3.8', '3.9']
-        qt-version: [PySide6, PyQt6, PyQt5, PySide2]
+        qt-version: [PySide6, PyQt5, PySide2]
         # exclude:
         #    - qt-version: PySide2
         #      python-version: '3.9'
