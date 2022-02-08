@@ -16,7 +16,14 @@ def make_resources_icons(qt_mode):
 </RCC>
 """)
 
-    if qt_mode == 'PyQt5':
+    if qt_mode == 'PySide6':
+        os.popen('pyside6-rcc icons.qrc -o icons_PySide6.py')
+
+    elif qt_mode == 'PyQt6':
+        # pyrcc6 do not exists!!!!!
+        # https://stackoverflow.com/questions/66099225/how-can-resources-be-provided-in-pyqt6-which-has-no-pyrcc
+        pass
+    elif qt_mode == 'PyQt5':
         os.popen('pyrcc5 icons.qrc -o icons_PyQt5.py')
 
     elif qt_mode == 'PySide2':

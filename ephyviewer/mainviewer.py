@@ -39,6 +39,7 @@ class MainViewer(QT.QMainWindow):
         self.debug = debug
         if self.debug:
             print('debug True')
+            print('QT_MODE', QT_MODE)
         self.settings_name = settings_name
         if self.settings_name is not None:
             pyver = '.'.join(str(e) for e in sys.version_info[0:3])

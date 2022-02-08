@@ -9,12 +9,13 @@ Requirements:
   * scipy
   * matplotlib ≥ 2.0
   * pyqtgraph ≥ 0.10.0
-  * PyQt5 or PySide2 (manual installation required)
+  * PySide6, PyQt5, PySide2, or PyQt4 (manual installation required)
 
 Optional dependencies:
   * Neo ≥ 0.6 (standalone app and Neo sources)
   * PyAV (video viewer)
   * pandas (dataframes and CSV writable epoch sources)
+  * spikeinterface>=0.92 (for spikeinterface objects)
 
 To install the latest release::
 
