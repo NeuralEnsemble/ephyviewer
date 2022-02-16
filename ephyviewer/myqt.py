@@ -17,9 +17,7 @@ class ModuleProxy(object):
         for prefix in self.prefixes:
             fullname = prefix + name
             for module in self.modules:
-                print(module)
                 obj = getattr(module, fullname, None)
-                print(obj)
                 if obj is not None:
                     setattr(self, name, obj) # cache it
                     return obj
@@ -71,7 +69,7 @@ if QT_MODE is None:
 
 if QT_MODE is None:
     raise ImportError('Could not locate a supported Qt bindings library (PySide6, PyQt6, PyQt5, PySide2, PyQt4)')
-print(QT_MODE)
+# print(QT_MODE)
 
 if QT_MODE == 'PyQt4':
     modules = [QtCore.Qt, QtCore, QtGui]
