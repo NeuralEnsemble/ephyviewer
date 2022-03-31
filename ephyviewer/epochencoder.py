@@ -396,7 +396,7 @@ class EpochEncoder(ViewerBase):
 
     def on_param_change(self):
         self.allow_overlap_action.setChecked(not self.params['exclusive_mode'])
-        self.vline.setPen(color=self.params['vline_color'])
+        self.vline.setPen(self.params['vline_color'])
         for label_item in self.label_items:
             font = label_item.textItem.font()
             font.setPointSize(self.params['label_size'])

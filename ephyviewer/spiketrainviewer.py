@@ -181,7 +181,7 @@ class SpikeTrainViewer(BaseMultiChannelViewer):
             all_brush = np.concatenate(all_brush)
             self.scatter.setData(x=all_x, y=all_y, pen=all_brush)
 
-        self.vline.setPen(color=self.params['vline_color'])
+        self.vline.setPen(self.params['vline_color'])
         self.vline.setPos(self.t)
 
         self.plot.setXRange( t_start, t_stop, padding = 0.0)

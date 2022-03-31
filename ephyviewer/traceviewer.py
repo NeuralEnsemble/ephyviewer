@@ -534,7 +534,7 @@ class TraceViewer(BaseMultiChannelViewer):
                 if self.source.with_scatter:
                     self.scatter.setSize(self.params['scatter_size'])
             if param.name()=='vline_color':
-                self.vline.setPen(color=self.params['vline_color'])
+                self.vline.setPen(self.params['vline_color'])
             if param.name()=='label_fill_color':
                 for label in self.channel_labels:
                     label.fill = pg.mkBrush(self.params['label_fill_color'])
@@ -598,7 +598,7 @@ class TraceViewer(BaseMultiChannelViewer):
             self.curves[c].setData(times_curves, dict_curves[c])
 
             color = self.by_channel_params['ch{}'.format(c), 'color']
-            self.curves[c].setPen(color=color, width=self.params['line_width'])
+            self.curves[c].setPen(color, width=self.params['line_width'])
 
             if self.params['display_labels']:
                 self.channel_labels[c].show()

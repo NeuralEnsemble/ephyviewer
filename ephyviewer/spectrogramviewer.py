@@ -363,7 +363,7 @@ class SpectrogramViewer(BaseMultiChannelViewer):
         # display_labels
 
         self.vlines[chan].setPos(t)
-        self.vlines[chan].setPen(color=self.params['vline_color'])
+        self.vlines[chan].setPen(self.params['vline_color'])
         plot = self.plots[chan]
         plot.setXRange(t_start, t_stop, padding = 0.0)
         plot.setYRange(f_start, f_stop, padding = 0.0)
