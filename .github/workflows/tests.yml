@@ -49,11 +49,11 @@ jobs:
             sudo apt-get install libxkbcommon-x11-0 libxcb-icccm4 libxcb-image0 libxcb-keysyms1 libxcb-randr0 libxcb-render-util0 libxcb-xinerama0 libxcb-xfixes0
             /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_99.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :99 -screen 0 1920x1200x24 -ac +extension GLX
 
-        - name: Install OpenGL and EGL
+        # - name: Install OpenGL and EGL
           # https://github.com/pyqtgraph/pyqtgraph/pull/1495#issuecomment-761397669
-          if: ${{ matrix.qt-version == 'PySide6' }}
-          run: |
-            sudo apt-get install -y libopengl0 libegl1-mesa
+          # if: ${{ matrix.qt-version == 'PySide6' }}
+          # run: |
+          #  sudo apt-get install -y libopengl0 libegl1-mesa
 
         - name: Set up Python ${{ matrix.python-version }}
           uses: actions/setup-python@v2
