@@ -1,0 +1,11 @@
+Version 1.6.0
+-------------
+
+2021-03-31
+
+
+* some fix with pyqtgraph version
+* PySide6 integration
+* spectrogram implementation
+* Prevent accidental un-docking of the navigation toolbar
+
