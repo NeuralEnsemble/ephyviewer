@@ -34,8 +34,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.7', '3.8', '3.9']
-        qt-version: [PyQt5, PySide2]
-        # PySide6 is exclude now because libopengl0 libegl1-mesa are not installing properlly on GH
+        qt-version: [PyQt5, PySide2, PySide6]
         # exclude:
         #    - qt-version: PySide2
         #      python-version: '3.9'
