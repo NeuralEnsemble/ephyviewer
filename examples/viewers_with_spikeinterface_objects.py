@@ -39,5 +39,5 @@ win.add_view(view)
 
 
 win.show()
-app.exec_()
+app.exec()
 

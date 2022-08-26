@@ -37,7 +37,7 @@ def test_spectrogramviewer(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()

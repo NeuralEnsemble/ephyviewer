@@ -8,7 +8,7 @@ def test_navigation(interactive=False):
 
     if interactive:
         toolbar.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         toolbar.close()

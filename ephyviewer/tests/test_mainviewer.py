@@ -40,7 +40,7 @@ def test_mainviewer(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()
@@ -72,7 +72,7 @@ def test_mainviewer2(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()
@@ -94,7 +94,7 @@ def test_save_load_params(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()

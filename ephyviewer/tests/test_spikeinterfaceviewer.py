@@ -27,7 +27,7 @@ def test_spikeinterface_viewer(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()

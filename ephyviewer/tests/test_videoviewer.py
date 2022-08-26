@@ -18,7 +18,7 @@ def test_videoviewer(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()

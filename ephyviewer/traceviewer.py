@@ -31,7 +31,7 @@ default_params = [
     {'name': 'ylim_min', 'type': 'float', 'value': -10.},
     {'name': 'scatter_size', 'type': 'float', 'value': 10.,  'limits': (0,np.inf)},
     {'name': 'scale_mode', 'type': 'list', 'value': 'real_scale',
-        'values':['real_scale', 'same_for_all', 'by_channel'] },
+        'limits':['real_scale', 'same_for_all', 'by_channel'] },
     {'name': 'auto_scale_factor', 'type': 'float', 'value': 0.1, 'step': 0.01, 'limits': (0,np.inf)},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
@@ -40,7 +40,7 @@ default_params = [
     {'name': 'display_labels', 'type': 'bool', 'value': False},
     {'name': 'display_offset', 'type': 'bool', 'value': False},
     {'name': 'antialias', 'type': 'bool', 'value': False},
-    {'name': 'decimation_method', 'type': 'list', 'value': 'min_max', 'values': ['min_max', 'mean', 'pure_decimate',  ]},
+    {'name': 'decimation_method', 'type': 'list', 'value': 'min_max', 'limits': ['min_max', 'mean', 'pure_decimate',  ]},
     {'name': 'line_width', 'type': 'float', 'value': 1., 'limits': (0, np.inf)},
     ]
 

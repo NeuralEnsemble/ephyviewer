@@ -22,7 +22,7 @@ from .datasource import get_sources_from_neo_rawio
 from neo.rawio import rawiolist
 rawio_gui_params = {}
 rawio_gui_params['RawBinarySignal'] = [
-        {'name': 'dtype', 'type': 'list', 'values':['int16', 'uint16', 'float32', 'float64']},
+        {'name': 'dtype', 'type': 'list', 'limits':['int16', 'uint16', 'float32', 'float64']},
         {'name': 'nb_channel', 'type': 'int', 'value':1},
         {'name': 'sampling_rate', 'type': 'float', 'value':10000., 'step': 1000., 'suffix': 'Hz', 'siPrefix': True},
         {'name': 'bytesoffset', 'type': 'int', 'value':0},
@@ -178,7 +178,7 @@ class RawNeoOpenDialog(QT.QDialog):
 
         if step=='source_type':
             source_types = list(all_neo_rawio_dict.keys())
-            params = [{'name': 'format', 'type': 'list', 'values':source_types},
+            params = [{'name': 'format', 'type': 'list', 'limits':source_types},
                             ]
             self.step_params = pg.parametertree.Parameter.create(name='Select format', type='group', children = params)
             self.tree_params.setParameters(self.step_params, showTop=True)

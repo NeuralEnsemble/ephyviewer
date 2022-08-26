@@ -56,4 +56,4 @@ win2 = compose_mainviewer_from_sources(sources)
 win2.show()
 
 
-app.exec_()
+app.exec()

@@ -60,7 +60,7 @@ def launch_standalone_ephyviewer():
         manager.open_dialog()
 
     if manager.windows:
-        app.exec_()
+        app.exec()
 
 if __name__=='__main__':
     launch_standalone_ephyviewer()

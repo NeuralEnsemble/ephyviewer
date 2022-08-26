@@ -48,4 +48,4 @@ win.add_view(view2, location='bottom',  orientation='horizontal')
 
 #show main window and run Qapp
 win.show()
-app.exec_()
+app.exec()

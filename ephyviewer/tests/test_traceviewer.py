@@ -20,7 +20,7 @@ def test_traceviewer(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()
@@ -41,7 +41,7 @@ def test_traceviewer_with_scatter(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()
@@ -61,7 +61,7 @@ def test_traceviewer_cls_method_numpy(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()
@@ -83,7 +83,7 @@ def test_traceviewer_cls_method_neo(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()
