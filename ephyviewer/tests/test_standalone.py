@@ -13,7 +13,7 @@ def test_WindowManager(interactive=False):
     if interactive:
         manager.open_dialog()
         if manager.windows:
-            app.exec_()
+            app.exec()
 
 
 def test_RawNeoOpenDialog(interactive=False):
@@ -22,7 +22,7 @@ def test_RawNeoOpenDialog(interactive=False):
 
     if interactive:
         dia.show()
-        app.exec_()
+        app.exec()
 
     print(dia.final_params)
 

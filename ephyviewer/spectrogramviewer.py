@@ -26,17 +26,17 @@ default_params = [
     {'name': 'nb_column', 'type': 'int', 'value': 4},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
-    {'name': 'colormap', 'type': 'list', 'value': 'viridis', 'values' : ['inferno', 'viridis', 'jet', 'gray', 'hot', ] },
-    {'name': 'scale_mode', 'type': 'list', 'value': 'same_for_all', 'values' : ['by_channel', 'same_for_all', ] },
+    {'name': 'colormap', 'type': 'list', 'value': 'viridis', 'limits' : ['inferno', 'viridis', 'jet', 'gray', 'hot', ] },
+    {'name': 'scale_mode', 'type': 'list', 'value': 'same_for_all', 'limits' : ['by_channel', 'same_for_all', ] },
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     {'name': 'show_axis', 'type': 'bool', 'value': True},
     {'name': 'scalogram', 'type': 'group', 'children': [
                     {'name': 'binsize', 'type': 'float', 'value': 0.01, 'step': .01, 'limits': (0,np.inf)},
                     {'name': 'overlapratio', 'type': 'float', 'value': 0., 'step': .05, 'limits': (0., 0.95)},
-                    {'name': 'scaling', 'type': 'list', 'value': 'density', 'values' : ['density', 'spectrum'] },
-                    {'name': 'mode', 'type': 'list', 'value': 'psd', 'values' : ['psd'] },
-                    {'name': 'detrend', 'type': 'list', 'value': 'constant', 'values' : ['constant'] },
-                    {'name': 'scale', 'type': 'list', 'value': 'dB', 'values' : ['dB', 'linear'] },
+                    {'name': 'scaling', 'type': 'list', 'value': 'density', 'limits' : ['density', 'spectrum'] },
+                    {'name': 'mode', 'type': 'list', 'value': 'psd', 'limits' : ['psd'] },
+                    {'name': 'detrend', 'type': 'list', 'value': 'constant', 'limits' : ['constant'] },
+                    {'name': 'scale', 'type': 'list', 'value': 'dB', 'limits' : ['dB', 'linear'] },
                     
 
                 ]

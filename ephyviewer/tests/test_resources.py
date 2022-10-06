@@ -8,7 +8,7 @@ def test_icons(interactive=False):
 
     if interactive:
     	w.show()
-    	app.exec_()
+    	app.exec()
 
 
 if __name__ == '__main__' :

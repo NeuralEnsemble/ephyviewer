@@ -41,4 +41,4 @@ win.add_view(view2)
 
 #show main window and run Qapp
 win.show()
-app.exec_()
+app.exec()

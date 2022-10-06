@@ -29,10 +29,10 @@ default_params = [
     {'name': 'nb_column', 'type': 'int', 'value': 4},
     {'name': 'background_color', 'type': 'color', 'value': 'k'},
     {'name': 'vline_color', 'type': 'color', 'value': '#FFFFFFAA'},
-    {'name': 'colormap', 'type': 'list', 'value': 'viridis', 'values' : ['viridis', 'jet', 'gray', 'hot', ] },
+    {'name': 'colormap', 'type': 'list', 'value': 'viridis', 'limits' : ['viridis', 'jet', 'gray', 'hot', ] },
     {'name': 'display_labels', 'type': 'bool', 'value': True},
     {'name': 'show_axis', 'type': 'bool', 'value': True},
-    {'name': 'scale_mode', 'type': 'list', 'value': 'same_for_all', 'values' : ['by_channel', 'same_for_all', ] },
+    {'name': 'scale_mode', 'type': 'list', 'value': 'same_for_all', 'limits' : ['by_channel', 'same_for_all', ] },
     {'name': 'timefreq', 'type': 'group', 'children': [
                     {'name': 'f_start', 'type': 'float', 'value': 3., 'step': 1.},
                     {'name': 'f_stop', 'type': 'float', 'value': 90., 'step': 1.},

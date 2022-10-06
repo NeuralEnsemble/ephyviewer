@@ -43,7 +43,7 @@ custom viewers in simple Python scripts that meet your individual needs::
     win.show()
 
     # launch the app
-    app.exec_()
+    app.exec()
 
 Have a look at the :ref:`examples` to see how to create both simple and
 sophisticated viewers, and at the :ref:`interface` guide for how to use the

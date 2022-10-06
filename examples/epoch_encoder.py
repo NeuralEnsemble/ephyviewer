@@ -50,7 +50,7 @@ win.add_view(view2)
 win.show()
 
 
-app.exec_()
+app.exec()
 
 
 # press '1', '2', '3', '4' to encode state.

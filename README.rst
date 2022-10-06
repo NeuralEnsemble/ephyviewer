@@ -64,7 +64,7 @@ Build viewers using code like this:
     win.add_view(view1)
     win.show()
 
-    app.exec_()
+    app.exec()
 
 Check the docs for more examples_.
 

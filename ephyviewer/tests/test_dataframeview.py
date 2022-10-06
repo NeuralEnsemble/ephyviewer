@@ -23,7 +23,7 @@ def test_dataframe_view(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()

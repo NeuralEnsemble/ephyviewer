@@ -21,7 +21,7 @@ def test_EpochEncoder(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()
@@ -45,7 +45,7 @@ def test_EpochEncoder_settings(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()
@@ -65,7 +65,7 @@ def test_EpochEncoder_empty(interactive=False):
 
     if interactive:
         win.show()
-        app.exec_()
+        app.exec()
     else:
         # close thread properly
         win.close()

@@ -28,7 +28,7 @@ default_params = [
     {'name': 'label_size', 'type': 'int', 'value': 8, 'limits': (1,np.inf)},
     {'name': 'new_epoch_step', 'type': 'float', 'value': .1, 'step': 0.1, 'limits':(0,np.inf)},
     {'name': 'exclusive_mode', 'type': 'bool', 'value': True},
-    {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'values' : ['stacked', 'flat']},
+    {'name': 'view_mode', 'type': 'list', 'value':'stacked', 'limits' : ['stacked', 'flat']},
     {'name': 'keys_as_ticks', 'type': 'bool', 'value': True},
     {'name': 'undo_history_size', 'type': 'int', 'value': 500, 'limits': (1, np.inf)},
 
@@ -583,7 +583,7 @@ class EpochEncoder(ViewerBase):
         self.refresh_table()
 
     def on_fill_blank(self):
-        params = [{'name': 'method', 'type': 'list', 'value':'from_left', 'values' : ['from_left', 'from_right', 'from_nearest']}]
+        params = [{'name': 'method', 'type': 'list', 'value':'from_left', 'limits' : ['from_left', 'from_right', 'from_nearest']}]
         dia = tools.ParamDialog(params, title='Fill blank method', parent=self)
         dia.resize(300, 100)
         if dia.exec_():
