@@ -32,7 +32,7 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
 
         self._nb_channel = self.recording.get_num_channels()
         self.sample_rate = self.recording.get_sampling_frequency()
-        self.t_start = 0.
+        self._t_start = 0.
 
     @property
     def nb_channel(self):
@@ -43,7 +43,7 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
 
     @property
     def t_start(self):
-        return self.t_start
+        return self._t_start
 
     @property
     def t_stop(self):
