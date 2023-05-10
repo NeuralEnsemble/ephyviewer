@@ -1,4 +1,4 @@
-import matplotlib.cm
+from matplotlib import colormaps
 import matplotlib.colors
 import numpy as np
 import pyqtgraph as pg
@@ -304,8 +304,7 @@ class TraceImageViewer(BaseMultiChannelViewer):
     def change_color_scale(self):
         N = 512
         cmap_name = self.params["colormap"]
-        cmap = matplotlib.cm.get_cmap(cmap_name, N)
-
+        cmap = colormaps.get_cmap(cmap_name).resampled(N)
         lut = []
         for i in range(N):
             r, g, b, _ = matplotlib.colors.ColorConverter().to_rgba(cmap(i))

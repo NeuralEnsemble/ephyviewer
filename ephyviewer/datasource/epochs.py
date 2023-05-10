@@ -3,7 +3,7 @@
 import os
 import numpy as np
 
-import matplotlib.cm
+from matplotlib import colormaps
 import matplotlib.colors
 
 try:
@@ -103,7 +103,7 @@ class WritableEpochSource(InMemoryEpochSource):
         # TODO: colors should be managed directly by EpochEncoder
         if color_labels is None:
             n = len(self.possible_labels)
-            cmap = matplotlib.cm.get_cmap("Dark2", n)
+            cmap = colormaps.get_cmap("Dark2").resampled(n)
             color_labels = [
                 matplotlib.colors.ColorConverter().to_rgb(cmap(i)) for i in range(n)
             ]
