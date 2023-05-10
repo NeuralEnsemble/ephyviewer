@@ -1,12 +1,13 @@
+import matplotlib.cm
+import matplotlib.colors
 import numpy as np
-
-from .myqt import QT
 import pyqtgraph as pg
 
 from .base import BaseMultiChannelViewer, Base_MultiChannel_ParamController
 from .datasource import (
     AnalogSignalFromNeoRawIOSource,
 )
+from .myqt import QT
 
 default_params = [
     {"name": "xsize", "type": "float", "value": 3.0, "step": 0.1},
@@ -23,6 +24,18 @@ default_params = [
             "min_max",
             "mean",
             "pure_decimate",
+        ],
+    },
+    {
+        "name": "colormap",
+        "type": "list",
+        "value": "viridis",
+        "limits": [
+            "inferno",
+            "viridis",
+            "jet",
+            "gray",
+            "hot",
         ],
     },
 ]
@@ -270,6 +283,7 @@ class TraceImageViewer(BaseMultiChannelViewer):
 
         self.viewBox.doubleclicked.connect(self.show_params_controller)
 
+        self.change_color_scale()
         self.initialize_plot()
 
         self.thread = QT.QThread(parent=self)
@@ -286,6 +300,17 @@ class TraceImageViewer(BaseMultiChannelViewer):
         event.accept()
         self.thread.quit()
         self.thread.wait()
+
+    def change_color_scale(self):
+        N = 512
+        cmap_name = self.params["colormap"]
+        cmap = matplotlib.cm.get_cmap(cmap_name, N)
+
+        lut = []
+        for i in range(N):
+            r, g, b, _ = matplotlib.colors.ColorConverter().to_rgba(cmap(i))
+            lut.append([r * 255, g * 255, b * 255])
+        self.lut = np.array(lut, dtype="uint8")
 
     def initialize_plot(self):
         self.vline = pg.InfiniteLine(
@@ -333,6 +358,8 @@ class TraceImageViewer(BaseMultiChannelViewer):
                     font = label.textItem.font()
                     font.setPointSize(self.params["label_size"])
                     label.setFont(font)
+            if param.name() == "colormap":
+                self.change_color_scale()
 
         self.refresh()
 
@@ -365,7 +392,7 @@ class TraceImageViewer(BaseMultiChannelViewer):
             return
 
         self.image.show()  # Why does this happen before the data are set?
-        self.image.setImage(data_curves.T)  # Need to set lut and clims?
+        self.image.setImage(data_curves.T, lut=self.lut)  # Ought to set clims?
         n_ch = data_curves.shape[0]
         self.image.setRect(QT.QRectF(t_start, 0, t_stop - t_start, n_ch))
 
