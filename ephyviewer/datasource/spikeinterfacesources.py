@@ -1,17 +1,13 @@
 """
 Data sources for SpikeInterface
 """
-
-from .sourcebase import BaseDataSource
-import sys
-import logging
-
 import numpy as np
 
 try:
     from distutils.version import LooseVersion as V
     import spikeinterface
-    if V(spikeinterface.__version__)>='0.90.1':
+
+    if V(spikeinterface.__version__) >= "0.90.1":
         HAVE_SI = True
     else:
         HAVE_SI = False
@@ -31,8 +27,12 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
         self.segment_index = segment_index
 
         self._nb_channel = self.recording.get_num_channels()
-        self.sample_rate = self.recording.get_sampling_frequency()
-        self._t_start = 0.
+        self._sample_rate = self.recording.get_sampling_frequency()
+        self._t_start = 0.0
+
+    @property
+    def sample_rate(self):
+        return self._sample_rate
 
     @property
     def nb_channel(self):
@@ -53,10 +53,12 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
         return self.recording.get_num_samples(segment_index=self.segment_index)
 
     def get_shape(self):
-        return (self.get_length(),self.nb_channel)
+        return (self.get_length(), self.nb_channel)
 
     def get_chunk(self, i_start=None, i_stop=None):
-        traces = self.recording.get_traces(segment_index=self.segment_index, start_frame=i_start, end_frame=i_stop)
+        traces = self.recording.get_traces(
+            segment_index=self.segment_index, start_frame=i_start, end_frame=i_stop
+        )
         return traces
 
     def time_to_index(self, t):
@@ -66,7 +68,6 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
         return float(ind / self.sample_rate)
 
 
-
 class SpikeInterfaceSortingSource(BaseSpikeSource):
     def __init__(self, sorting, segment_index=0):
         BaseSpikeSource.__init__(self)
@@ -74,8 +75,8 @@ class SpikeInterfaceSortingSource(BaseSpikeSource):
         self.sorting = sorting
         self.segment_index = segment_index
 
-        #TODO
-        self._t_stop = 10.
+        # TODO
+        self._t_stop = 10.0
 
     @property
     def nb_channel(self):
@@ -86,23 +87,27 @@ class SpikeInterfaceSortingSource(BaseSpikeSource):
 
     @property
     def t_start(self):
-        return 0.
+        return 0.0
 
     @property
     def t_stop(self):
         return self._t_stop
 
-    def get_chunk(self, chan=0,  i_start=None, i_stop=None):
+    def get_chunk(self, chan=0, i_start=None, i_stop=None):
         unit_id = self.sorting.unit_ids[chan]
-        spike_frames = self.sorting.get_unit_spike_train(unit_id,
-                    segment_index=self.segment_index, start_frame=i_start, end_frame=i_stop)
+        spike_frames = self.sorting.get_unit_spike_train(
+            unit_id,
+            segment_index=self.segment_index,
+            start_frame=i_start,
+            end_frame=i_stop,
+        )
         spike_frames = spike_frames[i_start:i_stop]
         spike_times = spike_frames / self.sorting.get_sampling_frequency()
         return spike_times
 
-    def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
+    def get_chunk_by_time(self, chan=0, t_start=None, t_stop=None):
         spike_times = self.get_chunk(chan=chan)
-        i1 = np.searchsorted(spike_times, t_start, side='left')
-        i2 = np.searchsorted(spike_times, t_stop, side='left')
-        sl = slice(i1, i2+1)
+        i1 = np.searchsorted(spike_times, t_start, side="left")
+        i2 = np.searchsorted(spike_times, t_stop, side="left")
+        sl = slice(i1, i2 + 1)
         return spike_times[sl]

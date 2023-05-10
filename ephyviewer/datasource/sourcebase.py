@@ -20,7 +20,3 @@ class BaseDataSource:
     @property
     def t_stop(self):
         raise (NotImplementedError)
-
-    @property
-    def sample_rate(self):
-        raise (NotImplementedError)

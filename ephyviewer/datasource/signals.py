@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#~ from __future__ import (unicode_literals, print_function, division, absolute_import)
+# ~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
 
 import numpy as np
@@ -12,25 +12,29 @@ import matplotlib.colors
 
 
 class BaseAnalogSignalSource(BaseDataSource):
-    type = 'AnalogSignal'
+    type = "AnalogSignal"
 
     def __init__(self):
         self.with_scatter = False
-    
+
     def get_length(self):
-        raise(NotImplementedError)
+        raise (NotImplementedError)
 
     def get_shape(self):
         return (self.get_length(), self.nb_channel)
 
     def get_chunk(self, i_start=None, i_stop=None):
-        raise(NotImplementedError)
+        raise (NotImplementedError)
 
     def time_to_index(self, t):
-        return int((t-self.t_start)*self.sample_rate)
+        return int((t - self.t_start) * self.sample_rate)
 
     def index_to_time(self, ind):
-        return float(ind/self.sample_rate) + self.t_start
+        return float(ind / self.sample_rate) + self.t_start
+
+    @property
+    def sample_rate(self):
+        raise (NotImplementedError)
 
 
 class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
@@ -38,13 +42,14 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
         BaseAnalogSignalSource.__init__(self)
 
         self.signals = signals
-        self.sample_rate = float(sample_rate)
+        self._sample_rate = float(sample_rate)
         self._t_start = float(t_start)
-        self._t_stop = self.signals.shape[0]/self.sample_rate + float(t_start)
+        self._t_stop = self.signals.shape[0] / self.sample_rate + float(t_start)
         self.channel_names = channel_names
         if channel_names is None:
-            self.channel_names = ['Channel {:3}'.format(c) for c in range(self.signals.shape[1])]
-
+            self.channel_names = [
+                "Channel {:3}".format(c) for c in range(self.signals.shape[1])
+            ]
 
     @property
     def nb_channel(self):
@@ -52,6 +57,10 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
 
     def get_channel_name(self, chan=0):
         return self.channel_names[chan]
+
+    @property
+    def sample_rate(self):
+        return self._sample_rate
 
     @property
     def t_start(self):
@@ -68,14 +77,23 @@ class InMemoryAnalogSignalSource(BaseAnalogSignalSource):
         return self.signals[i_start:i_stop, :]
 
 
-
-
 class AnalogSignalSourceWithScatter(InMemoryAnalogSignalSource):
-    def __init__(self, signals, sample_rate, t_start, scatter_indexes, scatter_channels, scatter_colors=None, channel_names=None):
-        InMemoryAnalogSignalSource.__init__(self, signals, sample_rate, t_start, channel_names=channel_names)
+    def __init__(
+        self,
+        signals,
+        sample_rate,
+        t_start,
+        scatter_indexes,
+        scatter_channels,
+        scatter_colors=None,
+        channel_names=None,
+    ):
+        InMemoryAnalogSignalSource.__init__(
+            self, signals, sample_rate, t_start, channel_names=channel_names
+        )
         self.with_scatter = True
 
-        #todo test and assert self.scatter_indexes sorted for eack k
+        # todo test and assert self.scatter_indexes sorted for eack k
         self.scatter_indexes = scatter_indexes
         self.scatter_channels = scatter_channels
         self.scatter_colors = scatter_colors
@@ -85,18 +103,18 @@ class AnalogSignalSourceWithScatter(InMemoryAnalogSignalSource):
         if self.scatter_colors is None:
             self.scatter_colors = {}
             n = len(self._labels)
-            colors = matplotlib.cm.get_cmap('Accent', n)
-            for i,k in enumerate(self._labels):
+            colors = matplotlib.cm.get_cmap("Accent", n)
+            for i, k in enumerate(self._labels):
                 self.scatter_colors[k] = matplotlib.colors.to_hex(colors(i))
 
     def get_scatter_babels(self):
         return self._labels
 
-    def get_scatter(self,  i_start=None, i_stop=None, chan=None, label=None):
+    def get_scatter(self, i_start=None, i_stop=None, chan=None, label=None):
         if chan not in self.scatter_channels[label]:
             return None
 
         inds = self.scatter_indexes[label]
-        i1 = np.searchsorted(inds, i_start, side='left')
-        i2 = np.searchsorted(inds, i_stop, side='left')
+        i1 = np.searchsorted(inds, i_start, side="left")
+        i2 = np.searchsorted(inds, i_stop, side="left")
         return inds[i1:i2]
