@@ -14,11 +14,6 @@ from .datasource import InMemoryAnalogSignalSource
 from .tools import create_plot_grid, get_dict_from_group_param
 
 
-# todo remove this
-import time
-import threading
-
-
 default_params = [
     {"name": "xsize", "type": "float", "value": 10.0, "step": 0.1},
     {"name": "xratio", "type": "float", "value": 0.3, "step": 0.1, "limits": (0, 1)},
