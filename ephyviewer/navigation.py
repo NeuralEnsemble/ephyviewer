@@ -137,6 +137,22 @@ class NavigationToolBar(QT.QWidget):
                 QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken)
             )
 
+            # add shortcuts for stepping through time and changing step size
+            shortcuts = [
+                {"key": QT.Qt.Key_Left, "callback": self.prev_step},
+                {"key": QT.Qt.Key_Right, "callback": self.next_step},
+                {"key": QT.Qt.Key_Up, "callback": self.increase_step},
+                {"key": QT.Qt.Key_Down, "callback": self.decrease_step},
+                {"key": "a", "callback": self.prev_step},
+                {"key": "d", "callback": self.next_step},
+                {"key": "w", "callback": self.increase_step},
+                {"key": "s", "callback": self.decrease_step},
+            ]
+            for s in shortcuts:
+                shortcut = QT.QShortcut(self)
+                shortcut.setKey(QT.QKeySequence(s["key"]))
+                shortcut.activated.connect(s["callback"])
+
         if show_spinbox:
             h.addWidget(QT.QLabel("Time (s):"))
             self.spinbox_time = pg.SpinBox(
@@ -249,6 +265,12 @@ class NavigationToolBar(QT.QWidget):
     def next_step(self):
         t = self.t + self.step_size
         self.seek(t)
+
+    def increase_step(self):
+        self.spinbox_step.setValue(self.spinbox_step.value() + float(self.spinbox_step.opts["step"]))
+
+    def decrease_step(self):
+        self.spinbox_step.setValue(self.spinbox_step.value() - float(self.spinbox_step.opts["step"]))
 
     def on_scroll_time_changed(self, pos):
         t = pos / 1000.0 * (self.t_stop - self.t_start) + self.t_start
