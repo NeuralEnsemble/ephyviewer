@@ -181,8 +181,8 @@ class NavigationToolBar(QT.QWidget):
             if "compactHeight" in self.spinbox_xsize.opts:  # pyqtgraph >= 0.11.0
                 self.spinbox_xsize.setOpts(compactHeight=False)
             h.addWidget(self.spinbox_xsize)
-            # ~ self.spinbox_xsize.valueChanged.connect(self.on_spinbox_xsize_changed)
-            self.spinbox_xsize.valueChanged.connect(self.xsize_changed.emit)
+            # self.spinbox_xsize.valueChanged.connect(self.xsize_changed.emit)
+            self.spinbox_xsize.valueChanged.connect(self.on_spinbox_xsize_changed)
             # trick for separator
             h.addWidget(
                 QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken)
@@ -257,8 +257,9 @@ class NavigationToolBar(QT.QWidget):
     def on_spinbox_time_changed(self, val):
         self.seek(val, refresh_spinbox=False)
 
-    # ~ def on_spinbox_xsize_changed(self, val):
-    # ~ print('xsize', val)
+    def on_spinbox_xsize_changed(self, val):
+        self.spinbox_step.setValue(val)
+        self.xsize_changed.emit(val)
 
     def seek(self, t, refresh_scroll=True, refresh_spinbox=True, emit=True):
         self.t = t
