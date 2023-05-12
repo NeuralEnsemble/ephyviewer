@@ -173,7 +173,7 @@ class NavigationToolBar(QT.QWidget):
                 value=3.0,
                 decimals=8,
                 bounds=(0.001, np.inf),
-                step=0.1,
+                step=1,
                 siPrefix=False,
                 suffix="",
                 int=False,
