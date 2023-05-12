@@ -106,29 +106,27 @@ class NavigationToolBar(QT.QWidget):
             play_pause_shortcut.setKey(QT.QKeySequence(" "))
             play_pause_shortcut.activated.connect(self.on_play_pause_shortcut)
 
-        self.steps = [
-            "60 s",
-            "10 s",
-            "1 s",
-            "100 ms",
-            "50 ms",
-            "5 ms",
-            "1 ms",
-            "200 us",
-        ]
-
         if show_step:
+
             but = QT.QPushButton("<")
             but.clicked.connect(self.prev_step)
             h.addWidget(but)
 
-            self.combo_step = QT.QComboBox()
-            self.combo_step.addItems(self.steps)
-            self.combo_step.setCurrentIndex(2)
-            h.addWidget(self.combo_step)
-
-            self.on_change_step(None)
-            self.combo_step.currentIndexChanged.connect(self.on_change_step)
+            h.addWidget(QT.QLabel("Step (s):"))
+            self.spinbox_step = pg.SpinBox(
+                value=3,
+                decimals=3,
+                bounds=(0, np.inf),
+                step=1,
+                siPrefix=False,
+                suffix="",
+                int=False,
+            )
+            if "compactHeight" in self.spinbox_step.opts:  # pyqtgraph >= 0.11.0
+                self.spinbox_step.setOpts(compactHeight=False)
+            h.addWidget(self.spinbox_step)
+            self.spinbox_step.valueChanged.connect(self.on_change_step)
+            self.on_change_step(self.spinbox_step.value())  # Sets self.step_size
 
             but = QT.QPushButton(">")
             but.clicked.connect(self.next_step)
@@ -138,22 +136,6 @@ class NavigationToolBar(QT.QWidget):
             h.addWidget(
                 QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken)
             )
-
-            # add shortcuts for stepping through time and changing step size
-            shortcuts = [
-                {"key": QT.Qt.Key_Left, "callback": self.prev_step},
-                {"key": QT.Qt.Key_Right, "callback": self.next_step},
-                {"key": QT.Qt.Key_Up, "callback": self.increase_step},
-                {"key": QT.Qt.Key_Down, "callback": self.decrease_step},
-                {"key": "a", "callback": self.prev_step},
-                {"key": "d", "callback": self.next_step},
-                {"key": "w", "callback": self.increase_step},
-                {"key": "s", "callback": self.decrease_step},
-            ]
-            for s in shortcuts:
-                shortcut = QT.QShortcut(self)
-                shortcut.setKey(QT.QKeySequence(s["key"]))
-                shortcut.activated.connect(s["callback"])
 
         if show_spinbox:
             h.addWidget(QT.QLabel("Time (s):"))
@@ -258,15 +240,7 @@ class NavigationToolBar(QT.QWidget):
             self.spinbox_time.setMaximum(t_stop)
 
     def on_change_step(self, val):
-        text = str(self.combo_step.currentText())
-
-        if text.endswith("ms"):
-            self.step_size = float(text[:-2]) * 1e-3
-        elif text.endswith("us"):
-            self.step_size = float(text[:-2]) * 1e-6
-        else:
-            self.step_size = float(text[:-1])
-        # ~ print('self.step_size', self.step_size)
+        self.step_size = val
 
     def prev_step(self):
         t = self.t - self.step_size
@@ -275,14 +249,6 @@ class NavigationToolBar(QT.QWidget):
     def next_step(self):
         t = self.t + self.step_size
         self.seek(t)
-
-    def increase_step(self):
-        new_index = max(self.combo_step.currentIndex() - 1, 0)
-        self.combo_step.setCurrentIndex(new_index)
-
-    def decrease_step(self):
-        new_index = min(self.combo_step.currentIndex() + 1, self.combo_step.count() - 1)
-        self.combo_step.setCurrentIndex(new_index)
 
     def on_scroll_time_changed(self, pos):
         t = pos / 1000.0 * (self.t_stop - self.t_start) + self.t_start
