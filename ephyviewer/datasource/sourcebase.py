@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-#~ from __future__ import (unicode_literals, print_function, division, absolute_import)
-
+# ~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
 
 class BaseDataSource:
@@ -9,15 +8,15 @@ class BaseDataSource:
 
     @property
     def nb_channel(self):
-        raise(NotImplementedError)
+        raise (NotImplementedError)
 
     def get_channel_name(self, chan=0):
-        raise(NotImplementedError)
+        raise (NotImplementedError)
 
     @property
     def t_start(self):
-        raise(NotImplementedError)
+        raise (NotImplementedError)
 
     @property
     def t_stop(self):
-        raise(NotImplementedError)
+        raise (NotImplementedError)
