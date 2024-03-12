@@ -9,7 +9,7 @@ import numpy as np
 import matplotlib.cm
 import matplotlib.colors
 
-from .myqt import QT
+from .myqt import QT, QT_MODE
 from . import tools
 
 import pyqtgraph as pg
@@ -213,7 +213,10 @@ class EpochEncoder(ViewerBase):
         self.graphicsview.setCentralItem(self.plot)
 
         self.controls = QT.QWidget()
-        self.controls.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Fixed)
+        if QT_MODE=="PyQt6":
+            self.controls.setSizePolicy(QT.QSizePolicy.Policy.Preferred, QT.QSizePolicy.Policy.Fixed)
+        else:
+            self.controls.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Fixed)
         self.mainlayout.addWidget(self.controls)
 
         h = QT.QHBoxLayout()
@@ -246,7 +249,10 @@ class EpochEncoder(ViewerBase):
             if 'compactHeight' in spinbox.opts:  # pyqtgraph >= 0.11.0
                 spinbox.setOpts(compactHeight=False)
             range_group_box_layout.addWidget(spinbox, i, 1)
-            spinbox.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Preferred, )
+            if QT_MODE=="PyQt6":
+                spinbox.setSizePolicy(QT.QSizePolicy.Policy.Preferred, QT.QSizePolicy.Policy.Preferred, )
+            else:
+                spinbox.setSizePolicy(QT.QSizePolicy.Preferred, QT.QSizePolicy.Preferred, )
             spinbox.valueChanged.connect(self.on_spin_limit_changed)
             spinboxs.append(spinbox)
         self.spin_limit1, self.spin_limit2 = spinboxs
@@ -280,8 +286,12 @@ class EpochEncoder(ViewerBase):
 
         self.table_widget = QT.QTableWidget()
         h.addWidget(self.table_widget, stretch=1)
-        self.table_widget.setSelectionMode(QT.QAbstractItemView.SingleSelection)
-        self.table_widget.setSelectionBehavior(QT.QAbstractItemView.SelectRows)
+        if QT_MODE=="PyQt6":
+            self.table_widget.setSelectionMode(QT.QAbstractItemView.SelectionMode.SingleSelection)
+            self.table_widget.setSelectionBehavior(QT.QAbstractItemView.SelectionBehavior.SelectRows)
+        else:
+            self.table_widget.setSelectionMode(QT.QAbstractItemView.SingleSelection)
+            self.table_widget.setSelectionBehavior(QT.QAbstractItemView.SelectRows)
         self.table_widget.cellClicked.connect(self.on_table_cell_click)
         self.table_widget.cellChanged.connect(self.on_table_cell_change)
         self.table_widget_icons = {
@@ -294,13 +304,19 @@ class EpochEncoder(ViewerBase):
         # Toolbar
 
         self.toolbar = QT.QToolBar()
-        self.toolbar.setToolButtonStyle(QT.Qt.ToolButtonTextBesideIcon)
+        if QT_MODE=="PyQt6":
+            self.toolbar.setToolButtonStyle(QT.Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        else:
+            self.toolbar.setToolButtonStyle(QT.Qt.ToolButtonTextBesideIcon)
         self.toolbar.setIconSize(QT.QSize(16, 16))
         self.mainlayout.addWidget(self.toolbar)
 
         self.toggle_controls_visibility_action = self.toolbar.addAction('Hide controls', self.on_controls_visibility_changed)
         self.toggle_controls_visibility_button = self.toolbar.widgetForAction(self.toggle_controls_visibility_action)
-        self.toggle_controls_visibility_button.setArrowType(QT.UpArrow)
+        if QT_MODE=="PyQt6":
+            self.toggle_controls_visibility_button.setArrowType(QT.ArrowType.UpArrow)
+        else:
+            self.toggle_controls_visibility_button.setArrowType(QT.UpArrow)
 
         self.toolbar.addSeparator()
 
@@ -336,7 +352,10 @@ class EpochEncoder(ViewerBase):
 
     def make_param_controller(self):
         self.params_controller = EpochEncoder_ParamController(parent=self, viewer=self)
-        self.params_controller.setWindowFlags(QT.Qt.Window)
+        if QT_MODE=="PyQt6":
+            self.params_controller.setWindowFlags(QT.Qt.WindowType.Window)
+        else:
+            self.params_controller.setWindowFlags(QT.Qt.Window)
 
 
     def closeEvent(self, event):
@@ -385,11 +404,17 @@ class EpochEncoder(ViewerBase):
         if self.controls.isVisible():
             self.controls.hide()
             self.toggle_controls_visibility_action.setText('Show controls')
-            self.toggle_controls_visibility_button.setArrowType(QT.RightArrow)
+            if QT_MODE=="PyQt6":
+                self.toggle_controls_visibility_button.setArrowType(QT.ArrowType.RightArrow)
+            else:
+                self.toggle_controls_visibility_button.setArrowType(QT.RightArrow)
         else:
             self.controls.show()
             self.toggle_controls_visibility_action.setText('Hide controls')
-            self.toggle_controls_visibility_button.setArrowType(QT.UpArrow)
+            if QT_MODE=="PyQt6":
+                self.toggle_controls_visibility_button.setArrowType(QT.ArrowType.UpArrow)
+            else:
+                self.toggle_controls_visibility_button.setArrowType(QT.UpArrow)
 
     def show_params_controller(self):
         self.params_controller.show()

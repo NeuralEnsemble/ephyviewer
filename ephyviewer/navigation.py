@@ -183,7 +183,10 @@ class NavigationToolBar(QT.QWidget) :
             self.label_datetime = QT.QLabel('')
             h.addWidget(self.label_datetime)
             #trick for separator
-            h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
+            if QT_MODE=="PyQt6":
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.Shape.VLine, frameShadow=QT.QFrame.Shadow.Sunken))
+            else:
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
 
         if show_global_xsize:
             h.addWidget(QT.QLabel('Time width (s):'))
