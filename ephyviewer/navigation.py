@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
-from .myqt import QT
+from .myqt import QT, QT_MODE
 import pyqtgraph as pg
 import numpy as np
 
@@ -31,7 +31,10 @@ class NavigationToolBar(QT.QWidget) :
 
         QT.QWidget.__init__(self, parent)
 
-        self.setSizePolicy(QT.QSizePolicy.Minimum, QT.QSizePolicy.Maximum)
+        if QT_MODE == "PyQt6":
+            self.setSizePolicy(QT.QSizePolicy.Policy.Minimum, QT.QSizePolicy.Policy.Maximum)
+        else:
+            self.setSizePolicy(QT.QSizePolicy.Minimum, QT.QSizePolicy.Maximum)
 
         self.mainlayout = QT.QVBoxLayout()
         self.setLayout(self.mainlayout)
@@ -56,7 +59,10 @@ class NavigationToolBar(QT.QWidget) :
 
         if show_scroll_time:
             #~ self.slider = QSlider()
-            self.scroll_time = QT.QScrollBar(orientation=QT.Horizontal, minimum=0, maximum=1000)
+            if QT_MODE == "PyQt6":
+                self.scroll_time = QT.QScrollBar(orientation=QT.Orientation.Horizontal, minimum=0, maximum=1000)
+            else:
+                self.scroll_time = QT.QScrollBar(orientation=QT.Horizontal, minimum=0, maximum=1000)
             self.mainlayout.addWidget(self.scroll_time)
             self.scroll_time.valueChanged.connect(self.on_scroll_time_changed)
 
@@ -92,7 +98,10 @@ class NavigationToolBar(QT.QWidget) :
             self.speed = 1.
 
             #trick for separator
-            h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
+            if QT_MODE=="PyQt6":
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.Shape.VLine, frameShadow=QT.QFrame.Shadow.Sunken))
+            else:
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
 
             # add spacebar shortcut for play/pause
             play_pause_shortcut = QT.QShortcut(self)
@@ -119,19 +128,34 @@ class NavigationToolBar(QT.QWidget) :
             h.addWidget(but)
 
             #trick for separator
-            h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
+            if QT_MODE=="PyQt6":
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.Shape.VLine, frameShadow=QT.QFrame.Shadow.Sunken))
+            else:
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
 
             # add shortcuts for stepping through time and changing step size
-            shortcuts = [
-                {'key': QT.Qt.Key_Left,  'callback': self.prev_step},
-                {'key': QT.Qt.Key_Right, 'callback': self.next_step},
-                {'key': QT.Qt.Key_Up,    'callback': self.increase_step},
-                {'key': QT.Qt.Key_Down,  'callback': self.decrease_step},
-                {'key': 'a',             'callback': self.prev_step},
-                {'key': 'd',             'callback': self.next_step},
-                {'key': 'w',             'callback': self.increase_step},
-                {'key': 's',             'callback': self.decrease_step},
-            ]
+            if QT_MODE=="PyQt6":
+                shortcuts = [
+                    {'key': QT.Qt.Key.Key_Left,  'callback': self.prev_step},
+                    {'key': QT.Qt.Key.Key_Right, 'callback': self.next_step},
+                    {'key': QT.Qt.Key.Key_Up,    'callback': self.increase_step},
+                    {'key': QT.Qt.Key.Key_Down,  'callback': self.decrease_step},
+                    {'key': 'a',             'callback': self.prev_step},
+                    {'key': 'd',             'callback': self.next_step},
+                    {'key': 'w',             'callback': self.increase_step},
+                    {'key': 's',             'callback': self.decrease_step},
+                ]
+            else:
+                shortcuts = [
+                    {'key': QT.Qt.Key_Left,  'callback': self.prev_step},
+                    {'key': QT.Qt.Key_Right, 'callback': self.next_step},
+                    {'key': QT.Qt.Key_Up,    'callback': self.increase_step},
+                    {'key': QT.Qt.Key_Down,  'callback': self.decrease_step},
+                    {'key': 'a',             'callback': self.prev_step},
+                    {'key': 'd',             'callback': self.next_step},
+                    {'key': 'w',             'callback': self.increase_step},
+                    {'key': 's',             'callback': self.decrease_step},
+                ]
             for s in shortcuts:
                 shortcut = QT.QShortcut(self)
                 shortcut.setKey(QT.QKeySequence(s['key']))
@@ -145,7 +169,10 @@ class NavigationToolBar(QT.QWidget) :
                 self.spinbox_time.setOpts(compactHeight=False)
             h.addWidget(self.spinbox_time)
             #trick for separator
-            h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
+            if QT_MODE=="PyQt6":
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.Shape.VLine, frameShadow=QT.QFrame.Shadow.Sunken))
+            else:
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
 
 
             #~ h.addSeparator()
@@ -167,7 +194,10 @@ class NavigationToolBar(QT.QWidget) :
             #~ self.spinbox_xsize.valueChanged.connect(self.on_spinbox_xsize_changed)
             self.spinbox_xsize.valueChanged.connect(self.xsize_changed.emit)
             #trick for separator
-            h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
+            if QT_MODE=="PyQt6":
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.Shape.VLine, frameShadow=QT.QFrame.Shadow.Sunken))
+            else:
+                h.addWidget(QT.QFrame(frameShape=QT.QFrame.VLine, frameShadow=QT.QFrame.Sunken))
 
         if show_auto_scale:
             but = QT.PushButton('Auto scale')

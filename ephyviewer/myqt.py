@@ -9,9 +9,10 @@ http://mikeboers.com/blog/2015/07/04/static-libraries-in-a-dynamic-world#the-fol
 
 class ModuleProxy(object):
 
-    def __init__(self, prefixes, modules):
+    def __init__(self, prefixes, modules, submodules):
         self.prefixes = prefixes
         self.modules = modules
+        self.submodules = submodules
 
     def __getattr__(self, name):
         for prefix in self.prefixes:
@@ -21,6 +22,14 @@ class ModuleProxy(object):
                 if obj is not None:
                     setattr(self, name, obj) # cache it
                     return obj
+                else:
+                    for submodule in self.submodules:
+                        submod = getattr(module, submodule, None)
+                        if submod is not None:
+                            obj = getattr(submod, fullname, None)
+                            if obj is not None:
+                                setattr(self, name, obj) # cache it
+                                return obj
         raise AttributeError(name)
 
 QT_MODE = None
@@ -34,13 +43,13 @@ if QT_MODE is None:
     except ImportError:
         pass
 
-#~ if QT_MODE is None:
-    #~ try:
-        #~ import PyQt6
-        #~ from PyQt6 import QtCore, QtGui, QtWidgets
-        #~ QT_MODE = 'PyQt6'
-    #~ except ImportError:
-        #~ pass
+if QT_MODE is None:
+    try:
+        import PyQt6
+        from PyQt6 import QtCore, QtGui, QtWidgets
+        QT_MODE = 'PyQt6'
+    except ImportError:
+        pass
 
 if QT_MODE is None:
     try:
@@ -75,7 +84,8 @@ if QT_MODE == 'PyQt4':
     modules = [QtCore.Qt, QtCore, QtGui]
 else:
     modules = [QtCore.Qt, QtCore, QtGui, QtWidgets]
-QT = ModuleProxy(['', 'Q', 'Qt'], modules)
+submodules = ["MouseButton","Orientation","DockWidgetArea","KeyboardModifier"]
+QT = ModuleProxy(['', 'Q', 'Qt'], modules, submodules)
 
 if QT_MODE.startswith('PySide'):
     QT.pyqtSignal = QtCore.Signal  # alias for cross-compatibility with PyQt
