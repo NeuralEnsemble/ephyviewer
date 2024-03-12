@@ -83,7 +83,10 @@ class WindowManager():
         self.windows.append(win)
 
         # delete window on close so that memory and file resources are released
-        win.setAttribute(QT.WA_DeleteOnClose, True)
+        if QT_MODE=="PyQt6":
+            win.setAttribute(QT.WidgetAttribute.WA_DeleteOnClose, True)
+        else:
+            win.setAttribute(QT.WA_DeleteOnClose, True)
         win.destroyed.connect(
             lambda *args, i=len(self.windows)-1: self.free_resources(i))
 
@@ -229,16 +232,28 @@ class RawNeoOpenDialog(QT.QDialog):
         #~ print('on_addfiles')
         #~ print(self.neo_rawio_class)
         #~ print(self.neo_rawio_class.rawmode)
+        if QT_MODE=="PyQt6":
+            if self.neo_rawio_class.rawmode.endswith('-file'):
+                fd = QT.QFileDialog(fileMode=QT.QFileDialog.FileMode.ExistingFiles, acceptMode=QT.QFileDialog.AcceptMode.AcceptOpen)
+                #Todo play with rawio.extentsions
+                fd.setNameFilters(['All (*)'])
+            elif self.neo_rawio_class.rawmode.endswith('-dir'):
+                fd = QT.QFileDialog(fileMode=QT.QFileDialog.FileMode.DirectoryOnly, acceptMode=QT.QFileDialog.AcceptMode.AcceptOpen)
+                #~ fd.setNameFilters(['All (*)'])
+            fd.setViewMode(QT.QFileDialog.ViewMode.Detail)
+            if fd.exec_():
+                filenames = fd.selectedFiles()
+                self.list_files.addItems(filenames)
+        else:
+            if self.neo_rawio_class.rawmode.endswith('-file'):
+                fd = QT.QFileDialog(fileMode=QT.QFileDialog.ExistingFiles, acceptMode=QT.QFileDialog.AcceptOpen)
+                #Todo play with rawio.extentsions
+                fd.setNameFilters(['All (*)'])
+            elif self.neo_rawio_class.rawmode.endswith('-dir'):
+                fd = QT.QFileDialog(fileMode=QT.QFileDialog.DirectoryOnly, acceptMode=QT.QFileDialog.AcceptOpen)
+                #~ fd.setNameFilters(['All (*)'])
 
-        if self.neo_rawio_class.rawmode.endswith('-file'):
-            fd = QT.QFileDialog(fileMode=QT.QFileDialog.ExistingFiles, acceptMode=QT.QFileDialog.AcceptOpen)
-            #Todo play with rawio.extentsions
-            fd.setNameFilters(['All (*)'])
-        elif self.neo_rawio_class.rawmode.endswith('-dir'):
-            fd = QT.QFileDialog(fileMode=QT.QFileDialog.DirectoryOnly, acceptMode=QT.QFileDialog.AcceptOpen)
-            #~ fd.setNameFilters(['All (*)'])
-
-        fd.setViewMode(QT.QFileDialog.Detail)
-        if fd.exec_():
-            filenames = fd.selectedFiles()
-            self.list_files.addItems(filenames)
+            fd.setViewMode(QT.QFileDialog.Detail)
+            if fd.exec_():
+                filenames = fd.selectedFiles()
+                self.list_files.addItems(filenames)
