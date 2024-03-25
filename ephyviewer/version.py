@@ -1,1 +1,3 @@
-version = '1.7.1.dev0'
+import importlib.metadata
+
+version = importlib.metadata.version("ephyviewer")
