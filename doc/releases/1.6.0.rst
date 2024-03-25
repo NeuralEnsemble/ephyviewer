@@ -1,7 +1,7 @@
 Version 1.6.0
 -------------
 
-2021-03-31
+2022-03-31
 
 
 * some fix with pyqtgraph version
