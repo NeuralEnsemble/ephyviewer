@@ -86,7 +86,7 @@ class WritableEpochSource(InMemoryEpochSource):
         # TODO: colors should be managed directly by EpochEncoder
         if color_labels is None:
             n = len(self.possible_labels)
-            cmap = matplotlib.cm.get_cmap('Dark2' , n)
+            cmap = matplotlib.colormaps['Dark2']
             color_labels = [ matplotlib.colors.ColorConverter().to_rgb(cmap(i)) for i in  range(n)]
             color_labels = (np.array(color_labels)*255).astype(int)
             color_labels = color_labels.tolist()
