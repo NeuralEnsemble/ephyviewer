@@ -293,7 +293,7 @@ class SpectrogramViewer(BaseMultiChannelViewer):
     def change_color_scale(self):
         N = 512
         cmap_name = self.params['colormap']
-        cmap = matplotlib.cm.get_cmap(cmap_name , N)
+        cmap = matplotlib.colormaps[cmap_name].resampled(N)
 
         lut = []
         for i in range(N):

@@ -324,7 +324,7 @@ class Base_MultiChannel_ParamController(Base_ParamController):
         cmap_name = str(self.combo_cmap.currentText())
         n = np.sum(self.selected)
         if n==0: return
-        cmap = matplotlib.cm.get_cmap(cmap_name , n)
+        cmap = matplotlib.colormaps[cmap_name].resampled(n)
 
         self.viewer.by_channel_params.blockSignals(True)
         for i, c in enumerate(np.nonzero(self.selected)[0]):

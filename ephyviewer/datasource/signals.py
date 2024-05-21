@@ -85,7 +85,7 @@ class AnalogSignalSourceWithScatter(InMemoryAnalogSignalSource):
         if self.scatter_colors is None:
             self.scatter_colors = {}
             n = len(self._labels)
-            colors = matplotlib.cm.get_cmap('Accent', n)
+            colors = matplotlib.colormaps['Accent'].resampled(n)
             for i,k in enumerate(self._labels):
                 self.scatter_colors[k] = matplotlib.colors.to_hex(colors(i))
 
