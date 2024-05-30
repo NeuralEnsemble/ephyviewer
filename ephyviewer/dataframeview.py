@@ -4,7 +4,7 @@
 
 import numpy as np
 
-from .myqt import QT
+from .myqt import QT, QT_MODE
 import pyqtgraph as pg
 
 from .base import ViewerBase
@@ -39,8 +39,11 @@ class DataFrameView(ViewerBase):
         self.mainlayout = QT.QVBoxLayout()
         self.setLayout(self.mainlayout)
 
-
-        self.qtable = QT.QTableWidget(selectionMode=QT.QAbstractItemView.SingleSelection,
+        if QT_MODE=="PyQt6":
+            self.qtable = QT.QTableWidget(selectionMode=QT.QAbstractItemView.SelectionMode.SingleSelection,
+                                                                            selectionBehavior=QT.QAbstractItemView.SelectionBehavior.SelectRows)
+        else:
+            self.qtable = QT.QTableWidget(selectionMode=QT.QAbstractItemView.SingleSelection,
                                                                             selectionBehavior=QT.QAbstractItemView.SelectRows)
         self.qtable.itemClicked.connect(self.on_selection_changed)
         self.mainlayout.addWidget(self.qtable)

@@ -14,17 +14,30 @@ from .epochviewer import EpochViewer
 from .eventlist import EventList
 from .spiketrainviewer import SpikeTrainViewer
 
-location_to_qt={
-    'left': QT.LeftDockWidgetArea,
-    'right': QT.RightDockWidgetArea,
-    'top': QT.TopDockWidgetArea,
-    'bottom': QT.BottomDockWidgetArea,
-}
+if QT_MODE == "PyQt6":
+    location_to_qt={
+        'left': QT.DockWidgetArea.LeftDockWidgetArea,
+        'right': QT.DockWidgetArea.RightDockWidgetArea,
+        'top': QT.DockWidgetArea.TopDockWidgetArea,
+        'bottom': QT.DockWidgetArea.BottomDockWidgetArea,
+    }
 
-orientation_to_qt={
-    'horizontal': QT.Horizontal,
-    'vertical': QT.Vertical,
-}
+    orientation_to_qt={
+        'horizontal': QT.Orientation.Horizontal,
+        'vertical': QT.Orientation.Vertical,
+    }
+else:
+    location_to_qt={
+        'left': QT.LeftDockWidgetArea,
+        'right': QT.RightDockWidgetArea,
+        'top': QT.TopDockWidgetArea,
+        'bottom': QT.BottomDockWidgetArea,
+    }
+
+    orientation_to_qt={
+        'horizontal': QT.Horizontal,
+        'vertical': QT.Vertical,
+    }
 
 
 
@@ -58,8 +71,12 @@ class MainViewer(QT.QMainWindow):
         dock.setObjectName('navigation')
         dock.setWidget(self.navigation_toolbar)
         dock.setTitleBarWidget(QT.QWidget())  # hide the widget title bar
-        dock.setFeatures(QT.DockWidget.NoDockWidgetFeatures)  # prevent accidental movement and undockingx
-        self.addDockWidget(QT.TopDockWidgetArea, dock)
+        if QT_MODE=="PyQt6":
+            dock.setFeatures(QT.DockWidget.DockWidgetFeature.NoDockWidgetFeatures)  # prevent accidental movement and undockingx
+            self.addDockWidget(QT.DockWidgetArea.TopDockWidgetArea, dock)
+        else:
+            dock.setFeatures(QT.DockWidget.NoDockWidgetFeatures)  # prevent accidental movement and undockingx
+            self.addDockWidget(QT.TopDockWidgetArea, dock)
 
         self.navigation_toolbar.time_changed.connect(self.on_time_changed)
         self.navigation_toolbar.xsize_changed.connect(self.on_xsize_changed)

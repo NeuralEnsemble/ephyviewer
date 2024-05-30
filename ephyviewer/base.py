@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 #~ from __future__ import (unicode_literals, print_function, division, absolute_import)
 
-from .myqt import QT
+from .myqt import QT, QT_MODE
 import pyqtgraph as pg
 import numpy as np
 
@@ -58,14 +58,22 @@ class MyViewBox(pg.ViewBox):
         else:
             ev.ignore()
     def wheelEvent(self, ev, axis=None):
-        if ev.modifiers() == QT.Qt.ControlModifier:
+        if QT_MODE=="PyQt6":
+            modifier = QT.Qt.KeyboardModifier.ControlModifier
+        else:
+            modifier = QT.Qt.ControlModifier
+        if ev.modifiers() == modifier:
             z = 5. if ev.delta()>0 else 1/5.
         else:
             z = 1.1 if ev.delta()>0 else 1/1.1
         self.ygain_zoom.emit(z)
         ev.accept()
     def mouseDragEvent(self, ev, axis=None):
-        if ev.button()== QT.RightButton:
+        if QT_MODE=="PyQt6":
+            button = QT.MouseButton.RightButton
+        else:
+            button = QT.RightButton
+        if ev.button()== button:
             self.xsize_zoom.emit((ev.pos()-ev.lastPos()).x())
         else:
             pass
@@ -117,7 +125,10 @@ class BaseMultiChannelViewer(ViewerBase):
         if self.with_user_dialog and self._ControllerClass:
             self.all_params.blockSignals(True)
             self.params_controller = self._ControllerClass(parent=self, viewer=self)
-            self.params_controller.setWindowFlags(QT.Qt.Window)
+            if QT_MODE=="PyQt6":
+                self.params_controller.setWindowFlags(QT.Qt.WindowType.Window)
+            else:
+                self.params_controller.setWindowFlags(QT.Qt.Window)
             self.all_params.blockSignals(False)
         else:
             self.params_controller = None
@@ -250,7 +261,10 @@ class Base_MultiChannel_ParamController(Base_ParamController):
                 self.qlist = QT.QListWidget()
                 v.addWidget(self.qlist, 2)
                 self.qlist.addItems(names)
-                self.qlist.setSelectionMode(QT.QAbstractItemView.ExtendedSelection)
+                if QT_MODE=="PyQt6":
+                    self.qlist.setSelectionMode(QT.QAbstractItemView.SelectionMode.ExtendedSelection)
+                else:
+                    self.qlist.setSelectionMode(QT.QAbstractItemView.ExtendedSelection)
                 self.qlist.doubleClicked.connect(self.on_double_clicked)
 
                 for i in range(len(names)):
