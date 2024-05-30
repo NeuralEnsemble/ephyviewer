@@ -1,4 +1,0 @@
-matplotlib>=2.0
-numpy
-pyqtgraph>=0.10.0
-scipy
