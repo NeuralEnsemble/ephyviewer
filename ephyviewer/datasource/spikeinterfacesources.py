@@ -24,11 +24,12 @@ from .spikes import BaseSpikeSource
 
 
 class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
-    def __init__(self, recording, segment_index=0):
+    def __init__(self, recording, segment_index=0, high_precision=False):
         BaseAnalogSignalSource.__init__(self)
 
         self.recording = recording
         self.segment_index = segment_index
+        self.hign_precision = high_precision
 
         self._nb_channel = self.recording.get_num_channels()
         self.sample_rate = self.recording.get_sampling_frequency()
@@ -48,8 +49,10 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
 
     @property
     def t_stop(self):
-        return self.times[-1]
-        #return self.get_length() / self.sample_rate
+        if self.hign_precision:
+            return self.times[-1]
+        else:
+            return self.get_length() / self.sample_rate
 
     def get_length(self):
         return self.recording.get_num_samples(segment_index=self.segment_index)
@@ -62,12 +65,16 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
         return traces
 
     def time_to_index(self, t):
-        return (np.abs(self.times - t)).argmin()
-        #return int(t * self.sample_rate)
+        if self.hign_precision:
+            return (np.abs(self.times - t)).argmin()
+        else:
+            return int(t * self.sample_rate)
 
     def index_to_time(self, ind):
-        return self.times[ind]
-        #return float(ind / self.sample_rate)
+        if self.hign_precision:
+            return self.times[ind]
+        else:
+            return float(ind / self.sample_rate)
 
 
 
