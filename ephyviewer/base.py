@@ -345,7 +345,7 @@ class Base_MultiChannel_ParamController(Base_ParamController):
         n = np.sum(self.selected)
         if n == 0:
             return
-        cmap = colormaps.get_cmap(cmap_name).resampled(n)
+        cmap = matplotlib.colormaps[cmap_name].resampled(n)
 
         self.viewer.by_channel_params.blockSignals(True)
         for i, c in enumerate(np.nonzero(self.selected)[0]):

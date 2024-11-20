@@ -424,7 +424,8 @@ class TimeFreqViewer(BaseMultiChannelViewer):
     def change_color_scale(self):
         N = 512
         cmap_name = self.params["colormap"]
-        cmap = colormaps.get_cmap(cmap_name).resampled(N)
+        cmap = matplotlib.colormaps[cmap_name].resampled(N)
+
         lut = []
         for i in range(N):
             r, g, b, _ = matplotlib.colors.ColorConverter().to_rgba(cmap(i))

@@ -71,7 +71,7 @@ def test_traceviewer_cls_method_neo(interactive=False):
     sample_rate = 1000.
     t_start = 0.
 
-    neo_anasig = neo.AnalogSignal(sigs*pq.mV, sampling_rate=sample_rate*pq.Hz, t_start=0*pq.s, copy=True)
+    neo_anasig = neo.AnalogSignal(sigs*pq.mV, sampling_rate=sample_rate*pq.Hz, t_start=0*pq.s)
     print(neo_anasig)
 
 

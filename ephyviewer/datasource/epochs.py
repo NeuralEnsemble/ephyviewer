@@ -103,7 +103,7 @@ class WritableEpochSource(InMemoryEpochSource):
         # TODO: colors should be managed directly by EpochEncoder
         if color_labels is None:
             n = len(self.possible_labels)
-            cmap = colormaps.get_cmap("Dark2").resampled(n)
+            cmap = matplotlib.colormaps["Dark2"].resampled(n)
             color_labels = [
                 matplotlib.colors.ColorConverter().to_rgb(cmap(i)) for i in range(n)
             ]
@@ -250,9 +250,9 @@ class WritableEpochSource(InMemoryEpochSource):
         for i in range(len(ep_times)):
             # if epoch starts and ends inside range, delete it
             if ep_times[i] >= t1 and ep_stops[i] <= t2:
-                ep_durations[
-                    i
-                ] = -1  # non-positive duration flags this epoch for clean up
+                ep_durations[i] = (
+                    -1
+                )  # non-positive duration flags this epoch for clean up
 
             # if epoch starts before and ends inside range, truncate it
             elif ep_times[i] < t1 and (t1 < ep_stops[i] <= t2):
@@ -302,9 +302,9 @@ class WritableEpochSource(InMemoryEpochSource):
                     )
 
                     # delete the first epoch
-                    ep_durations[
-                        inds[i]
-                    ] = -1  # non-positive duration flags this epoch for clean up
+                    ep_durations[inds[i]] = (
+                        -1
+                    )  # non-positive duration flags this epoch for clean up
 
         self._clean_and_set(ep_times, ep_durations, ep_labels, ep_ids)
 
