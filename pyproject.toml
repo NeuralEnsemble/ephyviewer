@@ -1,0 +1,64 @@
+[project]
+name = "ephyviewer"
+version = "1.7.1.dev0"
+authors = [
+  { name="Samuel Garcia", email="sam.garcia.die@gmail.com" },
+  { name="Jeffrey Gill"},
+]
+
+description = "Simple viewers for ephys signals, events, video and more"
+readme = "README.rst"
+requires-python = ">=3.8"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Science/Research",
+    "Natural Language :: English",
+]
+        
+dependencies = [
+    "numpy",
+    "matplotlib>=2.0",
+    "pyqtgraph>=0.10.0",
+    "scipy",
+]
+
+[project.urls]
+homepage = "https://github.com/NeuralEnsemble/ephyviewer/"
+repository = "https://github.com/NeuralEnsemble/ephyviewer/"
+documentation = "https://ephyviewer.readthedocs.io/en/latest/"
+changelog = "https://ephyviewer.readthedocs.io/en/latest/releasenotes.html"
+
+
+[build-system]
+requires = ["setuptools>=62.0"]
+build-backend = "setuptools.build_meta"
+
+
+[tool.setuptools]
+packages = ["ephyviewer"]
+package-dir = {"ephyviewer" = "ephyviewer"}
+
+[project.scripts]
+ephyviewer = "ephyviewer.scripts:launch_standalone_ephyviewer"
+
+[project.optional-dependencies]
+
+tests = [
+    "av",
+    "coveralls",
+    "neo>=0.10.0",
+    "spikeinterface>=0.90.1",
+    "pandas",
+    "pytest",
+    "pytest-cov",
+]
+
+docs = [
+    # these restricted versions are defaults on ReadTheDocs, so use the same in
+    # local builds and in tests
+    "sphinx<2",
+    # see this https://github.com/readthedocs/readthedocs.org/issues/9037
+    "jinja2<3.1.0",
+]
