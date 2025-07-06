@@ -70,9 +70,23 @@ class MainViewer(QT.QMainWindow):
 
     def add_view(self, widget, location='bottom', orientation='vertical',
                         tabify_with=None, split_with=None):
+        """
+        Add view to window.
+
+        Parameters:
+        ===========
+        widget: QT.QWidget
+        location: str
+            One of "left", "right", "top", "bottom" (default "bottom")
+        orientation: str
+            One of "horizontal", "vertical" (default "vertical")
+        tabify_with, split_with: str
+            Either of "navigation" or the name of an existing viewer.
+        """
         name = widget.name
 
         assert name not in self.viewers, 'Viewer already in MainViewer'
+        assert name != "navigation", "Viewer cannot be named 'navigation'."
 
         dock = QT.QDockWidget(name)
         dock.setObjectName(name)
@@ -81,18 +95,32 @@ class MainViewer(QT.QMainWindow):
         #TODO chustum titlebar
         #~ dock.setTitleBarWidget(titlebar)
 
+        other_docks = {
+            "navigation": self.navigation_dock,
+            **{
+                vname: vvalue["dock"]
+                for vname, vvalue in self.viewers.items()
+            }
+        }
+
         if tabify_with is not None:
-            assert tabify_with in self.viewers, '{} no exists'.format(tabify_with)
+            assert tabify_with in other_docks.keys(), (
+                f"Invalid value for 'tabify_with' kwarg (={tabify_with}). "
+                f"Expected one of: `{list(other_docks.keys())}`"
+            )
             #~ raise(NotImplementedError)
             #tabifyDockWidget ( QDockWidget * first, QDockWidget * second )
-            other_dock = self.viewers[tabify_with]['dock']
+            other_dock = other_docks[tabify_with]
             self.tabifyDockWidget(other_dock, dock)
 
         elif split_with is not None:
-            assert split_with in self.viewers, '{} no exists'.format(split_with)
+            assert split_with in other_docks.keys(), (
+                f"Invalid value for 'tabify_with' kwarg (={split_with}). "
+                f"Expected one of: `{list(other_docks.keys())}`"
+            )
             #~ raise(NotImplementedError)
             orien = orientation_to_qt[orientation]
-            other_dock = self.viewers[split_with]['dock']
+            other_dock = other_docks[split_with]
             self.splitDockWidget(other_dock, dock, orien)
             #splitDockWidget ( QDockWidget * first, QDockWidget * second, Qt::Orientation orientation )
         else:
