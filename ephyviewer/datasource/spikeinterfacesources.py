@@ -6,7 +6,7 @@ from .sourcebase import BaseDataSource
 import sys
 import logging
 
-from packagind.version import Version as V
+from packaging.version import Version as V
 
 import numpy as np
 
