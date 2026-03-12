@@ -31,7 +31,7 @@ orientation_to_qt={
 
 class MainViewer(QT.QMainWindow):
     def __init__(self, debug=False, settings_name=None, parent=None, global_xsize_zoom=False, **navigation_params):
-        QT.QMainWindow.__init__(self, parent)
+        QT.QMainWindow.__init__(self, parent=parent)
 
         #TODO settings
         #http://www.programcreek.com/python/example/86789/PyQt5.QtCore.QSettings
