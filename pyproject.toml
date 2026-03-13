@@ -1,0 +1,67 @@
+[project]
+name = "ephyviewer"
+version = "1.8.0"
+authors = [
+  { name="Samuel Garcia", email="sam.garcia.die@gmail.com" },
+  { name="Jeffrey Gill"},
+]
+description = "Simple viewers for ephys signals, events, video and more"
+readme = "README.rst"
+requires-python = ">=3.10,<4.0"
+classifiers = [
+    "Programming Language :: Python :: 3 :: Only",
+    "License :: OSI Approved :: MIT License",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: MacOS",
+    "Operating System :: OS Independent"
+]
+
+
+dependencies = [
+    "matplotlib>=2.0",
+    "numpy",
+    "pyqtgraph>=0.14.0",
+    "scipy",
+]
+
+[project.optional-dependencies]
+test = [
+    "av",
+    "coveralls",
+    "neo>=0.14.4",
+    "spikeinterface>=0.103.0",
+    "pandas",
+    "pytest",
+    "pytest-cov",
+]
+
+docs = [
+    "matplotlib",
+    "sphinx-gallery",
+    "sphinx_rtd_theme",
+    "numpydoc",
+]
+
+[build-system]
+requires = ["setuptools>=62.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+include-package-data = true
+
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["ephyviewer*"]
+namespaces = false
+exclude = ["ephyviewer.*.tests"]
+
+
+[project.urls]
+homepage = "https://ephyviewer.readthedocs.io"
+repository = "https://github.com/NeuralEnsemble/ephyviewer"
+
+[project.scripts]
+ephyviewer = "ephyviewer.scripts:launch_standalone_ephyviewer"

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+
 #
 # ephyviewer documentation build configuration file, created by
 # sphinx-quickstart on Mon Aug 28 09:37:17 2017.
