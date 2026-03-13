@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 """
 This module include some facilities to make data source from:
   * neo.rawio so on disk sources (signals, spikes, epoch...)
