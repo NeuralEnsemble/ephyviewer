@@ -37,8 +37,16 @@ jobs:
       run: |
         ls -l dist/
 
-    - name: Publish package to PyPI
-      uses: pypa/gh-action-pypi-publish@v1.13.0
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+    # - name: Publish package to PyPI
+    #   uses: pypa/gh-action-pypi-publish@v1.13.0
+    #   with:
+    #     user: __token__
+    #     password: ${{ secrets.PYPI_API_TOKEN }}
+
+    - name: Publish on PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: |
+          python -m build --sdist --wheel
+          twine upload dist/*
