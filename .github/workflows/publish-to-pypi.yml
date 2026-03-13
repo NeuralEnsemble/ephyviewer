@@ -1,14 +1,14 @@
 name: Publish to PyPI
 
 on:
-  workflow_dispatch:
-    inputs:
-      tag:
-        description: 'Tag for OFFICIAL release'
-        required: true
-  # push:
-  #   tags:
-  #       - '*'
+  # workflow_dispatch:
+  #   inputs:
+  #     tag:
+  #       description: 'Tag for OFFICIAL release'
+  #       required: true
+  push:
+    tags:
+        - '*'
 
 jobs:
   publish-pypi:
@@ -22,7 +22,7 @@ jobs:
     - name: Install tools
       run: |
         python -m pip install --upgrade pip
-        pip install setuptools wheel twine
+        pip install setuptools wheel twine build
 
     - name: Checkout tag ${{ github.event.inputs.tag }}
       uses: actions/checkout@v2
@@ -31,7 +31,7 @@ jobs:
 
     - name: Build source distribution and wheel
       run: |
-        python setup.py sdist bdist_wheel
+        python -m build --sdist --wheel
 
     - name: List distribution artifacts
       run: |
