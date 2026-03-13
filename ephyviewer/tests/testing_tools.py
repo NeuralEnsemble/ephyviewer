@@ -51,7 +51,7 @@ def make_fake_signals_with_scatter():
 
 
 
-def make_video_file(filename, codec='mpeg4', rate=25.): # mpeg4 mjpeg libx264
+def make_video_file(filename, codec='mpeg4', rate=25): # mpeg4 mjpeg libx264
     print('make_video_file', filename)
     name=filename.replace('.avi', '')
     import av
@@ -59,7 +59,7 @@ def make_video_file(filename, codec='mpeg4', rate=25.): # mpeg4 mjpeg libx264
     w, h = 800, 600
 
     output = av.open(filename, 'w')
-    stream = output.add_stream(codec, rate)
+    stream = output.add_stream(codec, int(rate))
     #~ stream.bit_rate = 8000000
     #~ stream.pix_fmt = 'yuv420p'
     stream.pix_fmt = 'yuv420p'
@@ -98,7 +98,7 @@ def make_video_file(filename, codec='mpeg4', rate=25.): # mpeg4 mjpeg libx264
             if packet is None:
                 break
             output.mux(packet)
-        except av.AVError:
+        except :
             break
 
     output.close()
