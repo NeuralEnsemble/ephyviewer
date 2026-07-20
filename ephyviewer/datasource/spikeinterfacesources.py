@@ -33,7 +33,6 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
 
         self._nb_channel = self.recording.get_num_channels()
         self.sample_rate = self.recording.get_sampling_frequency()
-        self._t_start = 0.
 
     @property
     def nb_channel(self):
@@ -44,11 +43,11 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
 
     @property
     def t_start(self):
-        return self._t_start
+        return self.recording.sample_index_to_time(0, segment_index=self.segment_index)
 
     @property
     def t_stop(self):
-        return self.get_length() / self.sample_rate
+        return self.recording.sample_index_to_time(self.get_length() - 1, segment_index=self.segment_index)
 
     def get_length(self):
         return self.recording.get_num_samples(segment_index=self.segment_index)
@@ -61,10 +60,10 @@ class SpikeInterfaceRecordingSource(BaseAnalogSignalSource):
         return traces
 
     def time_to_index(self, t):
-        return int(t * self.sample_rate)
+        return int(self.recording.time_to_sample_index(t, segment_index=self.segment_index))
 
     def index_to_time(self, ind):
-        return float(ind / self.sample_rate)
+        return float(self.recording.sample_index_to_time(ind, segment_index=self.segment_index))
 
 
 
@@ -75,7 +74,7 @@ class SpikeInterfaceSortingSource(BaseSpikeSource):
         self.sorting = sorting
         self.segment_index = segment_index
 
-        #TODO
+        #TODO: no way to know the duration without a registered recording
         self._t_stop = 10.
 
     @property
@@ -87,10 +86,12 @@ class SpikeInterfaceSortingSource(BaseSpikeSource):
 
     @property
     def t_start(self):
-        return 0.
+        return self.sorting.sample_index_to_time(0, segment_index=self.segment_index)
 
     @property
     def t_stop(self):
+        if self.sorting.has_recording():
+            return self.sorting.get_total_duration()
         return self._t_stop
 
     def get_chunk(self, chan=0,  i_start=None, i_stop=None):
@@ -98,7 +99,7 @@ class SpikeInterfaceSortingSource(BaseSpikeSource):
         spike_frames = self.sorting.get_unit_spike_train(unit_id,
                     segment_index=self.segment_index, start_frame=i_start, end_frame=i_stop)
         spike_frames = spike_frames[i_start:i_stop]
-        spike_times = spike_frames / self.sorting.get_sampling_frequency()
+        spike_times = self.sorting.sample_index_to_time(spike_frames, segment_index=self.segment_index)
         return spike_times
 
     def get_chunk_by_time(self, chan=0,  t_start=None, t_stop=None):
